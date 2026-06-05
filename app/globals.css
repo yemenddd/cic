@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* shadcn/ui tokens — dark palette (site is dark-themed) */
+  --primary: #ffffff;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1c1c20;
+  --secondary-foreground: #fafafa;
+  --muted: #1c1c20;
+  --muted-foreground: #9ca3af;
+  --accent: #26262b;
+  --accent-foreground: #fafafa;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.18);
+  --ring: #3ca2fa;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+/* shadcn default: bare border/outline utilities use the theme tokens */
+@layer base {
+  * {
+    border-color: var(--border);
+    outline-color: var(--ring);
+  }
+
+  :root {
+    --gradient-color: #3b82f6;
+    --sparkles-color: #3b82f6;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+/* ── Arabic typography: use Thmanyah Serif Text for all text (incl. display headings) when RTL ── */
+html[lang="ar"] body,
+html[lang="ar"] .font-inter,
+html[lang="ar"] .font-outfit {
+  font-family: var(--font-thmanyah), "Segoe UI", system-ui, serif;
+}
+
+/* Outfit utility (set via Tailwind theme) — override for Arabic */
+html[lang="ar"] [class*="font-outfit"] {
+  font-family: var(--font-thmanyah), system-ui, serif;
+}
+
+/* Fluent 2 design tokens */
+:root {
+  --fluent-brand:              #0078D4;
+  --fluent-brand-hover:        #106EBE;
+  --fluent-brand-pressed:      #005A9E;
+  --fluent-fg1:                #242424;
+  --fluent-fg2:                #616161;
+  --fluent-fg3:                #707070;
+  --fluent-bg1:                #FFFFFF;
+  --fluent-bg2:                #F9F9F9;
+  --fluent-bg3:                #F5F5F5;
+  --fluent-stroke:             rgba(0,0,0,0.06);
+  --fluent-stroke-strong:      rgba(0,0,0,0.12);
+  --fluent-shadow4:            0 2px 4px rgba(0,0,0,0.10), 0 0 2px rgba(0,0,0,0.06);
+  --fluent-shadow8:            0 4px 8px rgba(0,0,0,0.12), 0 0 2px rgba(0,0,0,0.06);
+  --fluent-shadow16:           0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.08);
+  --fluent-shadow28:           0 14px 28px rgba(0,0,0,0.16), 0 0 4px rgba(0,0,0,0.08);
+}
+
+/* Fluent acrylic glass surface */
+.fluent-acrylic {
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+
+/* Fluent card surface */
+.fluent-card {
+  background: var(--fluent-bg1);
+  border: 1px solid var(--fluent-stroke);
+  box-shadow: var(--fluent-shadow4);
+  border-radius: 8px;
+}
+
+.fluent-card:hover {
+  box-shadow: var(--fluent-shadow16);
+}
+
+
+/* Soft glow pulse for accent text */
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.animate-glow-pulse {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+/* Force browser's standard cursor on Spline 3D canvas, overriding any custom pointer settings in the scene */
+canvas,
+canvas:hover,
+canvas:active {
+  cursor: default !important;
+}
+
+/* Ensure any wrapper the Spline runtime injects also uses the normal cursor */
+[class*="spline"] canvas,
+.spline-watermark + canvas {
+  cursor: default !important;
+}
+
