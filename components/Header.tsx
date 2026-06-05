@@ -73,10 +73,9 @@ export default function Header() {
             </div>
           </Link>
 
-          {/* ── Desktop nav — centered pill ── */}
+          {/* ── Desktop nav ── */}
           <nav
-            className="hidden md:flex items-center gap-0.5 px-1.5 py-1.5 rounded-full"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+            className="hidden md:flex items-center gap-0.5 px-1.5 py-1.5"
             onMouseLeave={() => setHovered(null)}
           >
             {navLinks.map(link => {
