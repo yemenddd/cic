@@ -7,16 +7,16 @@ import { useLang } from '@/lib/i18n';
 import { motion } from 'framer-motion';
 
 const partners = [
-  '/images/sponsors/1.png',
-  '/images/sponsors/2.png',
-  '/images/sponsors/3.png',
-  '/images/sponsors/4.png',
-  '/images/sponsors/5.png',
-  '/images/sponsors/6.png',
-  '/images/sponsors/7.png',
-  '/images/sponsors/8.png',
-  '/images/sponsors/9.png',
-  '/images/sponsors/10.png',
+  { src: ‘/images/sponsors/1.png’,  alt: ‘Sponsor 1’ },
+  { src: ‘/images/sponsors/2.png’,  alt: ‘Sponsor 2’ },
+  { src: ‘/images/sponsors/3.png’,  alt: ‘Sponsor 3’ },
+  { src: ‘/images/sponsors/4.png’,  alt: ‘Sponsor 4’ },
+  { src: ‘/images/sponsors/5.png’,  alt: ‘Sponsor 5’ },
+  { src: ‘/images/sponsors/6.png’,  alt: ‘Sponsor 6’ },
+  { src: ‘/images/sponsors/7.png’,  alt: ‘Sponsor 7’ },
+  { src: ‘/images/sponsors/8.png’,  alt: ‘Sponsor 8’ },
+  { src: ‘/images/sponsors/9.png’,  alt: ‘Sponsor 9’ },
+  { src: ‘/images/sponsors/10.png’, alt: ‘Sponsor 10’ },
 ];
 
 export default function Partners() {
@@ -40,24 +40,17 @@ export default function Partners() {
       </div>
 
       {/* Infinite slider — logo lockups */}
-      <div className="relative mt-12 h-[160px] md:h-[220px] lg:h-[280px] z-40">
-        <InfiniteSlider className="flex h-full w-full items-center" duration={45} gap={100}>
-          {partners.map((src, idx) => (
-            <div
-              key={idx}
-              dir="ltr"
-              className="group flex items-center justify-center whitespace-nowrap select-none transition-all duration-300"
-              style={{ opacity: 0.9 }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLDivElement).style.opacity = '1')}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.opacity = '0.9')}
-            >
-              <img 
-                src={src} 
-                alt={`Sponsor ${idx + 1}`} 
-                decoding="async"
-                className="h-28 md:h-40 lg:h-[200px] w-auto object-contain transition-transform duration-300 group-hover:scale-105"
-              />
-            </div>
+      <div className="relative mt-12 h-[64px] z-10">
+        <InfiniteSlider className="flex h-full w-full items-center" duration={35} gap={72}>
+          {partners.map((p) => (
+            <img
+              key={p.src}
+              src={p.src}
+              alt={p.alt}
+              loading="lazy"
+              decoding="async"
+              className="h-12 w-auto max-w-[140px] object-contain select-none transition-all duration-300 grayscale opacity-50 hover:grayscale-0 hover:opacity-100"
+            />
           ))}
         </InfiniteSlider>
         <ProgressiveBlur
