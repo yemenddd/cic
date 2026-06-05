@@ -114,9 +114,10 @@ export default function VideosPage() {
           </h1>
         </div>
 
-        {/* Edition tabs */}
+        {/* Edition tabs — sticky */}
         <motion.div
-          className="flex gap-2 mb-6 md:mb-8 flex-wrap"
+          className="flex gap-2 mb-6 md:mb-8 flex-wrap sticky top-14 md:top-16 z-20 py-3"
+          style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
         >
@@ -126,13 +127,18 @@ export default function VideosPage() {
               onClick={() => setActiveEdition(i)}
               className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full text-[12px] md:text-[13px] font-semibold transition-all duration-300"
               style={activeEdition === i ? {
-                background: 'linear-gradient(to right,#06b6d4,#3b82f6,#8b5cf6)',
+                background: 'rgba(255,255,255,0.12)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.35)',
                 color: '#fff',
-                boxShadow: '0 0 18px rgba(96,165,250,0.3)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)',
               } : {
                 background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: 'rgba(255,255,255,0.5)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.45)',
               }}
             >
               <span className="font-mono opacity-60 text-[10px]">{ed.number}</span>

@@ -75,7 +75,8 @@ export default function Header() {
 
           {/* ── Desktop nav ── */}
           <nav
-            className="hidden md:flex items-center gap-0.5 px-1.5 py-1.5"
+            className="hidden md:flex items-center gap-0.5 px-1.5 py-1.5 rounded-md"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
             onMouseLeave={() => setHovered(null)}
           >
             {navLinks.map(link => {
@@ -85,20 +86,20 @@ export default function Header() {
                   key={link.key}
                   href={link.href}
                   onMouseEnter={() => setHovered(link.key)}
-                  className="relative px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors duration-100 select-none"
+                  className="relative px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors duration-100 select-none"
                   style={{ color: active ? '#fff' : hovered === link.key ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)' }}
                 >
                   {hovered === link.key && !active && (
                     <motion.span
                       layoutId="nav-pill"
-                      className="absolute inset-0 rounded-full"
+                      className="absolute inset-0 rounded-md"
                       style={{ background: 'rgba(255,255,255,0.07)' }}
                       transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                     />
                   )}
                   <span className="relative z-10">{t(`nav.${link.key}`)}</span>
                   {active && (
-                    <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500" />
+                    <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500" />
                   )}
                 </Link>
               );
