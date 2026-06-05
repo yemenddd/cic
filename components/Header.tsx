@@ -91,7 +91,7 @@ export default function Header() {
                   {hovered === link.key && !active && (
                     <motion.span
                       layoutId="nav-pill"
-                      className="absolute inset-0 rounded-md border border-white/10"
+                      className="absolute inset-0 rounded-md"
                       style={{ background: 'rgba(255,255,255,0.07)' }}
                       transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                     />
