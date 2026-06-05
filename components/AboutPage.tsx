@@ -178,6 +178,8 @@ function MissionSection() {
               <img
                 src="/yemen.png"
                 alt="Yemen map"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-auto object-contain"
               />
             </motion.div>
@@ -245,6 +247,8 @@ function PresidentSection() {
           <img
             src="/images/about/president2.jpg"
             alt="رئيس المؤتمر"
+            loading="lazy"
+            decoding="async"
             className="hidden md:block w-full h-full object-cover"
             style={{ objectPosition: '30% 20%' }}
           />
@@ -252,6 +256,8 @@ function PresidentSection() {
           <img
             src="/images/about/president_mobile.jpg"
             alt="رئيس المؤتمر"
+            loading="lazy"
+            decoding="async"
             className="block md:hidden w-full h-full object-cover"
             style={{ objectPosition: 'center center' }}
             onError={(e) => {

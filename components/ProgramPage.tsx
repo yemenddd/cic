@@ -103,6 +103,8 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
               <img
                 src={session.img}
                 alt={session.speaker}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
               />
             </div>

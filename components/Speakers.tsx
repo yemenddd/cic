@@ -61,6 +61,8 @@ function SpeakerCard({ speaker, index, currentP }: { speaker: Speaker; index: nu
             <img
               src={speaker.image}
               alt={speaker.name}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover object-top"
             />
             {/* Gradient overlay */}
