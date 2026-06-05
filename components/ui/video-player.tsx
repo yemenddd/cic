@@ -44,7 +44,8 @@ function YouTubePlayer({ youtubeId }: { youtubeId: string }) {
         <iframe
           className="w-full h-full"
           src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+          sandbox="allow-scripts allow-same-origin allow-presentation allow-fullscreen"
           allowFullScreen
           style={{ border: "none" }}
         />
@@ -164,6 +165,6 @@ export function VideoPlayer({ src }: { src: string }) {
 
 /* Universal player — uses YouTubePlayer for yt IDs, VideoPlayer for direct URLs */
 export default function UniversalPlayer({ src }: { src: string }) {
-  const isYouTube = src.length === 11 && !src.includes('/');
+  const isYouTube = /^[A-Za-z0-9_-]{11}$/.test(src);
   return isYouTube ? <YouTubePlayer youtubeId={src} /> : <VideoPlayer src={src} />;
 }

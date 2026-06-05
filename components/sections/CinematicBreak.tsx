@@ -52,6 +52,7 @@ export default function CinematicBreak() {
               title="CICT 2025 background reel"
               src={`https://www.youtube.com/embed/${BG_VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${BG_VIDEO_ID}&controls=0&showinfo=0&rel=0&disablekb=1&modestbranding=1&playsinline=1&iv_load_policy=3`}
               allow="autoplay; encrypted-media; picture-in-picture"
+              sandbox="allow-scripts allow-same-origin allow-presentation allow-fullscreen"
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[177.78vh] min-w-full h-[56.25vw] min-h-full"
               style={{ border: 'none' }}
             />
@@ -177,7 +178,8 @@ export default function CinematicBreak() {
                 width="100%" height="100%"
                 src={`https://www.youtube.com/embed/${FILM_VIDEO_ID}?autoplay=1&rel=0`}
                 title="CICT 2025 Highlight Reel"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                sandbox="allow-scripts allow-same-origin allow-presentation allow-fullscreen"
                 allowFullScreen
                 className="w-full h-full"
                 style={{ border: 'none' }}

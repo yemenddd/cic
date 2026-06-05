@@ -72,7 +72,7 @@ export default function RegisterCTA() {
   }, []);
 
   const handleNotify = () => {
-    if (email.includes('@')) setNotified(true);
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) setNotified(true);
   };
 
   const sectionRef = useRef<HTMLDivElement>(null);
