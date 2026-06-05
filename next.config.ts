@@ -8,6 +8,7 @@ const ContentSecurityPolicy = `
   frame-src https://www.youtube.com;
   connect-src 'self' blob: https://prod.spline.design https://*.spline.design https://unpkg.com;
   worker-src 'self' blob:;
+  media-src 'self' data: blob:;
   font-src 'self';
   object-src 'none';
   base-uri 'self';

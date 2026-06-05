@@ -249,7 +249,9 @@ export default function Hero() {
                         borderBottomLeftRadius: '14px',
                         borderBottomRightRadius: '14px',
                         boxShadow: '0 0 40px rgba(96,165,250,0.28)',
-                        transition: 'all 0.2s ease',
+                        transitionProperty: 'all',
+                        transitionDuration: '0.2s',
+                        transitionTimingFunction: 'ease',
                       },
                     },
                   }}
