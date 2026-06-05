@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef } from 'react';
-import Image from 'next/image';
 import { motion, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
 
@@ -47,12 +46,10 @@ export default function ScrollGallery() {
 
         {/* ── Background photo (blurs + fades as you scroll) ── */}
         <motion.div className="absolute inset-0 z-0" style={{ opacity: bgOpacity, filter: bgFilter }}>
-          <Image
+          <img
             src="/images/gallery/bg2.jpg"
             alt="CICT conference hall"
-            fill
-            priority
-            className="object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
             style={{ transform: 'scale(1.08)' }}
           />
           <div className="absolute inset-0 bg-black/45" />
@@ -70,12 +67,10 @@ export default function ScrollGallery() {
             boxShadow: '0 30px 80px rgba(0,0,0,0.35)',
           }}
         >
-          <Image
+          <img
             src="/images/gallery/feature.jpg"
             alt="CICT 2025 main stage"
-            fill
-            className="object-cover"
-            sizes="94vw"
+            className="absolute inset-0 w-full h-full object-cover"
           />
           <motion.div className="absolute inset-0 bg-black" style={{ opacity: mediaOverlay }} />
 
