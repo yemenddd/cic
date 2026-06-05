@@ -61,7 +61,7 @@ export default function Header() {
 
           {/* ── Logo ── */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            <Image src="/images/logos/logo_white.png" alt="CICT" width={32} height={32}
+            <Image src="/images/logos/logo_white.png" alt="CICT" width={32} height={32} priority
               className="w-8 h-8 object-contain opacity-90 group-hover:opacity-100 transition-opacity" />
             <div className="flex flex-col leading-none">
               <span className="font-outfit font-bold text-[13px] text-white tracking-tight">
