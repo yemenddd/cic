@@ -17,6 +17,8 @@ const partners = [
   '/images/sponsors/8.png',
   '/images/sponsors/9.png',
   '/images/sponsors/10.png',
+];
+
 // Duplicate the array to ensure it's wide enough for any screen to prevent cutting
 const duplicatedPartners = [...partners, ...partners, ...partners];
 
