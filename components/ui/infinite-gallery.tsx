@@ -165,6 +165,8 @@ function GalleryScene({ images, speed = 1, visibleCount = 8, fadeSettings, blurS
     }))
   );
 
+  const touchStartY = useRef(0);
+
   const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
     setScrollVelocity((p) => p + e.deltaY * 0.01 * speed!);
@@ -182,17 +184,34 @@ function GalleryScene({ images, speed = 1, visibleCount = 8, fadeSettings, blurS
     }
   }, [speed]);
 
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    e.preventDefault();
+    const deltaY = touchStartY.current - e.touches[0].clientY;
+    touchStartY.current = e.touches[0].clientY;
+    setScrollVelocity((p) => p + deltaY * 0.06 * speed!);
+    setAutoPlay(false);
+    lastInteraction.current = Date.now();
+  }, [speed]);
+
   useEffect(() => {
     const canvas = document.querySelector('canvas');
     if (canvas) {
       canvas.addEventListener('wheel', handleWheel, { passive: false });
+      canvas.addEventListener('touchstart', handleTouchStart, { passive: true });
+      canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
       document.addEventListener('keydown', handleKeyDown);
       return () => {
         canvas.removeEventListener('wheel', handleWheel);
+        canvas.removeEventListener('touchstart', handleTouchStart);
+        canvas.removeEventListener('touchmove', handleTouchMove);
         document.removeEventListener('keydown', handleKeyDown);
       };
     }
-  }, [handleWheel, handleKeyDown]);
+  }, [handleWheel, handleKeyDown, handleTouchStart, handleTouchMove]);
 
   useEffect(() => {
     const id = setInterval(() => {

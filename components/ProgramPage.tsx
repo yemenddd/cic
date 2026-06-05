@@ -3,45 +3,18 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
+import { dict } from '@/lib/dictionary';
 import { SparklesCore } from '@/components/ui/sparkles';
 
 /* ─── Session card data ─── */
-interface Session {
+type Session = {
   time: string;
   title: string;
   speaker: string;
   role: string;
   img: string;
   color: string;
-}
-
-const DAY_ONE: Session[] = [
-  { time: '09:00', title: 'الافتتاح الرسمي وكلمة رئيس المؤتمر', speaker: 'فريق قيادة المؤتمر', role: 'افتتاح', img: '/images/attends/1.jpg', color: '#67e8f9' },
-  { time: '10:30', title: 'الأنظمة المستقلة في التعافي من النزاعات', speaker: 'د. عبدالرحمن باهرمز', role: 'مهندس روبوتات — ETH Zurich', img: '/images/speakers/abdulrahman.jpg', color: '#60a5fa' },
-  { time: '12:00', title: 'الذكاء الاصطناعي المسؤول للدول النامية', speaker: 'م. أسامة عادل', role: 'باحث — جامعة أكسفورد', img: '/images/speakers/osama.jpg', color: '#818cf8' },
-  { time: '14:30', title: 'ورشة الابتكار الهندسي التطبيقي', speaker: 'فريق مسار الابتكار', role: 'جلسة تفاعلية', img: '/images/attends/3.jpg', color: '#a78bfa' },
-];
-
-const DAY_TWO: Session[] = [
-  { time: '09:30', title: 'بناء الشركات الناشئة في الدول الهشة', speaker: 'م. عمار صالح', role: 'مؤسس — تيك يمن', img: '/images/speakers/ammar.jpg', color: '#67e8f9' },
-  { time: '11:00', title: 'الطاقة المتجددة كعائد للسلام', speaker: 'م. عبدالله العمراني', role: 'رائد طاقة — سولار أرابيا', img: '/images/speakers/abdullah.jpg', color: '#34d399' },
-  { time: '13:00', title: 'التنمية القائمة على البيانات في اليمن', speaker: 'د. محمد علي أوغلو', role: 'كبير علماء البيانات — UNDP', img: '/images/speakers/mohammed.jpg', color: '#f59e0b' },
-  { time: '15:30', title: 'الختام وتكريم المشاركين', speaker: 'فريق المؤتمر', role: 'حفل ختامي', img: '/images/attends/2.jpg', color: '#a78bfa' },
-];
-
-const COLLAPSED_OFFSETS = [
-  'top-0',
-  'top-[calc(0.5rem+0.5rem)]',
-  'top-[calc(0.5rem+1rem)]',
-  'top-[calc(0.5rem+1.5rem)]',
-];
-
-const EXPANDED_OFFSETS = [
-  'top-0',
-  'top-[calc(120px+1rem)]',
-  'top-[calc(240px+2rem)]',
-  'top-[calc(360px+3rem)]',
-];
+};
 
 /* ─── Stacked day cards ─── */
 function DayStack({ day, sessions, label, date }: { day: number; sessions: Session[]; label: string; date: string }) {
@@ -64,39 +37,46 @@ function DayStack({ day, sessions, label, date }: { day: number; sessions: Sessi
       </motion.div>
 
       {/* Stacked cards */}
-      <div
-        className="relative cursor-pointer"
-        style={{ height: isActive ? sessions.length * 120 + (sessions.length - 1) * 16 + 48 : 200 }}
+      <motion.div
+        layout
+        className={`relative cursor-pointer transition-all duration-700 ease-[cubic-bezier(0.075,0.82,0.165,1)] ${isActive ? 'flex flex-col gap-4 mb-10' : 'h-[200px]'}`}
         onClick={() => !isActive && setIsActive(true)}
       >
         {sessions.map((session, i) => (
           <motion.div
+            layout
             key={i}
-            className={`absolute right-0 left-0 transition-all duration-700 ease-[cubic-bezier(0.075,0.82,0.165,1)] ${
-              isActive ? EXPANDED_OFFSETS[i] : COLLAPSED_OFFSETS[i]
-            }`}
-            style={{ zIndex: sessions.length - i }}
+            className={`transition-all duration-700 ease-[cubic-bezier(0.075,0.82,0.165,1)] ${isActive ? 'relative w-full' : 'absolute right-0 left-0'}`}
+            style={isActive ? { zIndex: sessions.length - i } : { top: `calc(${i * 0.5}rem + ${i * 0.5}rem)`, zIndex: sessions.length - i }}
           >
             <div
-              className="flex items-start gap-4 rounded-2xl p-4 border border-white/[0.07] backdrop-blur-xl transition-colors duration-300 hover:border-white/15"
+              className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 rounded-2xl p-4 sm:p-5 border border-white/[0.07] backdrop-blur-xl transition-colors duration-300 hover:border-white/15"
               style={{ background: 'rgba(255,255,255,0.04)' }}
             >
-              {/* Time */}
-              <span className="shrink-0 font-outfit font-black text-white text-2xl tabular-nums w-16 text-center">
-                {session.time}
-              </span>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-lg leading-snug line-clamp-1 mb-1">
-                  {session.title}
-                </p>
-                <p className="text-white/50 text-base truncate">{session.speaker}</p>
-                <p className="text-sm truncate mt-0.5" style={{ color: session.color, opacity: 0.7 }}>{session.role}</p>
+              {/* Top row on mobile (Time + Photo), just Time on desktop */}
+              <div className="flex items-center justify-between sm:justify-start sm:w-auto w-full">
+                <span className="shrink-0 font-outfit font-black text-white text-xl sm:text-2xl tabular-nums w-14 sm:w-16 rtl:text-right ltr:text-left sm:text-center">
+                  {session.time}
+                </span>
+                
+                {/* Mobile Speaker Photo */}
+                <div className="sm:hidden shrink-0 w-12 h-12 rounded-full overflow-hidden"
+                  style={{ border: `1px solid ${session.color}30` }}>
+                  <img src={session.img} alt={session.speaker} className="w-full h-full object-cover" />
+                </div>
               </div>
 
-              {/* Speaker photo */}
-              <div className="shrink-0 w-20 h-20 rounded-xl overflow-hidden"
+              {/* Content */}
+              <div className="flex-1 min-w-0 mt-1 sm:mt-0">
+                <p className="text-white font-semibold text-base sm:text-lg leading-snug mb-1">
+                  {session.title}
+                </p>
+                <p className="text-white/50 text-sm sm:text-base">{session.speaker}</p>
+                <p className="text-xs sm:text-sm mt-0.5" style={{ color: session.color, opacity: 0.7 }}>{session.role}</p>
+              </div>
+
+              {/* Desktop Speaker photo */}
+              <div className="hidden sm:block shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden"
                 style={{ border: `1px solid ${session.color}30` }}>
                 <img src={session.img} alt={session.speaker} className="w-full h-full object-cover" />
               </div>
@@ -112,26 +92,27 @@ function DayStack({ day, sessions, label, date }: { day: number; sessions: Sessi
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="absolute right-0 text-[12px] text-white/35 hover:text-white/60 transition-colors uppercase tracking-[0.2em] font-medium"
-              style={{ top: sessions.length * 120 + (sessions.length - 1) * 16 + 8 }}
+              className="absolute -bottom-8 rtl:left-0 ltr:right-0 text-[12px] text-white/35 hover:text-white/60 transition-colors uppercase tracking-[0.2em] font-medium"
               onClick={(e) => { e.stopPropagation(); setIsActive(false); }}
             >
-              طيّ القائمة ↑
+              {dict['ar'].schedule?.collapse || 'طيّ القائمة ↑'} {/* It will use the prop passed or fallback */}
             </motion.button>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
     </div>
   );
 }
 
 /* ─── Main page ─── */
 export default function ProgramPage() {
-  const { t, dir } = useLang();
+  const { t, dir, lang } = useLang();
   const isRtl = dir === 'rtl';
+  
+  const scheduleData = dict[lang].schedule;
 
   return (
-    <section className="min-h-screen bg-[#030712] relative" dir={isRtl ? 'rtl' : 'ltr'}>
+    <section className="min-h-screen bg-[#030712] relative overflow-x-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
 
       {/* Background grid */}
       <div className="absolute inset-0 pointer-events-none" style={{
@@ -192,15 +173,15 @@ export default function ProgramPage() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           <DayStack
             day={0}
-            sessions={DAY_ONE}
-            label={isRtl ? 'اليوم الأول' : 'Day One'}
-            date={isRtl ? 'الجمعة · ١٥ أغسطس ٢٠٢٦' : 'Friday · August 15, 2026'}
+            sessions={scheduleData.dayOne}
+            label={scheduleData.dayOneLabel}
+            date={scheduleData.dayOneDate}
           />
           <DayStack
             day={1}
-            sessions={DAY_TWO}
-            label={isRtl ? 'اليوم الثاني' : 'Day Two'}
-            date={isRtl ? 'السبت · ١٦ أغسطس ٢٠٢٦' : 'Saturday · August 16, 2026'}
+            sessions={scheduleData.dayTwo}
+            label={scheduleData.dayTwoLabel}
+            date={scheduleData.dayTwoDate}
           />
         </div>
       </div>{/* end program cards */}

@@ -227,6 +227,25 @@ export const dict = {
       license: 'All rights reserved',
     },
     countdown: { days: 'Days', hours: 'Hrs', minutes: 'Min', seconds: 'Sec' },
+    schedule: {
+      dayOneLabel: 'Day One',
+      dayOneDate: 'Friday · August 15, 2026',
+      dayTwoLabel: 'Day Two',
+      dayTwoDate: 'Saturday · August 16, 2026',
+      collapse: 'COLLAPSE ↑',
+      dayOne: [
+        { time: '09:00', title: 'Official Opening & President Speech', speaker: 'Conference Leadership', role: 'Opening', img: '/images/attends/1.jpg', color: '#67e8f9' },
+        { time: '10:30', title: 'Autonomous Systems in Conflict Recovery', speaker: 'Dr. Abdulrahman Bahermez', role: 'Robotics Engineer — ETH Zurich', img: '/images/speakers/abdulrahman.jpg', color: '#60a5fa' },
+        { time: '12:00', title: 'Responsible AI for Developing Nations', speaker: 'Eng. Osama Adel', role: 'Researcher — Oxford University', img: '/images/speakers/osama.jpg', color: '#818cf8' },
+        { time: '14:30', title: 'Applied Engineering Innovation Workshop', speaker: 'Innovation Track Team', role: 'Interactive Session', img: '/images/attends/3.jpg', color: '#a78bfa' },
+      ],
+      dayTwo: [
+        { time: '09:30', title: 'Building Startups in Fragile States', speaker: 'Eng. Ammar Saleh', role: 'Founder — TechYemen', img: '/images/speakers/ammar.jpg', color: '#67e8f9' },
+        { time: '11:00', title: 'Renewable Energy as a Peace Dividend', speaker: 'Eng. Abdullah Alemrani', role: 'Energy Pioneer — Solar Arabia', img: '/images/speakers/abdullah.jpg', color: '#34d399' },
+        { time: '13:00', title: 'Data-Driven Development in Yemen', speaker: 'Dr. Mohammed Alioğlu', role: 'Chief Data Scientist — UNDP', img: '/images/speakers/mohammed.jpg', color: '#f59e0b' },
+        { time: '15:30', title: 'Closing & Awards Ceremony', speaker: 'Conference Team', role: 'Closing Ceremony', img: '/images/attends/2.jpg', color: '#a78bfa' },
+      ]
+    }
   },
 
   ar: {
@@ -448,6 +467,25 @@ export const dict = {
       copyright: 'مؤتمر الإبداع والابتكار',
       license: 'جميع الحقوق محفوظة',
     },
-    countdown: { days: 'يوم', hours: 'ساعة', minutes: 'دقيقة', seconds: 'ثانية' },
+    countdown: { days: 'أيام', hours: 'ساعة', minutes: 'دقيقة', seconds: 'ثانية' },
+    schedule: {
+      dayOneLabel: 'اليوم الأول',
+      dayOneDate: 'الجمعة · ١٥ أغسطس ٢٠٢٦',
+      dayTwoLabel: 'اليوم الثاني',
+      dayTwoDate: 'السبت · ١٦ أغسطس ٢٠٢٦',
+      collapse: 'طيّ القائمة ↑',
+      dayOne: [
+        { time: '09:00', title: 'الافتتاح الرسمي وكلمة رئيس المؤتمر', speaker: 'فريق قيادة المؤتمر', role: 'افتتاح', img: '/images/attends/1.jpg', color: '#67e8f9' },
+        { time: '10:30', title: 'الأنظمة المستقلة في التعافي من النزاعات', speaker: 'د. عبدالرحمن باهرمز', role: 'مهندس روبوتات — ETH Zurich', img: '/images/speakers/abdulrahman.jpg', color: '#60a5fa' },
+        { time: '12:00', title: 'الذكاء الاصطناعي المسؤول للدول النامية', speaker: 'م. أسامة عادل', role: 'باحث — جامعة أكسفورد', img: '/images/speakers/osama.jpg', color: '#818cf8' },
+        { time: '14:30', title: 'ورشة الابتكار الهندسي التطبيقي', speaker: 'فريق مسار الابتكار', role: 'جلسة تفاعلية', img: '/images/attends/3.jpg', color: '#a78bfa' },
+      ],
+      dayTwo: [
+        { time: '09:30', title: 'بناء الشركات الناشئة في الدول الهشة', speaker: 'م. عمار صالح', role: 'مؤسس — تيك يمن', img: '/images/speakers/ammar.jpg', color: '#67e8f9' },
+        { time: '11:00', title: 'الطاقة المتجددة كعائد للسلام', speaker: 'م. عبدالله العمراني', role: 'رائد طاقة — سولار أرابيا', img: '/images/speakers/abdullah.jpg', color: '#34d399' },
+        { time: '13:00', title: 'التنمية القائمة على البيانات في اليمن', speaker: 'د. محمد علي أوغلو', role: 'كبير علماء البيانات — UNDP', img: '/images/speakers/mohammed.jpg', color: '#f59e0b' },
+        { time: '15:30', title: 'الختام وتكريم المشاركين', speaker: 'فريق المؤتمر', role: 'حفل ختامي', img: '/images/attends/2.jpg', color: '#a78bfa' },
+      ]
+    }
   },
 } as const;
