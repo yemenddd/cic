@@ -1,4 +1,4 @@
-import AboutPage from '@/components/AboutPage';
+import AboutPage from '@/components/sections/AboutPage';
 
 export const metadata = {
   title: 'عن المؤتمر | مؤتمر الإبداع والابتكار 2026',

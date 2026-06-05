@@ -136,7 +136,7 @@ export default function Hero() {
                     <span className="block w-full text-right -mb-10 md:-mb-20">
                       <motion.span className="inline-block" {...revealWord(wordThresholds[0])}>
                         <img
-                          src="/من_العقل.svg"
+                          src="/images/logos/من_العقل.svg"
                           alt="من العقل"
                           className="object-right translate-x-[4%] md:translate-x-[6%] w-[280px] sm:w-[400px] md:w-[500px] max-w-full h-auto"
                           style={{ filter: 'brightness(0) invert(1)' }}

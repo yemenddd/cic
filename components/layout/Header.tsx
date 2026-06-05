@@ -61,7 +61,7 @@ export default function Header() {
 
           {/* ── Logo ── */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            <Image src="/logo_white.png" alt="CICT" width={32} height={32}
+            <Image src="/images/logos/logo_white.png" alt="CICT" width={32} height={32}
               className="w-8 h-8 object-contain opacity-90 group-hover:opacity-100 transition-opacity" />
             <div className="flex flex-col leading-none">
               <span className="font-outfit font-bold text-[13px] text-white tracking-tight">
@@ -171,7 +171,7 @@ export default function Header() {
             {/* Close */}
             <div className="flex items-center justify-between px-5 h-14">
               <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5">
-                <Image src="/logo_white.png" alt="CICT" width={28} height={28} className="w-7 h-7 object-contain" />
+                <Image src="/images/logos/logo_white.png" alt="CICT" width={28} height={28} className="w-7 h-7 object-contain" />
                 <span className="font-outfit font-bold text-[13px] text-white">{t('footer.copyright')}</span>
               </Link>
               <button onClick={() => setMenuOpen(false)} className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white">

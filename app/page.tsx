@@ -1,12 +1,12 @@
-import Hero from "@/components/Hero";
-import CinematicBreak from "@/components/CinematicBreak";
-import BoldStatement from "@/components/BoldStatement";
-import HorizontalGallery from "@/components/HorizontalGallery";
-import Speakers from "@/components/Speakers";
-import Program from "@/components/Program";
-import ScrollGallery from "@/components/ScrollGallery";
-import Partners from "@/components/Partners";
-import RegisterCTA from "@/components/RegisterCTA";
+import Hero from "@/components/sections/Hero";
+import CinematicBreak from "@/components/sections/CinematicBreak";
+import BoldStatement from "@/components/sections/BoldStatement";
+import HorizontalGallery from "@/components/sections/HorizontalGallery";
+import Speakers from "@/components/sections/Speakers";
+import Program from "@/components/sections/Program";
+import ScrollGallery from "@/components/sections/ScrollGallery";
+import Partners from "@/components/sections/Partners";
+import RegisterCTA from "@/components/sections/RegisterCTA";
 
 export default function Home() {
   return (

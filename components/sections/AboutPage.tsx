@@ -176,7 +176,7 @@ function MissionSection() {
               style={{ x: mapX, opacity: mapOpacity }}
             >
               <img
-                src="/yemen.png"
+                src="/images/logos/yemen.png"
                 alt="Yemen map"
                 loading="lazy"
                 decoding="async"

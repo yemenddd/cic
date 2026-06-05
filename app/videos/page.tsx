@@ -1,4 +1,4 @@
-import VideosPage from '@/components/VideosPage';
+import VideosPage from '@/components/sections/VideosPage';
 
 export const metadata = {
   title: 'الأفلام والوثائقيات | مؤتمر الإبداع والابتكار',

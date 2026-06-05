@@ -1,4 +1,4 @@
-import HistoryTimeline from '@/components/HistoryTimeline';
+import HistoryTimeline from '@/components/sections/HistoryTimeline';
 
 export const metadata = {
   title: 'رحلتنا | مؤتمر الإبداع والابتكار 2026',

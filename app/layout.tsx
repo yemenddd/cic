@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import StyletronWrapper from "@/components/StyletronWrapper";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import StyletronWrapper from "@/components/layout/StyletronWrapper";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import { LanguageProvider } from "@/lib/i18n";
-import ScrollToTop from "@/components/ScrollToTop";
+import ScrollToTop from "@/components/layout/ScrollToTop";
 
 const inter = Inter({
   variable: "--font-inter",

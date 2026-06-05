@@ -37,7 +37,7 @@ function YoutubeIcon({ className }: { className?: string }) {
 
 const C4Logo = (
   <Image
-    src="/logo_white.png"
+    src="/images/logos/logo_white.png"
     alt="CICT 2026 logo"
     width={40}
     height={40}

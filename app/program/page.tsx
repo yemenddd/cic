@@ -1,4 +1,4 @@
-import ProgramPage from '@/components/ProgramPage';
+import ProgramPage from '@/components/sections/ProgramPage';
 
 export const metadata = {
   title: 'البرنامج | مؤتمر الإبداع والابتكار 2026',

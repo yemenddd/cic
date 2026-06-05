@@ -66,7 +66,7 @@ export default function CinematicBreak() {
             {/* Eyebrow — brand logo */}
             <motion.div className="flex justify-center mb-7" {...reveal(0.05)}>
               <Image
-                src="/logo_text_horizonal.png"
+                src="/images/logos/logo_text_horizonal.png"
                 alt="CICT 2026"
                 width={640}
                 height={128}
