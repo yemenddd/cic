@@ -75,8 +75,7 @@ export default function Header() {
 
           {/* ── Desktop nav ── */}
           <nav
-            className="hidden md:flex items-center gap-0.5 px-1.5 py-1.5 rounded-md"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+            className="hidden md:flex items-center gap-0.5 px-1.5 py-1.5"
             onMouseLeave={() => setHovered(null)}
           >
             {navLinks.map(link => {
@@ -92,14 +91,14 @@ export default function Header() {
                   {hovered === link.key && !active && (
                     <motion.span
                       layoutId="nav-pill"
-                      className="absolute inset-0 rounded-md"
+                      className="absolute inset-0 rounded-md border border-white/10"
                       style={{ background: 'rgba(255,255,255,0.07)' }}
                       transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                     />
                   )}
                   <span className="relative z-10">{t(`nav.${link.key}`)}</span>
                   {active && (
-                    <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500" />
+                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500" />
                   )}
                 </Link>
               );
