@@ -67,7 +67,7 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
       {/* Stacked cards wrapper — height animates smoothly via transition */}
       <div
         className="relative w-full cursor-pointer transition-all duration-1000 ease-[cubic-bezier(0.075,0.82,0.165,1)]"
-        style={{ height: isActive ? `${expandedHeight}px` : '8rem' }}
+        style={{ height: isActive ? `${expandedHeight}px` : '8rem', overflow: isActive ? 'visible' : 'hidden' }}
         onClick={() => !isActive && setIsActive(true)}
       >
         {sessions.map((session, i) => (
@@ -75,8 +75,8 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
             key={i}
             className={[
               'absolute right-0 left-0',
-              'flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4',
-              'h-28 rounded-2xl px-4 sm:px-5 pt-4 border border-white/[0.07] backdrop-blur-xl',
+              'flex flex-row items-center gap-3',
+              'h-28 rounded-2xl px-4 sm:px-5 border border-white/[0.07] backdrop-blur-xl',
               'transition-all duration-1000 ease-[cubic-bezier(0.075,0.82,0.165,1)]',
               'hover:border-white/15 hover:bg-white/[0.06]',
               isActive ? EXPANDED_OFFSETS[i] : COLLAPSED_OFFSETS[i],
@@ -84,21 +84,21 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
             style={{ background: 'rgba(255,255,255,0.04)', zIndex: sessions.length - i }}
           >
             {/* Time */}
-            <span className="shrink-0 font-outfit font-black text-white text-xl sm:text-2xl tabular-nums w-14 sm:w-16 text-right">
+            <span className="shrink-0 font-outfit font-black text-white text-base sm:text-2xl tabular-nums w-12 sm:w-16 text-right">
               {session.time}
             </span>
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold text-base sm:text-lg leading-snug mb-0.5 truncate">
+              <p className="text-white font-semibold text-sm sm:text-lg leading-snug mb-0.5 line-clamp-2">
                 {session.title}
               </p>
-              <p className="text-white/50 text-sm truncate">{session.speaker}</p>
-              <p className="text-xs mt-0.5 truncate" style={{ color: session.color, opacity: 0.75 }}>{session.role}</p>
+              <p className="text-white/50 text-xs sm:text-sm truncate">{session.speaker}</p>
+              <p className="text-xs mt-0.5 truncate hidden sm:block" style={{ color: session.color, opacity: 0.75 }}>{session.role}</p>
             </div>
 
             {/* Speaker photo */}
-            <div className="shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden"
+            <div className="shrink-0 w-12 h-12 sm:w-20 sm:h-20 rounded-xl overflow-hidden"
               style={{ border: `1px solid ${session.color}30` }}>
               <img
                 src={session.img}
