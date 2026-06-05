@@ -67,7 +67,7 @@ export default function Header() {
               <span className="font-outfit font-bold text-[13px] text-white tracking-tight">
                 {t('footer.copyright')}
               </span>
-              <span className="text-[9px] text-white/30 tracking-[0.16em] uppercase mt-1">
+              <span className="text-[9px] text-white/30 tracking-[0.16em] uppercase mt-[2px]">
                 {t('nav.edition')}
               </span>
             </div>
