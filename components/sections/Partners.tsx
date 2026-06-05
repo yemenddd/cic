@@ -7,16 +7,16 @@ import { useLang } from '@/lib/i18n';
 import { motion } from 'framer-motion';
 
 const partners = [
-  { src: ‘/images/sponsors/1.png’,  alt: ‘Sponsor 1’ },
-  { src: ‘/images/sponsors/2.png’,  alt: ‘Sponsor 2’ },
-  { src: ‘/images/sponsors/3.png’,  alt: ‘Sponsor 3’ },
-  { src: ‘/images/sponsors/4.png’,  alt: ‘Sponsor 4’ },
-  { src: ‘/images/sponsors/5.png’,  alt: ‘Sponsor 5’ },
-  { src: ‘/images/sponsors/6.png’,  alt: ‘Sponsor 6’ },
-  { src: ‘/images/sponsors/7.png’,  alt: ‘Sponsor 7’ },
-  { src: ‘/images/sponsors/8.png’,  alt: ‘Sponsor 8’ },
-  { src: ‘/images/sponsors/9.png’,  alt: ‘Sponsor 9’ },
-  { src: ‘/images/sponsors/10.png’, alt: ‘Sponsor 10’ },
+  { src: "/images/sponsors/1.png",  alt: "Sponsor 1" },
+  { src: "/images/sponsors/2.png",  alt: "Sponsor 2" },
+  { src: "/images/sponsors/3.png",  alt: "Sponsor 3" },
+  { src: "/images/sponsors/4.png",  alt: "Sponsor 4" },
+  { src: "/images/sponsors/5.png",  alt: "Sponsor 5" },
+  { src: "/images/sponsors/6.png",  alt: "Sponsor 6" },
+  { src: "/images/sponsors/7.png",  alt: "Sponsor 7" },
+  { src: "/images/sponsors/8.png",  alt: "Sponsor 8" },
+  { src: "/images/sponsors/9.png",  alt: "Sponsor 9" },
+  { src: "/images/sponsors/10.png", alt: "Sponsor 10" },
 ];
 
 export default function Partners() {
@@ -25,7 +25,7 @@ export default function Partners() {
     <section className="relative w-full overflow-hidden bg-[#030712]">
       <div className="max-w-7xl mx-auto px-6 pt-20 pb-4 text-center relative z-10">
 
-        <motion.h2 
+        <motion.h2
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
