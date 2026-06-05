@@ -67,7 +67,7 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
       {/* Stacked cards wrapper — height animates smoothly via transition */}
       <div
         className="relative w-full cursor-pointer transition-all duration-1000 ease-[cubic-bezier(0.075,0.82,0.165,1)]"
-        style={{ height: isActive ? `${expandedHeight}px` : '10rem', overflow: isActive ? 'visible' : 'hidden' }}
+        style={{ height: isActive ? `${expandedHeight}px` : '11rem', overflow: isActive ? 'visible' : 'hidden' }}
         onClick={() => !isActive && setIsActive(true)}
       >
         {sessions.map((session, i) => (
