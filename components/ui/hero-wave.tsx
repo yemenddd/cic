@@ -17,10 +17,12 @@ export default function HeroWave() {
     let animId: number;
 
     const resizeCanvas = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-      width = Math.max(1, Math.floor(canvas.width / SCALE));
-      height = Math.max(1, Math.floor(canvas.height / SCALE));
+      const w = canvas.offsetWidth || window.innerWidth;
+      const h = canvas.offsetHeight || window.innerHeight;
+      canvas.width = w;
+      canvas.height = h;
+      width = Math.max(1, Math.floor(w / SCALE));
+      height = Math.max(1, Math.floor(h / SCALE));
       imageData = ctx.createImageData(width, height);
       data = imageData.data;
     };

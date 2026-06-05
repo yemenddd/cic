@@ -27,6 +27,7 @@ export default function Gallery() {
 
   useEffect(() => {
     if (audioRef.current) {
+      audioRef.current.volume = 0.3; // Lower music volume
       audioRef.current.play()
         .then(() => setIsPlaying(true))
         .catch(() => setIsPlaying(false)); // Browser autoplay policy might block this

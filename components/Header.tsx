@@ -14,6 +14,7 @@ const navLinks = [
   { key: 'history', href: '/history' },
   { key: 'program', href: '/program' },
   { key: 'gallery', href: '/gallery' },
+  { key: 'videos', href: '/videos' },
 ];
 
 const EASE = [0.22, 1, 0.36, 1] as const;
