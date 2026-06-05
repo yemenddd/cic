@@ -8,16 +8,16 @@ import { SparklesCore } from '@/components/ui/sparkles';
 
 /* ─── Session card data ─── */
 type Session = {
-  readonly time: string;
-  readonly title: string;
-  readonly speaker: string;
-  readonly role: string;
-  readonly img: string;
-  readonly color: string;
+  time: string;
+  title: string;
+  speaker: string;
+  role: string;
+  img: string;
+  color: string;
 };
 
 /* ─── Stacked day cards ─── */
-function DayStack({ day, sessions, label, date }: { day: number; sessions: readonly Session[]; label: string; date: string }) {
+function DayStack({ day, sessions, label, date }: { day: number; sessions: Session[]; label: string; date: string }) {
   const [isActive, setIsActive] = useState(false);
 
   return (

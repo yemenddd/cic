@@ -1,15 +1,18 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
 import { Button, KIND, SIZE } from 'baseui/button';
 import { ArrowRight } from 'lucide-react';
-import { DottedSurface } from '@/components/ui/dotted-surface';
+import { SplineScene } from '@/components/ui/splite';
+import { Spotlight } from '@/components/ui/spotlight';
+import HeroWave from '@/components/ui/hero-wave';
 import { useLang } from '@/lib/i18n';
 
 export default function Hero() {
   const { t, dir, lang } = useLang();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isDesktop, setIsDesktop] = useState(true);
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -33,8 +36,13 @@ export default function Hero() {
     tick();
     const countdownId = setInterval(tick, 1000);
 
+    const onResize = () => setIsDesktop(window.innerWidth >= 1024);
+    onResize();
+    window.addEventListener('resize', onResize);
+
     return () => {
       clearInterval(countdownId);
+      window.removeEventListener('resize', onResize);
     };
   }, []);
 
@@ -44,6 +52,11 @@ export default function Hero() {
     { label: t('countdown.minutes'), value: timeLeft.minutes },
     { label: t('countdown.seconds'), value: timeLeft.seconds },
   ];
+
+  // ── Scroll choreography ──
+  // Robot drifts right + scales down as the content reveals
+  const robotX = useTransform(scrollYProgress, [0, 0.5], ['0%', isDesktop ? '22%' : '0%']);
+  const robotScale = useTransform(scrollYProgress, [0, 0.35], [isDesktop ? 1 : 1.35, isDesktop ? 0.8 : 0.98]);
 
   // Two scroll trackers:
   // - maxP: only increases — used to hide the scroll cue once scrolling starts
@@ -57,28 +70,57 @@ export default function Hero() {
     setMaxP((prev) => (v > prev ? v : prev));
   });
 
-  const reveal = (threshold: number) => ({
+  const reveal = (threshold: number) => isDesktop ? ({
     initial: { opacity: 0, y: 28 },
     animate: { opacity: currentP >= threshold ? 1 : 0, y: currentP >= threshold ? 0 : 28 },
     transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
+  }) : ({
+    initial: { opacity: 0, y: 28 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.6, delay: threshold * 1.5, ease: [0.16, 1, 0.3, 1] as const },
   });
-  const revealWord = (threshold: number) => ({
+
+  const revealWord = (threshold: number) => isDesktop ? ({
     initial: { opacity: 0, y: 48 },
     animate: { opacity: currentP >= threshold ? 1 : 0, y: currentP >= threshold ? 0 : 48 },
     transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
+  }) : ({
+    initial: { opacity: 0, y: 48 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.7, delay: threshold * 2, ease: [0.16, 1, 0.3, 1] as const },
   });
+
   const wordThresholds = [0.04, 0.08];
   const tTitle3 = 0.13;
   const tTagline = 0.22;
-  const tDesc = 0.3;
+  const tDesc = 0.30;
   const tButtons = 0.35;
 
   return (
-    <section ref={sectionRef} className="relative h-[200vh] bg-[#030712]">
+    <section ref={sectionRef} className="relative h-[250vh] md:h-[300vh] bg-[#030712]">
       <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden">
 
-        {/* ── Dotted wave background ── */}
-        <DottedSurface className="z-0" />
+        {/* ── Wave background — mobile only ── */}
+        <div className="md:hidden absolute inset-0 z-10">
+          <HeroWave />
+          <div className="absolute inset-0 bg-[#030712]/40" />
+        </div>
+
+        {/* ── Robot — desktop only, drifts right + scales on scroll ── */}
+        <motion.div className="hidden md:block absolute inset-0 z-10" style={{ x: robotX, scale: robotScale }}>
+          <motion.div
+            className="w-full h-full"
+            initial={{ opacity: 0, scale: 1.06 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.3, ease: 'easeOut' }}
+          >
+            <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="white" />
+            <SplineScene
+              scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+              className="w-full h-full"
+            />
+          </motion.div>
+        </motion.div>
 
         {/* ── Text panel ── */}
         <div className="absolute inset-0 z-30 flex items-center pointer-events-none">
