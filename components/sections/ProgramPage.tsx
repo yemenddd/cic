@@ -27,12 +27,12 @@ const COLLAPSED_OFFSETS = [
   'top-[calc(1.5rem+1.8rem)]',
 ];
 
-/* ─── Expanded offsets: card height (h-28 = 112px) + gap (1rem = 16px) per step ─── */
+/* ─── Expanded offsets: card height (h-36 = 144px) + gap (1rem = 16px) per step ─── */
 const EXPANDED_OFFSETS = [
   'top-6',
-  'top-[calc(1.5rem+112px+1rem)]',
-  'top-[calc(1.5rem+224px+2rem)]',
-  'top-[calc(1.5rem+336px+3rem)]',
+  'top-[calc(1.5rem+144px+1rem)]',
+  'top-[calc(1.5rem+288px+2rem)]',
+  'top-[calc(1.5rem+432px+3rem)]',
 ];
 
 /* ─── Stacked day cards ─── */
@@ -45,8 +45,8 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
 }) {
   const [isActive, setIsActive] = useState(false);
 
-  /* total expanded height = n * 112px + (n-1) * 16px + 1.5rem top offset */
-  const expandedHeight = sessions.length * 112 + (sessions.length - 1) * 16 + 24 + 40; /* +40 for collapse btn */
+  /* total expanded height = n * 144px + (n-1) * 16px + 1.5rem top offset + 40px collapse btn */
+  const expandedHeight = sessions.length * 144 + (sessions.length - 1) * 16 + 24 + 40;
 
   return (
     <div className="flex flex-col">
@@ -67,7 +67,7 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
       {/* Stacked cards wrapper — height animates smoothly via transition */}
       <div
         className="relative w-full cursor-pointer transition-all duration-1000 ease-[cubic-bezier(0.075,0.82,0.165,1)]"
-        style={{ height: isActive ? `${expandedHeight}px` : '11rem', overflow: isActive ? 'visible' : 'hidden' }}
+        style={{ height: isActive ? `${expandedHeight}px` : '12.5rem', overflow: isActive ? 'visible' : 'hidden' }}
         onClick={() => !isActive && setIsActive(true)}
       >
         {sessions.map((session, i) => (
@@ -75,30 +75,30 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
             key={i}
             className={[
               'absolute right-0 left-0',
-              'flex flex-row items-center gap-3',
-              'h-28 rounded-2xl px-4 sm:px-5 border border-white/[0.07] backdrop-blur-xl',
+              'flex flex-row items-start gap-4',
+              'h-36 rounded-2xl px-4 sm:px-5 pt-4 pb-3 border border-white/[0.07] backdrop-blur-xl',
               'transition-all duration-1000 ease-[cubic-bezier(0.075,0.82,0.165,1)]',
               'hover:border-white/15 hover:bg-white/[0.06]',
               isActive ? EXPANDED_OFFSETS[i] : COLLAPSED_OFFSETS[i],
             ].join(' ')}
             style={{ background: 'rgba(255,255,255,0.04)', zIndex: sessions.length - i }}
           >
-            {/* Time */}
-            <span className="shrink-0 font-outfit font-black text-white text-base sm:text-2xl tabular-nums w-12 sm:w-16 text-right">
+            {/* Time — pinned to top */}
+            <span className="shrink-0 font-outfit font-black text-white text-lg sm:text-2xl tabular-nums w-14 sm:w-16 text-right leading-none pt-0.5">
               {session.time}
             </span>
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold text-sm sm:text-lg leading-snug mb-0.5 line-clamp-2">
+              <p className="text-white font-semibold text-base sm:text-lg leading-snug mb-1 line-clamp-2">
                 {session.title}
               </p>
-              <p className="text-white/50 text-xs sm:text-sm truncate">{session.speaker}</p>
-              <p className="text-xs mt-0.5 truncate hidden sm:block" style={{ color: session.color, opacity: 0.75 }}>{session.role}</p>
+              <p className="text-white/55 text-sm sm:text-base truncate">{session.speaker}</p>
+              <p className="text-xs sm:text-sm mt-1 truncate" style={{ color: session.color, opacity: 0.75 }}>{session.role}</p>
             </div>
 
             {/* Speaker photo */}
-            <div className="shrink-0 w-12 h-12 sm:w-20 sm:h-20 rounded-xl overflow-hidden"
+            <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden"
               style={{ border: `1px solid ${session.color}30` }}>
               <img
                 src={session.img}
