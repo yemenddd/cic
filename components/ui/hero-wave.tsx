@@ -19,8 +19,8 @@ export default function HeroWave() {
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
-      width = Math.floor(canvas.width / SCALE);
-      height = Math.floor(canvas.height / SCALE);
+      width = Math.max(1, Math.floor(canvas.width / SCALE));
+      height = Math.max(1, Math.floor(canvas.height / SCALE));
       imageData = ctx.createImageData(width, height);
       data = imageData.data;
     };
