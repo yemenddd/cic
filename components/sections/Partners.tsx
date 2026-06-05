@@ -57,8 +57,6 @@ export default function Partners() {
               <img 
                 src={src} 
                 alt={`Sponsor ${idx + 1}`} 
-                loading="lazy"
-                decoding="async"
                 className="h-16 md:h-24 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
               />
             </div>
