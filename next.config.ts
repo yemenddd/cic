@@ -4,9 +4,10 @@ const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline';
   style-src 'self' 'unsafe-inline';
-  img-src 'self' data: https://img.youtube.com;
+  img-src 'self' data: blob: https://img.youtube.com https://*.spline.design;
   frame-src https://www.youtube.com;
-  connect-src 'self' https://prod.spline.design https://*.spline.design https://unpkg.com;
+  connect-src 'self' blob: https://prod.spline.design https://*.spline.design https://unpkg.com;
+  worker-src 'self' blob:;
   font-src 'self';
   object-src 'none';
   base-uri 'self';
