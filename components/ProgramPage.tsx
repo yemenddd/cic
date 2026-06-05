@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
 import { dict } from '@/lib/dictionary';
 import { SparklesCore } from '@/components/ui/sparkles';
@@ -16,12 +16,37 @@ type Session = {
   readonly color: string;
 };
 
+/* ─── Collapsed peek offsets (cards stacked behind each other) ─── */
+const COLLAPSED_OFFSETS = [
+  'top-6',
+  'top-[calc(1.5rem+0.6rem)]',
+  'top-[calc(1.5rem+1.2rem)]',
+  'top-[calc(1.5rem+1.8rem)]',
+];
+
+/* ─── Expanded offsets: card height (h-28 = 112px) + gap (1rem = 16px) per step ─── */
+const EXPANDED_OFFSETS = [
+  'top-6',
+  'top-[calc(1.5rem+112px+1rem)]',
+  'top-[calc(1.5rem+224px+2rem)]',
+  'top-[calc(1.5rem+336px+3rem)]',
+];
+
 /* ─── Stacked day cards ─── */
-function DayStack({ day, sessions, label, date }: { day: number; sessions: readonly Session[]; label: string; date: string }) {
+function DayStack({ day, sessions, label, date, collapseLabel }: {
+  day: number;
+  sessions: readonly Session[];
+  label: string;
+  date: string;
+  collapseLabel: string;
+}) {
   const [isActive, setIsActive] = useState(false);
 
+  /* total expanded height = n * 112px + (n-1) * 16px + 1.5rem top offset */
+  const expandedHeight = sessions.length * 112 + (sessions.length - 1) * 16 + 24 + 40; /* +40 for collapse btn */
+
   return (
-    <div className="flex flex-col" dir="rtl">
+    <div className="flex flex-col">
       {/* Day header */}
       <motion.div
         className="mb-10"
@@ -36,70 +61,67 @@ function DayStack({ day, sessions, label, date }: { day: number; sessions: reado
         <p className="text-white/40 text-base">{date}</p>
       </motion.div>
 
-      {/* Stacked cards */}
-      <motion.div
-        layout
-        className={`relative cursor-pointer transition-all duration-700 ease-[cubic-bezier(0.075,0.82,0.165,1)] ${isActive ? 'flex flex-col gap-4 mb-10' : 'h-[200px]'}`}
+      {/* Stacked cards wrapper — height animates smoothly via transition */}
+      <div
+        className="relative w-full cursor-pointer transition-all duration-1000 ease-[cubic-bezier(0.075,0.82,0.165,1)]"
+        style={{ height: isActive ? `${expandedHeight}px` : '8rem' }}
         onClick={() => !isActive && setIsActive(true)}
       >
         {sessions.map((session, i) => (
-          <motion.div
-            layout
+          <div
             key={i}
-            className={`transition-all duration-700 ease-[cubic-bezier(0.075,0.82,0.165,1)] ${isActive ? 'relative w-full' : 'absolute right-0 left-0'}`}
-            style={isActive ? { zIndex: sessions.length - i } : { top: `calc(${i * 0.5}rem + ${i * 0.5}rem)`, zIndex: sessions.length - i }}
+            className={[
+              'absolute right-0 left-0',
+              'flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4',
+              'h-28 rounded-2xl px-4 sm:px-5 pt-4 border border-white/[0.07] backdrop-blur-xl',
+              'transition-all duration-1000 ease-[cubic-bezier(0.075,0.82,0.165,1)]',
+              'hover:border-white/15 hover:bg-white/[0.06]',
+              isActive ? EXPANDED_OFFSETS[i] : COLLAPSED_OFFSETS[i],
+            ].join(' ')}
+            style={{ background: 'rgba(255,255,255,0.04)', zIndex: sessions.length - i }}
           >
-            <div
-              className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 rounded-2xl p-4 sm:p-5 border border-white/[0.07] backdrop-blur-xl transition-colors duration-300 hover:border-white/15"
-              style={{ background: 'rgba(255,255,255,0.04)' }}
-            >
-              {/* Top row on mobile (Time + Photo), just Time on desktop */}
-              <div className="flex items-center justify-between sm:justify-start sm:w-auto w-full">
-                <span className="shrink-0 font-outfit font-black text-white text-xl sm:text-2xl tabular-nums w-14 sm:w-16 rtl:text-right ltr:text-left sm:text-center">
-                  {session.time}
-                </span>
-                
-                {/* Mobile Speaker Photo */}
-                <div className="sm:hidden shrink-0 w-12 h-12 rounded-full overflow-hidden"
-                  style={{ border: `1px solid ${session.color}30` }}>
-                  <img src={session.img} alt={session.speaker} className="w-full h-full object-cover" />
-                </div>
-              </div>
+            {/* Time */}
+            <span className="shrink-0 font-outfit font-black text-white text-xl sm:text-2xl tabular-nums w-14 sm:w-16 text-right">
+              {session.time}
+            </span>
 
-              {/* Content */}
-              <div className="flex-1 min-w-0 mt-1 sm:mt-0">
-                <p className="text-white font-semibold text-base sm:text-lg leading-snug mb-1">
-                  {session.title}
-                </p>
-                <p className="text-white/50 text-sm sm:text-base">{session.speaker}</p>
-                <p className="text-xs sm:text-sm mt-0.5" style={{ color: session.color, opacity: 0.7 }}>{session.role}</p>
-              </div>
-
-              {/* Desktop Speaker photo */}
-              <div className="hidden sm:block shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden"
-                style={{ border: `1px solid ${session.color}30` }}>
-                <img src={session.img} alt={session.speaker} className="w-full h-full object-cover" />
-              </div>
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-semibold text-base sm:text-lg leading-snug mb-0.5 truncate">
+                {session.title}
+              </p>
+              <p className="text-white/50 text-sm truncate">{session.speaker}</p>
+              <p className="text-xs mt-0.5 truncate" style={{ color: session.color, opacity: 0.75 }}>{session.role}</p>
             </div>
-          </motion.div>
+
+            {/* Speaker photo */}
+            <div className="shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden"
+              style={{ border: `1px solid ${session.color}30` }}>
+              <img
+                src={session.img}
+                alt={session.speaker}
+                className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+              />
+            </div>
+          </div>
         ))}
 
         {/* Collapse button */}
-        <AnimatePresence>
-          {isActive && (
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="absolute -bottom-8 rtl:left-0 ltr:right-0 text-[12px] text-white/35 hover:text-white/60 transition-colors uppercase tracking-[0.2em] font-medium"
-              onClick={(e) => { e.stopPropagation(); setIsActive(false); }}
-            >
-              {dict['ar'].schedule?.collapse || 'طيّ القائمة ↑'} {/* It will use the prop passed or fallback */}
-            </motion.button>
-          )}
-        </AnimatePresence>
-      </motion.div>
+        <div
+          className={[
+            'absolute right-0 transition-all duration-300 ease-in-out',
+            isActive
+              ? 'pointer-events-auto visible opacity-100'
+              : 'pointer-events-none invisible opacity-0',
+          ].join(' ')}
+          style={{ top: `${expandedHeight - 32}px` }}
+          onClick={(e) => { e.stopPropagation(); setIsActive(false); }}
+        >
+          <button className="text-[11px] text-white/30 hover:text-white/60 transition-colors uppercase tracking-[0.22em] font-medium">
+            {collapseLabel}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -112,6 +134,11 @@ export default function ProgramPage() {
   const scheduleData = dict[lang].schedule;
 
   return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+    >
     <section className="min-h-screen bg-[#030712] relative overflow-x-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
 
       {/* Background grid */}
@@ -176,15 +203,18 @@ export default function ProgramPage() {
             sessions={scheduleData.dayOne}
             label={scheduleData.dayOneLabel}
             date={scheduleData.dayOneDate}
+            collapseLabel={scheduleData.collapse}
           />
           <DayStack
             day={1}
             sessions={scheduleData.dayTwo}
             label={scheduleData.dayTwoLabel}
             date={scheduleData.dayTwoDate}
+            collapseLabel={scheduleData.collapse}
           />
         </div>
       </div>{/* end program cards */}
     </section>
+    </motion.div>
   );
 }
