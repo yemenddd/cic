@@ -3,8 +3,11 @@
 import { useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useMotionValueEvent, useSpring } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
-import { Sparkles as SparklesCore } from '@/components/ui/sparkles';
-import { Starfield } from '@/components/ui/starfield';
+import dynamic from 'next/dynamic';
+
+// Lazy-load particle & canvas-heavy components
+const SparklesCore = dynamic(() => import('@/components/ui/sparkles').then(m => ({ default: m.Sparkles })), { ssr: false });
+const Starfield = dynamic(() => import('@/components/ui/starfield').then(m => ({ default: m.Starfield })), { ssr: false });
 
 type Edition = {
   year: string;

@@ -6,8 +6,11 @@ import { Button, KIND, SIZE } from 'baseui/button';
 import { ArrowRight } from 'lucide-react';
 import { SplineScene } from '@/components/ui/splite';
 import { Spotlight } from '@/components/ui/spotlight';
-import HeroWave from '@/components/ui/hero-wave';
+import dynamic from 'next/dynamic';
 import { useLang } from '@/lib/i18n';
+
+// Lazy-load canvas wave — only used on mobile, no need to block initial paint
+const HeroWave = dynamic(() => import('@/components/ui/hero-wave'), { ssr: false });
 
 export default function Hero() {
   const { t, dir, lang } = useLang();

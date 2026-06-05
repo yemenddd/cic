@@ -4,7 +4,10 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
 import { dict } from '@/lib/dictionary';
-import { SparklesCore } from '@/components/ui/sparkles';
+import dynamic from 'next/dynamic';
+
+// Lazy-load particles — only needed after hero section scrolls into view
+const SparklesCore = dynamic(() => import('@/components/ui/sparkles').then(m => ({ default: m.SparklesCore })), { ssr: false });
 
 /* ─── Session card data ─── */
 type Session = {

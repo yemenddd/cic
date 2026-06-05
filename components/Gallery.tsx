@@ -2,9 +2,15 @@
 
 import { motion } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
-import InfiniteGallery from '@/components/ui/infinite-gallery';
+import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
+
+// Lazy-load the heavy 3D WebGL gallery — only fetched when this page is visited
+const InfiniteGallery = dynamic(() => import('@/components/ui/infinite-gallery'), {
+  ssr: false,
+  loading: () => <div className="w-full h-screen bg-[#030712]" />,
+});
 
 const GALLERY_IMAGES = [
   "/images/gallery/DSC02311-Pano.jpg",
