@@ -17,12 +17,10 @@ export function SplineScene({ scene, className }: SplineSceneProps) {
         </div>
       }
     >
-      <div className="w-full h-full [&_canvas]:!cursor-auto">
-        <Spline
-          scene={scene}
-          className={className}
-        />
-      </div>
+      <Spline
+        scene={scene}
+        className={className}
+      />
     </Suspense>
   )
 }
