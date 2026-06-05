@@ -227,7 +227,6 @@ function GalleryScene({ images, speed = 1, visibleCount = 8, fadeSettings, blurS
     materials.forEach((m) => { if (m?.uniforms) { m.uniforms.time.value = time; m.uniforms.scrollForce.value = scrollVelocity; } });
 
     const imageAdvance = totalImages > 0 ? visibleCount! % totalImages || totalImages : 0;
-    const halfRange = depthRange / 2;
 
     planesData.current.forEach((plane, i) => {
       let newZ = plane.z + scrollVelocity * delta * 10;
@@ -308,16 +307,19 @@ export default function InfiniteGallery({
   fadeSettings = { fadeIn: { start: 0.05, end: 0.25 }, fadeOut: { start: 0.4, end: 0.43 } },
   blurSettings = { blurIn: { start: 0.0, end: 0.1 }, blurOut: { start: 0.4, end: 0.43 }, maxBlur: 8.0 },
 }: InfiniteGalleryProps) {
-  const [webglSupported, setWebglSupported] = useState(true);
+  const [use3D, setUse3D] = useState(false);
+
   useEffect(() => {
+    // Only run the 3D canvas on desktop — mobile GPUs can't handle 36 textures
+    if (window.innerWidth < 768) { setUse3D(false); return; }
     try {
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (!gl) setWebglSupported(false);
-    } catch { setWebglSupported(false); }
+      setUse3D(!!gl);
+    } catch { setUse3D(false); }
   }, []);
 
-  if (!webglSupported) return <div className={className} style={style}><FallbackGallery images={images} /></div>;
+  if (!use3D) return <div className={className} style={style}><FallbackGallery images={images} /></div>;
 
   return (
     <div className={className} style={style}>
@@ -329,6 +331,8 @@ export default function InfiniteGallery({
         onCreated={({ gl }) => {
           gl.domElement.addEventListener('webglcontextlost', (e) => {
             e.preventDefault();
+            // Switch to CSS grid fallback on unrecoverable context loss
+            setUse3D(false);
           });
           gl.domElement.addEventListener('webglcontextrestored', () => {
             gl.setSize(gl.domElement.clientWidth, gl.domElement.clientHeight);
