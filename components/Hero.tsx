@@ -1,17 +1,15 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
+import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { Button, KIND, SIZE } from 'baseui/button';
 import { ArrowRight } from 'lucide-react';
-import { SplineScene } from '@/components/ui/splite';
-import { Spotlight } from '@/components/ui/spotlight';
+import { DottedSurface } from '@/components/ui/dotted-surface';
 import { useLang } from '@/lib/i18n';
 
 export default function Hero() {
   const { t, dir, lang } = useLang();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  const [isDesktop, setIsDesktop] = useState(true);
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -35,13 +33,8 @@ export default function Hero() {
     tick();
     const countdownId = setInterval(tick, 1000);
 
-    const onResize = () => setIsDesktop(window.innerWidth >= 1024);
-    onResize();
-    window.addEventListener('resize', onResize);
-
     return () => {
       clearInterval(countdownId);
-      window.removeEventListener('resize', onResize);
     };
   }, []);
 
@@ -51,11 +44,6 @@ export default function Hero() {
     { label: t('countdown.minutes'), value: timeLeft.minutes },
     { label: t('countdown.seconds'), value: timeLeft.seconds },
   ];
-
-  // ── Scroll choreography ──
-  // Robot drifts right + scales down as the content reveals
-  const robotX = useTransform(scrollYProgress, [0, 0.5], ['0%', isDesktop ? '22%' : '0%']);
-  const robotScale = useTransform(scrollYProgress, [0, 0.35], [isDesktop ? 1 : 1.35, isDesktop ? 0.8 : 0.98]);
 
   // Two scroll trackers:
   // - maxP: only increases — used to hide the scroll cue once scrolling starts
@@ -79,41 +67,23 @@ export default function Hero() {
     animate: { opacity: currentP >= threshold ? 1 : 0, y: currentP >= threshold ? 0 : 48 },
     transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
   });
-  // Delay text reveals on mobile so the robot has time to scale down and be fully visible first
-  const mobileOffset = isDesktop ? 0 : 0.35;
-  const wordThresholds = [0.04 + mobileOffset, 0.08 + mobileOffset];
-  const tTitle3 = 0.13 + mobileOffset;
-  const tTagline = 0.22 + mobileOffset;
-  const tDesc = 0.3 + mobileOffset;
-  const tButtons = 0.35 + mobileOffset;
+  const wordThresholds = [0.04, 0.08];
+  const tTitle3 = 0.13;
+  const tTagline = 0.22;
+  const tDesc = 0.3;
+  const tButtons = 0.35;
 
   return (
-    <section ref={sectionRef} className="relative h-[250vh] md:h-[300vh] bg-[#030712]">
+    <section ref={sectionRef} className="relative h-[200vh] bg-[#030712]">
       <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden">
 
-        {/* ── Robot — centered on load, drifts right + scales on scroll ── */}
-        <motion.div className="absolute inset-0 z-10" style={{ x: robotX, scale: robotScale }}>
-          <motion.div
-            className="w-full h-full"
-            initial={{ opacity: 0, scale: 1.06 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.3, ease: 'easeOut' }}
-          >
-            <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="white" />
-            <SplineScene
-              scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-              className="w-full h-full"
-            />
-          </motion.div>
-        </motion.div>
+        {/* ── Dotted wave background ── */}
+        <DottedSurface className="z-0" />
 
         {/* ── Text panel ── */}
         <div className="absolute inset-0 z-30 flex items-center pointer-events-none">
           <div className={`max-w-7xl mx-auto px-6 w-full flex ${dir === 'rtl' ? 'justify-end' : 'justify-start'}`}>
-            <motion.div 
-              className="max-w-xl w-full p-6 sm:p-8 md:p-0 rounded-[2rem] bg-[#030712]/30 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none border border-white/10 md:border-transparent mt-24 sm:mt-16 md:mt-0"
-              {...reveal(isDesktop ? 0.01 : mobileOffset)}
-            >
+            <div className="max-w-xl w-full">
 
               <h1 className={`mb-2 drop-shadow-[0_2px_30px_rgba(0,0,0,0.6)] flex flex-col gap-0 ${lang === 'en' ? 'text-left' : 'text-right'}`}>
                 {lang === 'ar' ? (
@@ -305,7 +275,7 @@ export default function Hero() {
                   ))}
                 </div>
               </motion.div>
-            </motion.div>
+            </div>
           </div>
         </div>
 
