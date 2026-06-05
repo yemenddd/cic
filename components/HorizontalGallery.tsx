@@ -45,7 +45,7 @@ export default function HorizontalGallery() {
   const headerX = useTransform(scrollYProgress, [0, 1], isRtl ? ['0%', '-50%'] : ['0%', '50%']);
 
   return (
-    <section ref={sectionRef} className="relative h-[320vh] bg-[#0a0d15]">
+    <section ref={sectionRef} className="relative h-[250vh] md:h-[320vh] bg-[#0a0d15]">
       <div className="sticky top-0 h-screen flex flex-col overflow-hidden">
 
         {/* ── Header ── */}

@@ -96,3 +96,32 @@ export function Sparkles({
 
   return isReady && <Particles id={id} options={{ ...defaultOptions, ...options }} className={className} />
 }
+
+/* ── SparklesCore — alias with alternate prop names ── */
+type SparklesCoreProps = {
+  id?: string
+  className?: string
+  background?: string
+  minSize?: number
+  maxSize?: number
+  speed?: number
+  particleColor?: string
+  particleDensity?: number
+}
+
+export function SparklesCore({ className, background = 'transparent', minSize = 0.6, maxSize = 1.4, speed = 3, particleColor = '#ffffff', particleDensity = 100 }: SparklesCoreProps) {
+  return (
+    <Sparkles
+      className={className}
+      background={background}
+      minSize={minSize}
+      size={maxSize}
+      speed={speed}
+      color={particleColor}
+      density={particleDensity}
+      opacity={0.8}
+      minOpacity={0.1}
+      opacitySpeed={speed}
+    />
+  )
+}

@@ -101,12 +101,12 @@ export const FinancialHero = ({
 
             <motion.div
               dir={isRtl ? 'rtl' : 'ltr'}
-              className={cn('space-y-6 mb-8', isRtl ? 'w-full max-w-lg text-right ml-auto' : 'max-w-lg')}
+              className={cn('space-y-4 md:space-y-6 mb-8', isRtl ? 'w-full max-w-lg text-right ml-auto' : 'max-w-lg')}
               {...reveal(0.30)}
             >
-              <p className="text-lg leading-relaxed font-medium text-white/80">{description}</p>
+              <p className="text-base md:text-lg leading-relaxed font-medium text-white/80">{description}</p>
               {description2 && (
-                <p className="text-[15px] leading-relaxed text-white/50">{description2}</p>
+                <p className="text-[13px] md:text-[15px] leading-relaxed text-white/50">{description2}</p>
               )}
             </motion.div>
 
@@ -145,7 +145,7 @@ export const FinancialHero = ({
 
           {/* ── Images — slide in from right, settle into position ── */}
           <motion.div
-            className="relative lg:w-[45%] h-[420px] w-full flex items-center justify-center mt-12 lg:mt-0 overflow-visible px-10"
+            className="relative lg:w-[45%] h-56 sm:h-72 lg:h-[420px] w-full flex items-center justify-center mt-4 lg:mt-0 overflow-visible px-4 lg:px-10"
             style={{ x: imagesX }}
             animate={{ opacity: currentP >= 0.04 ? 1 : 0 }}
             transition={{ duration: 0.6 }}
@@ -153,13 +153,13 @@ export const FinancialHero = ({
             <motion.img
               src={imageUrl2}
               alt=""
-              className="absolute h-64 md:h-[320px] w-auto rounded-3xl border border-white/20 shadow-[0_12px_48px_rgba(0,0,0,0.4)] object-cover transform rotate-[-4deg] translate-x-12 translate-y-6"
+              className="absolute h-40 sm:h-56 md:h-[320px] w-auto rounded-2xl md:rounded-3xl border border-white/20 shadow-[0_12px_48px_rgba(0,0,0,0.4)] object-cover transform rotate-[-4deg] translate-x-6 md:translate-x-12 translate-y-4 md:translate-y-6"
               whileHover={{ y: -10, rotate: -3, transition: { duration: 0.3 } }}
             />
             <motion.img
               src={imageUrl1}
               alt=""
-              className="relative z-10 h-64 md:h-[320px] w-auto rounded-3xl border border-white/20 shadow-[0_12px_48px_rgba(0,0,0,0.45)] object-cover transform rotate-[3deg] -translate-x-8"
+              className="relative z-10 h-40 sm:h-56 md:h-[320px] w-auto rounded-2xl md:rounded-3xl border border-white/20 shadow-[0_12px_48px_rgba(0,0,0,0.45)] object-cover transform rotate-[3deg] -translate-x-4 md:-translate-x-8"
               whileHover={{ y: -10, rotate: 3, transition: { duration: 0.3 } }}
             />
           </motion.div>

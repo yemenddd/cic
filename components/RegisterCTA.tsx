@@ -100,10 +100,10 @@ export default function RegisterCTA() {
     <div
       ref={sectionRef}
       id="register"
-      className="relative h-[200vh]"
+      className="relative h-[150vh] md:h-[200vh]"
       style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
     >
-      <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden bg-black">
+      <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden bg-gradient-to-b from-black to-[#030712]">
 
         {/* Ambient spotlight */}
         <div
@@ -243,6 +243,9 @@ export default function RegisterCTA() {
           </motion.div>
 
         </div>
+
+        {/* Bottom fade to blend seamlessly with the next section */}
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#030712] to-transparent z-20" />
       </div>
     </div>
   );

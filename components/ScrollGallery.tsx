@@ -16,8 +16,8 @@ export default function ScrollGallery() {
   });
 
   // Media grows from a small centered card to near-full-bleed
-  const mediaWidth = useTransform(scrollYProgress, [0, 1], [360, 1500]);
-  const mediaHeight = useTransform(scrollYProgress, [0, 1], [460, 760]);
+  const mediaWidth = useTransform(scrollYProgress, [0, 1], [280, 1500]);
+  const mediaHeight = useTransform(scrollYProgress, [0, 1], [340, 760]);
   const radius = useTransform(scrollYProgress, [0, 1], [24, 18]);
 
   // Background photo + dark overlay fade as the media takes over
@@ -42,7 +42,7 @@ export default function ScrollGallery() {
 
   return (
     // Tall section gives the pinned content room to animate
-    <section ref={sectionRef} className="relative h-[260vh] bg-black">
+    <section ref={sectionRef} className="relative h-[200vh] md:h-[260vh] bg-black">
       <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
 
         {/* ── Background photo (blurs + fades as you scroll) ── */}

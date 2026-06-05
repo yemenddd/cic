@@ -9,7 +9,7 @@ import { Spotlight } from '@/components/ui/spotlight';
 import { useLang } from '@/lib/i18n';
 
 export default function Hero() {
-  const { t, dir } = useLang();
+  const { t, dir, lang } = useLang();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isDesktop, setIsDesktop] = useState(true);
 
@@ -55,7 +55,7 @@ export default function Hero() {
   // ── Scroll choreography ──
   // Robot drifts right + scales down as the content reveals
   const robotX = useTransform(scrollYProgress, [0, 0.5], ['0%', isDesktop ? '22%' : '0%']);
-  const robotScale = useTransform(scrollYProgress, [0, 0.5], [1, isDesktop ? 0.8 : 0.92]);
+  const robotScale = useTransform(scrollYProgress, [0, 0.35], [isDesktop ? 1 : 1.35, isDesktop ? 0.8 : 0.98]);
 
   // Two scroll trackers:
   // - maxP: only increases — used to hide the scroll cue once scrolling starts
@@ -79,10 +79,16 @@ export default function Hero() {
     animate: { opacity: currentP >= threshold ? 1 : 0, y: currentP >= threshold ? 0 : 48 },
     transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
   });
-  const wordThresholds = [0.04, 0.08];
+  // Delay text reveals on mobile so the robot has time to scale down and be fully visible first
+  const mobileOffset = isDesktop ? 0 : 0.35;
+  const wordThresholds = [0.04 + mobileOffset, 0.08 + mobileOffset];
+  const tTitle3 = 0.13 + mobileOffset;
+  const tTagline = 0.22 + mobileOffset;
+  const tDesc = 0.3 + mobileOffset;
+  const tButtons = 0.35 + mobileOffset;
 
   return (
-    <section ref={sectionRef} className="relative h-[200vh] bg-[#030712]">
+    <section ref={sectionRef} className="relative h-[250vh] md:h-[300vh] bg-[#030712]">
       <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden">
 
         {/* ── Robot — centered on load, drifts right + scales on scroll ── */}
@@ -104,45 +110,93 @@ export default function Hero() {
         {/* ── Text panel ── */}
         <div className="absolute inset-0 z-30 flex items-center pointer-events-none">
           <div className={`max-w-7xl mx-auto px-6 w-full flex ${dir === 'rtl' ? 'justify-end' : 'justify-start'}`}>
-            <div className="max-w-xl w-full">
+            <motion.div 
+              className="max-w-xl w-full p-6 sm:p-8 md:p-0 rounded-[2rem] bg-[#030712]/30 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none border border-white/10 md:border-transparent mt-24 sm:mt-16 md:mt-0"
+              {...reveal(isDesktop ? 0.01 : mobileOffset)}
+            >
 
-              <h1 className="mb-2 drop-shadow-[0_2px_30px_rgba(0,0,0,0.6)] flex flex-col gap-0">
-                <span className="block w-full text-right -mb-20">
-                  <motion.span className="inline-block" {...revealWord(wordThresholds[0])}>
-                    <img
-                      src="/من_العقل.svg"
-                      alt="من العقل"
-                      className="object-right translate-x-[4%] md:translate-x-[6%]"
-                      style={{ width: '500px', maxWidth: '100%', height: 'auto', filter: 'brightness(0) invert(1)' }}
-                    />
-                  </motion.span>
-                </span>
-                <span className="block w-full text-right">
-                  <motion.span className="inline-block" {...revealWord(0.13)}>
-                    <span
-                      dir="rtl"
-                      style={{
-                        fontFamily: 'var(--font-thmanyah)',
-                        fontWeight: 900,
-                        fontSize: 'clamp(3.5rem, 9vw, 7.5rem)',
-                        lineHeight: 1.1,
-                        display: 'inline-block',
-                        paddingTop: '0.1em',
-                        paddingBottom: '0.2em',
-                        background: 'linear-gradient(to right, #67e8f9, #60a5fa, #8b5cf6)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
-                      }}
-                    >
-                      إلى الآلة
+              <h1 className={`mb-2 drop-shadow-[0_2px_30px_rgba(0,0,0,0.6)] flex flex-col gap-0 ${lang === 'en' ? 'text-left' : 'text-right'}`}>
+                {lang === 'ar' ? (
+                  <>
+                    <span className="block w-full text-right -mb-10 md:-mb-20">
+                      <motion.span className="inline-block" {...revealWord(wordThresholds[0])}>
+                        <img
+                          src="/من_العقل.svg"
+                          alt="من العقل"
+                          className="object-right translate-x-[4%] md:translate-x-[6%] w-[280px] sm:w-[400px] md:w-[500px] max-w-full h-auto"
+                          style={{ filter: 'brightness(0) invert(1)' }}
+                        />
+                      </motion.span>
                     </span>
-                  </motion.span>
-                </span>
+                    <span className="block w-full text-right">
+                      <motion.span className="inline-block" {...revealWord(tTitle3)}>
+                        <span
+                          dir="rtl"
+                          style={{
+                            fontFamily: 'var(--font-thmanyah)',
+                            fontWeight: 900,
+                            fontSize: 'clamp(4rem, 11vw, 7.5rem)',
+                            lineHeight: 1.1,
+                            display: 'inline-block',
+                            paddingTop: '0.1em',
+                            paddingBottom: '0.2em',
+                            background: 'linear-gradient(to right, #67e8f9, #60a5fa, #8b5cf6)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text',
+                          }}
+                        >
+                          إلى الآلة
+                        </span>
+                      </motion.span>
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="block w-full text-left">
+                      <motion.span className="inline-block text-white" {...revealWord(wordThresholds[0])}>
+                        <span
+                          dir="ltr"
+                          style={{
+                            fontFamily: 'var(--font-outfit)',
+                            fontWeight: 900,
+                            fontSize: 'clamp(4rem, 10vw, 7rem)',
+                            lineHeight: 1.1,
+                            display: 'inline-block',
+                          }}
+                        >
+                          {t('hero.word1')} {t('hero.word2')}
+                        </span>
+                      </motion.span>
+                    </span>
+                    <span className="block w-full text-left -mt-2 md:-mt-4">
+                      <motion.span className="inline-block" {...revealWord(tTitle3)}>
+                        <span
+                          dir="ltr"
+                          style={{
+                            fontFamily: 'var(--font-outfit)',
+                            fontWeight: 900,
+                            fontSize: 'clamp(4rem, 10vw, 7rem)',
+                            lineHeight: 1.1,
+                            display: 'inline-block',
+                            paddingTop: '0.1em',
+                            paddingBottom: '0.2em',
+                            background: 'linear-gradient(to right, #67e8f9, #60a5fa, #8b5cf6)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text',
+                          }}
+                        >
+                          {t('hero.word3')}
+                        </span>
+                      </motion.span>
+                    </span>
+                  </>
+                )}
               </h1>
 
               {/* Accent divider + tagline — scroll reveal */}
-              <motion.div className="flex items-center gap-3 mb-7" {...reveal(0.22)}>
+              <motion.div className="flex items-center gap-3 mb-7" {...reveal(tTagline)}>
                 <span className="block h-px w-20 bg-blue-400/60" />
                 <span className="text-[13px] md:text-[14px] font-semibold tracking-[0.25em] text-blue-400 opacity-90">
                   {t('hero.tagline')}
@@ -152,15 +206,15 @@ export default function Hero() {
               {/* Description — scroll reveal */}
               <motion.p
                 className="text-base md:text-lg text-white/55 mb-10 max-w-md leading-relaxed font-light"
-                {...reveal(0.3)}
+                {...reveal(tDesc)}
               >
                 {t('hero.description')}
               </motion.p>
 
-              {/* CTAs — scroll reveal */}
+              {/* Buttons — scroll reveal */}
               <motion.div
-                className="flex flex-wrap items-center gap-4 mb-12 pointer-events-auto"
-                {...reveal(0.38)}
+                className="flex flex-col sm:flex-row gap-4 mb-12 pointer-events-auto"
+                {...reveal(tButtons)}
               >
                 <Button
                   size={SIZE.large}
@@ -251,7 +305,7 @@ export default function Hero() {
                   ))}
                 </div>
               </motion.div>
-            </div>
+            </motion.div>
           </div>
         </div>
 

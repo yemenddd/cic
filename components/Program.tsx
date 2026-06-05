@@ -46,17 +46,17 @@ export default function Program() {
       id="program"
       style={{ background: '#030712', borderTop: '1px solid rgba(255,255,255,0.06)' }}
     >
-      <div className="flex justify-between px-6 lg:px-16 max-w-screen-xl mx-auto">
+      <div className="flex flex-col lg:flex-row justify-between px-6 lg:px-16 max-w-screen-xl mx-auto relative">
 
         {/* ── LEFT: sticky stacking cards ── */}
-        <div className="grid gap-2 w-full lg:w-auto">
+        <div className="grid gap-2 w-full lg:w-auto relative z-10 pt-28 lg:pt-0">
           {streams.map((stream, i) => {
             // text finishes at ~0.32; distribute 4 cards across 0.36 → 0.84
             const cardThreshold = 0.36 + i * 0.16;
             return (
             <figure
               key={stream.key}
-              className="sticky top-0 h-screen grid place-content-center"
+              className="sticky top-0 h-[85vh] lg:h-screen flex items-end lg:items-center lg:grid lg:place-content-center pb-8 lg:pb-0"
             >
               <motion.article
                 className={`w-full max-w-[30rem] mx-auto lg:w-[30rem] rounded-2xl overflow-hidden ${stream.rotation}`}
@@ -107,15 +107,13 @@ export default function Program() {
         </div>
 
         {/* ── RIGHT: sticky heading — scroll-reveal ── */}
-        <div className="hidden lg:grid sticky top-0 h-screen place-content-center pl-10">
+        <div className="order-first lg:order-none sticky top-0 z-20 pt-32 pb-6 lg:py-0 lg:h-screen flex flex-col justify-start lg:justify-center items-center lg:items-start text-center lg:text-right lg:pl-10 bg-[#030712]/90 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none border-b border-white/5 lg:border-none">
           <div>
-
-
 
             {/* Headline */}
             <h2
-              className="font-outfit font-bold leading-[0.9] tracking-tight mb-6"
-              style={{ fontSize: 'clamp(2.6rem, 3.8vw, 4rem)' }}
+              className="font-outfit font-bold leading-[0.9] tracking-tight mb-2 lg:mb-6"
+              style={{ fontSize: 'clamp(2.4rem, 5vw, 4rem)' }}
             >
               <motion.span className="block text-white" {...revealWord(0.06)}>
                 {t('program.titleA')}
@@ -125,16 +123,16 @@ export default function Program() {
               </motion.span>
             </h2>
 
-            {/* Description */}
+            {/* Description (hidden on mobile) */}
             <motion.p
-              className="text-[15px] leading-relaxed max-w-[280px] text-white/50"
+              className="hidden lg:block text-[15px] leading-relaxed max-w-[280px] text-white/50"
               {...reveal(0.16)}
             >
               {t('program.lead')}
             </motion.p>
 
-            {/* Stream indicators — one by one */}
-            <div className="flex flex-col gap-3 mt-10">
+            {/* Stream indicators (hidden on mobile) */}
+            <div className="hidden lg:flex flex-col gap-3 mt-10">
               {streams.map((s, i) => (
                 <motion.div
                   key={s.key}

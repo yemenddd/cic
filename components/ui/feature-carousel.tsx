@@ -84,9 +84,9 @@ export function FeatureCarousel({ currentP = 1 }: { currentP?: number }) {
 
   return (
     <div className="w-full max-w-7xl mx-auto md:px-8 md:pb-8">
-      <div className="relative overflow-hidden flex flex-col lg:flex-row-reverse lg:items-center lg:justify-center lg:gap-6 lg:min-h-[560px] bg-transparent">
-        <div className="w-full min-h-[300px] lg:w-[34%] lg:min-h-0 relative z-30 flex flex-col items-center lg:items-start justify-center overflow-hidden px-8 lg:px-0 bg-transparent">
-          <div className="relative w-full h-full flex flex-col gap-4 items-center justify-center lg:items-start z-20">
+      <div className="relative overflow-visible flex flex-col lg:flex-row-reverse lg:items-center lg:justify-center lg:gap-6 lg:min-h-[560px] bg-transparent">
+        <div className="w-full lg:w-[34%] relative z-30 flex flex-col items-center lg:items-start justify-center px-4 lg:px-0 bg-transparent mt-6 lg:mt-0">
+          <div className="relative w-full grid grid-cols-2 lg:flex lg:flex-col gap-3 lg:gap-4 items-center justify-center lg:items-start z-20">
             {FEATURES.map((feature, index) => {
               const isActive = index === currentIndex;
 
@@ -94,7 +94,7 @@ export function FeatureCarousel({ currentP = 1 }: { currentP?: number }) {
               return (
                 <motion.div
                   key={feature.id}
-                  className="flex items-center justify-start w-full max-w-[300px]"
+                  className="flex items-center justify-center w-full"
                   initial={{ opacity: 0, y: 28 }}
                   animate={{ opacity: currentP >= threshold ? 1 : 0, y: currentP >= threshold ? 0 : 28 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -104,7 +104,7 @@ export function FeatureCarousel({ currentP = 1 }: { currentP?: number }) {
                     onMouseEnter={() => setIsPaused(true)}
                     onMouseLeave={() => setIsPaused(false)}
                     className={cn(
-                      "relative w-full flex items-center gap-4 px-6 md:px-10 lg:px-8 py-3.5 md:py-5 lg:py-4 rounded-full transition-all duration-700 text-left group",
+                      "relative w-full flex items-center justify-center lg:justify-start gap-1.5 md:gap-4 px-2 md:px-10 lg:px-8 py-3 lg:py-4 rounded-xl lg:rounded-full transition-all duration-700 text-center lg:text-left group",
                       isActive
                         ? "text-white shadow-md z-10"
                         : "bg-white/[0.03] text-white/55 border border-white/15 hover:border-violet-400 hover:text-white"
@@ -117,14 +117,14 @@ export function FeatureCarousel({ currentP = 1 }: { currentP?: number }) {
                   >
                     <div
                       className={cn(
-                        "flex items-center justify-center transition-colors duration-500",
+                        "flex items-center justify-center transition-colors duration-500 shrink-0",
                         isActive ? "text-white" : "text-slate-400 group-hover:text-[#0078D4]"
                       )}
                     >
-                      <feature.icon size={18} strokeWidth={2} />
+                      <feature.icon className="w-4 h-4 md:w-[18px] md:h-[18px]" strokeWidth={2} />
                     </div>
 
-                    <span className="font-medium text-sm md:text-[15px] tracking-tight whitespace-nowrap uppercase">
+                    <span className="font-medium text-[11px] md:text-[15px] tracking-tight whitespace-nowrap uppercase">
                       {t(`audience.${feature.id}.label`)}
                     </span>
                   </button>

@@ -168,11 +168,11 @@ function MissionSection() {
           style={{ background: 'radial-gradient(ellipse 60% 50% at 80% 50%, rgba(96,165,250,0.06) 0%, transparent 70%)' }}
         />
         <div className="relative z-10 max-w-7xl mx-auto px-6 w-full" dir="ltr">
-          <div className="flex items-center gap-12 lg:gap-20">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-20">
 
             {/* Yemen map — reveals first */}
             <motion.div
-              className="hidden lg:flex shrink-0 w-[520px] items-center justify-center relative"
+              className="flex shrink-0 w-[240px] sm:w-[350px] lg:w-[520px] items-center justify-center relative"
               style={{ x: mapX, opacity: mapOpacity }}
             >
               <img
@@ -241,11 +241,24 @@ function PresidentSection() {
           animate={{ scale: p >= 0.04 ? 1 : 1.06 }}
           transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
         >
+          {/* Desktop Image */}
           <img
             src="/images/about/president2.jpg"
             alt="رئيس المؤتمر"
-            className="w-full h-full object-cover"
-            style={{ objectPosition: '30% center' }}
+            className="hidden md:block w-full h-full object-cover"
+            style={{ objectPosition: '30% 20%' }}
+          />
+          {/* Mobile Image */}
+          <img
+            src="/images/about/president_mobile.jpg"
+            alt="رئيس المؤتمر"
+            className="block md:hidden w-full h-full object-cover"
+            style={{ objectPosition: 'center center' }}
+            onError={(e) => {
+              // Fallback to desktop image if mobile one doesn't exist yet
+              e.currentTarget.src = "/images/about/president2.jpg";
+              e.currentTarget.style.objectPosition = "30% 20%";
+            }}
           />
 
           {/* Left — subtle 40% vignette */}
@@ -272,9 +285,9 @@ function PresidentSection() {
 
         <div className="relative z-10 h-full">
           {/* Wrapper for precise vertical centering without Framer Motion interference */}
-          <div className="absolute top-1/2 -translate-y-1/2 right-[18%] w-[540px] z-10">
+          <div className="absolute bottom-16 md:bottom-auto md:top-1/2 md:-translate-y-1/2 left-1/2 md:left-auto -translate-x-1/2 md:translate-x-0 md:right-[12%] lg:right-[18%] w-[92%] md:w-[540px] max-w-[540px] z-10">
             <motion.div 
-              className="p-8 rounded-3xl bg-[#020509]/30 backdrop-blur-lg border border-white/5" 
+              className="p-6 md:p-8 rounded-3xl bg-[#020509]/30 backdrop-blur-lg border border-white/5" 
               dir="rtl"
               {...reveal(0.04)}
             >

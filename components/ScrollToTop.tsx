@@ -7,7 +7,14 @@ export default function ScrollToTop() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 400);
+    const onScroll = () => {
+      const scrollY = window.scrollY;
+      const isScrolledDown = scrollY > 400;
+      // Use a larger threshold (e.g. 400px) so it hides as soon as the footer comes into view
+      const scrollHeight = Math.max(document.body.offsetHeight, document.documentElement.scrollHeight);
+      const isAtBottom = (window.innerHeight + scrollY) >= scrollHeight - 400;
+      setVisible(isScrolledDown && !isAtBottom);
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);

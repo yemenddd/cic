@@ -70,7 +70,7 @@ export default function CinematicBreak() {
                 alt="CICT 2026"
                 width={640}
                 height={128}
-                className="h-20 sm:h-28 lg:h-32 w-auto object-contain"
+                className="h-12 sm:h-20 lg:h-28 w-auto object-contain"
                 priority
               />
             </motion.div>
@@ -82,7 +82,7 @@ export default function CinematicBreak() {
                   key={word}
                   className="inline-block mr-[0.22em]"
                   style={{
-                    fontSize: 'clamp(3rem, 9vw, 8rem)',
+                    fontSize: 'clamp(2.5rem, 8vw, 8rem)',
                     ...(i === words.length - 1 ? {
                       background: 'linear-gradient(to right, #67e8f9, #60a5fa, #8b5cf6)',
                       WebkitBackgroundClip: 'text',

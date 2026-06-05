@@ -1,5 +1,10 @@
-import Program from "@/components/Program";
+import ProgramPage from '@/components/ProgramPage';
 
-export default function ProgramPage() {
-  return <Program />;
+export const metadata = {
+  title: 'البرنامج | مؤتمر الإبداع والابتكار 2026',
+  description: 'جدول أعمال مؤتمر الإبداع والابتكار 2026 — يومان، أربعة مسارات، رسالة واحدة.',
+};
+
+export default function Program() {
+  return <ProgramPage />;
 }

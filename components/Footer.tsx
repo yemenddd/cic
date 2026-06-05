@@ -60,6 +60,8 @@ export default function Footer() {
         { icon: <XIcon className="h-5 w-5" />, href: "#", label: "X" },
       ]}
       mainLinks={[
+        { href: "/", label: t("nav.home") },
+        { href: "/about", label: t("nav.about") },
         { href: "/history", label: t("nav.history") },
         { href: "/program", label: t("nav.program") },
         { href: "/gallery", label: t("nav.gallery") },

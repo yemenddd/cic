@@ -37,8 +37,8 @@ function SpeakerCard({ speaker, index, currentP }: { speaker: Speaker; index: nu
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       <div
-        className="relative cursor-pointer select-none"
-        style={{ height: '260px', perspective: '1200px' }}
+        className="relative cursor-pointer select-none h-[160px] md:h-[260px]"
+        style={{ perspective: '1200px' }}
         onMouseEnter={() => setFlipped(true)}
         onMouseLeave={() => setFlipped(false)}
         onClick={() => setFlipped((v) => !v)}
@@ -143,27 +143,27 @@ export default function Speakers() {
       <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden bg-black">
         <div className="max-w-7xl mx-auto px-6 w-full py-8">
 
-          {/* ── Side-by-side: photos left, title right ── */}
-          <div className="flex items-center gap-10 w-full" dir="ltr">
+          {/* ── Responsive Stack: Title top/right, photos bottom/left ── */}
+          <div className="flex flex-col-reverse lg:flex-row items-center gap-6 lg:gap-10 w-full" dir="ltr">
 
-            {/* LEFT: Cards grid */}
-            <div className="w-[58%] shrink-0">
-              <div className="grid grid-cols-3 gap-3">
+            {/* LEFT/BOTTOM: Cards grid */}
+            <div className="w-full lg:w-[58%] shrink-0">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                 {speakers.map((speaker, i) => (
                   <SpeakerCard key={speaker.name} speaker={speaker} index={i} currentP={currentP} />
                 ))}
               </div>
             </div>
 
-            {/* RIGHT: Title vertically centered */}
-            <div className="flex-1 flex items-center justify-center" dir="rtl">
+            {/* RIGHT/TOP: Title vertically centered */}
+            <div className="w-full lg:flex-1 flex items-center justify-center lg:justify-end mb-4 lg:mb-0" dir="rtl">
               <h2
-                className="font-outfit font-bold tracking-tight leading-[0.9] text-white text-right"
+                className="font-outfit font-bold tracking-tight leading-[0.9] text-white text-center lg:text-right"
               >
-                <motion.span className="block" style={{ fontSize: 'clamp(4rem, 7vw, 8rem)' }} {...revealWord(0.10)}>
+                <motion.span className="block" style={{ fontSize: 'clamp(2.8rem, 7vw, 8rem)' }} {...revealWord(0.10)}>
                   {t('speakers.titleA')}
                 </motion.span>
-                <motion.span className="block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent" style={{ fontSize: 'clamp(2.4rem, 4vw, 5rem)' }} {...revealWord(0.17)}>
+                <motion.span className="block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent" style={{ fontSize: 'clamp(2rem, 4vw, 5rem)' }} {...revealWord(0.17)}>
                   {t('speakers.titleB')}
                 </motion.span>
               </h2>
