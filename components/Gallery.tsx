@@ -47,7 +47,7 @@ export default function Gallery() {
   return (
     <section id="gallery" className="relative bg-[#030712] min-h-screen overflow-hidden">
       
-      <audio ref={audioRef} src="/music/gallery.mp3" loop />
+      <audio ref={audioRef} src="/music/gallery.m4a" loop />
 
       {/* Audio Toggle Button */}
       <div className={`absolute top-28 z-30 ${isRtl ? 'left-6' : 'right-6'}`}>
