@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #030712;
+  --foreground: #ededed;
 
-  /* shadcn/ui tokens — dark palette (site is dark-themed) */
+  /* shadcn/ui tokens — dark palette */
   --primary: #ffffff;
   --primary-foreground: #0a0a0a;
   --secondary: #1c1c20;
@@ -18,13 +18,33 @@
   --border: rgba(255, 255, 255, 0.12);
   --input: rgba(255, 255, 255, 0.18);
   --ring: #3ca2fa;
+
+  /* Fluent 2 design tokens */
+  --fluent-brand:         #0078D4;
+  --fluent-brand-hover:   #106EBE;
+  --fluent-brand-pressed: #005A9E;
+  --fluent-fg1:           #242424;
+  --fluent-fg2:           #616161;
+  --fluent-fg3:           #707070;
+  --fluent-bg1:           #FFFFFF;
+  --fluent-bg2:           #F9F9F9;
+  --fluent-bg3:           #F5F5F5;
+  --fluent-stroke:        rgba(0, 0, 0, 0.06);
+  --fluent-stroke-strong: rgba(0, 0, 0, 0.12);
+  --fluent-shadow4:       0 2px 4px rgba(0,0,0,0.10), 0 0 2px rgba(0,0,0,0.06);
+  --fluent-shadow8:       0 4px 8px rgba(0,0,0,0.12), 0 0 2px rgba(0,0,0,0.06);
+  --fluent-shadow16:      0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.08);
+  --fluent-shadow28:      0 14px 28px rgba(0,0,0,0.16), 0 0 4px rgba(0,0,0,0.08);
+
+  --gradient-color: #3b82f6;
+  --sparkles-color: #3b82f6;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
 
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
@@ -41,23 +61,10 @@
   --color-ring: var(--ring);
 }
 
-/* shadcn default: bare border/outline utilities use the theme tokens */
 @layer base {
   * {
     border-color: var(--border);
     outline-color: var(--ring);
-  }
-
-  :root {
-    --gradient-color: #3b82f6;
-    --sparkles-color: #3b82f6;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
   }
 }
 
@@ -67,51 +74,24 @@ body {
   font-family: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
-@keyframes hero-blob {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%       { transform: translate(6%, -8%) scale(1.08); }
-  66%       { transform: translate(-5%, 6%) scale(0.94); }
-}
-
-/* ── Arabic typography: use Thmanyah Serif Text for all text (incl. display headings) when RTL ── */
+/* ── Arabic typography ── */
 html[lang="ar"] body,
 html[lang="ar"] .font-inter,
 html[lang="ar"] .font-outfit {
   font-family: var(--font-thmanyah), "Segoe UI", system-ui, serif;
 }
 
-/* Outfit utility (set via Tailwind theme) — override for Arabic */
 html[lang="ar"] [class*="font-outfit"] {
   font-family: var(--font-thmanyah), system-ui, serif;
 }
 
-/* Fluent 2 design tokens */
-:root {
-  --fluent-brand:              #0078D4;
-  --fluent-brand-hover:        #106EBE;
-  --fluent-brand-pressed:      #005A9E;
-  --fluent-fg1:                #242424;
-  --fluent-fg2:                #616161;
-  --fluent-fg3:                #707070;
-  --fluent-bg1:                #FFFFFF;
-  --fluent-bg2:                #F9F9F9;
-  --fluent-bg3:                #F5F5F5;
-  --fluent-stroke:             rgba(0,0,0,0.06);
-  --fluent-stroke-strong:      rgba(0,0,0,0.12);
-  --fluent-shadow4:            0 2px 4px rgba(0,0,0,0.10), 0 0 2px rgba(0,0,0,0.06);
-  --fluent-shadow8:            0 4px 8px rgba(0,0,0,0.12), 0 0 2px rgba(0,0,0,0.06);
-  --fluent-shadow16:           0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.08);
-  --fluent-shadow28:           0 14px 28px rgba(0,0,0,0.16), 0 0 4px rgba(0,0,0,0.08);
-}
-
-/* Fluent acrylic glass surface */
+/* ── Fluent surfaces ── */
 .fluent-acrylic {
-  background: rgba(255,255,255,0.82);
+  background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
 
-/* Fluent card surface */
 .fluent-card {
   background: var(--fluent-bg1);
   border: 1px solid var(--fluent-stroke);
@@ -123,27 +103,41 @@ html[lang="ar"] [class*="font-outfit"] {
   box-shadow: var(--fluent-shadow16);
 }
 
+/* ── Animations ── */
+@keyframes hero-blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(6%, -8%) scale(1.08); }
+  66%       { transform: translate(-5%, 6%) scale(0.94); }
+}
 
-/* Soft glow pulse for accent text */
 @keyframes glowPulse {
   0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+  50%       { opacity: 1; }
 }
 
 .animate-glow-pulse {
   animation: glowPulse 3s ease-in-out infinite;
 }
 
-/* Force browser's standard cursor on Spline 3D canvas, overriding any custom pointer settings in the scene */
-canvas,
-canvas:hover,
-canvas:active {
-  cursor: default !important;
+/* ── Spline loader spinner (used in SplineScene Suspense fallback) ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-/* Ensure any wrapper the Spline runtime injects also uses the normal cursor */
+.loader {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-top-color: rgba(96, 165, 250, 0.7);
+  animation: spin 0.9s linear infinite;
+}
+
+/* ── Force default cursor on Spline canvas ── */
+canvas,
+canvas:hover,
+canvas:active,
 [class*="spline"] canvas,
 .spline-watermark + canvas {
   cursor: default !important;
 }
-
