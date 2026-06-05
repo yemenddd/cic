@@ -40,8 +40,8 @@ export default function Partners() {
       </div>
 
       {/* Infinite slider — logo lockups */}
-      <div className="relative mt-12 h-[120px] md:h-[160px] lg:h-[200px] z-10">
-        <InfiniteSlider className="flex h-full w-full items-center" duration={45} gap={80}>
+      <div className="relative mt-12 h-[160px] md:h-[220px] lg:h-[280px] z-10">
+        <InfiniteSlider className="flex h-full w-full items-center" duration={45} gap={100}>
           {partners.map((src, idx) => (
             <div
               key={idx}
@@ -56,8 +56,7 @@ export default function Partners() {
                 alt={`Sponsor ${idx + 1}`} 
                 loading="lazy"
                 decoding="async"
-                className="h-20 md:h-28 lg:h-[140px] w-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                style={{ filter: 'brightness(0) invert(1)' }} /* Makes them all white if they are dark logos, optional but good for dark theme */
+                className="h-28 md:h-40 lg:h-[200px] w-auto object-contain transition-transform duration-300 group-hover:scale-105"
               />
             </div>
           ))}
