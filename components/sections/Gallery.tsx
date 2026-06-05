@@ -87,56 +87,39 @@ export default function Gallery() {
         <motion.button
           onClick={toggleAudio}
           aria-label="Toggle music"
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.93 }}
-          className="relative w-14 h-14 rounded-full flex items-center justify-center overflow-hidden"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.96 }}
+          className="w-11 h-11 rounded-full flex items-center justify-center"
           style={{
-            background: 'rgba(255,255,255,0.04)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,0.10)',
-            boxShadow: isPlaying
-              ? '0 0 24px rgba(96,165,250,0.35), inset 0 1px 0 rgba(255,255,255,0.08)'
-              : '0 0 0px rgba(0,0,0,0), inset 0 1px 0 rgba(255,255,255,0.05)',
-            transition: 'box-shadow 0.4s ease',
+            background: 'rgba(255,255,255,0.06)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: `1px solid ${isPlaying ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)'}`,
+            transition: 'border-color 0.3s ease',
           }}
         >
-          {/* Rotating gradient ring when playing */}
-          {isPlaying && (
-            <motion.div
-              className="absolute inset-0 rounded-full"
-              style={{
-                background: 'conic-gradient(from 0deg, #67e8f9, #60a5fa, #8b5cf6, #67e8f9)',
-                opacity: 0.25,
-              }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-            />
-          )}
-
-          {/* Icon — equalizer bars when playing, mute icon when paused */}
-          <div className="relative z-10 flex items-end justify-center gap-[3px] h-5">
+          <motion.svg
+            key={isPlaying ? 'on' : 'off'}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+            width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke={isPlaying ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.35)'}
+            strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"
+          >
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
             {isPlaying ? (
               <>
-                {[0.5, 1, 0.7, 1.2, 0.4].map((delay, i) => (
-                  <motion.span
-                    key={i}
-                    className="w-[3px] rounded-full"
-                    style={{ background: 'linear-gradient(to top, #60a5fa, #c4b5fd)' }}
-                    animate={{ scaleY: [0.3, 1, 0.5, 0.9, 0.3] }}
-                    transition={{ duration: 0.9, repeat: Infinity, delay: delay * 0.18, ease: 'easeInOut' }}
-                    initial={{ scaleY: 0.3, height: 20, originY: 1 }}
-                  />
-                ))}
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
               </>
             ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <>
                 <line x1="23" y1="9" x2="17" y2="15" />
                 <line x1="17" y1="9" x2="23" y2="15" />
-              </svg>
+              </>
             )}
-          </div>
+          </motion.svg>
         </motion.button>
       </div>
 
