@@ -115,7 +115,7 @@ export default function Gallery() {
         images={GALLERY_IMAGES}
         className="w-full h-screen"
         speed={1}
-        visibleCount={10}
+        visibleCount={8}
         fadeSettings={{ fadeIn: { start: 0.05, end: 0.25 }, fadeOut: { start: 0.4, end: 0.43 } }}
         blurSettings={{ blurIn: { start: 0.0, end: 0.1 }, blurOut: { start: 0.4, end: 0.43 }, maxBlur: 8.0 }}
       />

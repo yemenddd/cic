@@ -321,7 +321,20 @@ export default function InfiniteGallery({
 
   return (
     <div className={className} style={style}>
-      <Canvas camera={{ position: [0, 0, 0], fov: 55 }} gl={{ antialias: true, alpha: true }}>
+      <Canvas
+        camera={{ position: [0, 0, 0], fov: 55 }}
+        gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
+        dpr={[1, 1.5]}
+        performance={{ min: 0.5 }}
+        onCreated={({ gl }) => {
+          gl.domElement.addEventListener('webglcontextlost', (e) => {
+            e.preventDefault();
+          });
+          gl.domElement.addEventListener('webglcontextrestored', () => {
+            gl.setSize(gl.domElement.clientWidth, gl.domElement.clientHeight);
+          });
+        }}
+      >
         <GalleryScene images={images} speed={speed} visibleCount={visibleCount} fadeSettings={fadeSettings} blurSettings={blurSettings} />
       </Canvas>
     </div>
