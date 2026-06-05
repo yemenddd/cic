@@ -8,12 +8,14 @@ import { SplineScene } from '@/components/ui/splite';
 import { Spotlight } from '@/components/ui/spotlight';
 import dynamic from 'next/dynamic';
 import { useLang } from '@/lib/i18n';
+import { useRouter } from 'next/navigation';
 
 // Lazy-load canvas wave — only used on mobile, no need to block initial paint
 const HeroWave = dynamic(() => import('@/components/ui/hero-wave'), { ssr: false });
 
 export default function Hero() {
   const { t, dir, lang } = useLang();
+  const router = useRouter();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isDesktop, setIsDesktop] = useState(true);
 
@@ -261,6 +263,7 @@ export default function Hero() {
                 <Button
                   size={SIZE.large}
                   kind={KIND.tertiary}
+                  onClick={() => router.push('/program')}
                   overrides={{
                     BaseButton: {
                       style: {
