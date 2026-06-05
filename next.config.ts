@@ -6,7 +6,7 @@ const ContentSecurityPolicy = `
   style-src 'self' 'unsafe-inline';
   img-src 'self' data: https://img.youtube.com;
   frame-src https://www.youtube.com;
-  connect-src 'self' https://prod.spline.design https://*.spline.design;
+  connect-src 'self' https://prod.spline.design https://*.spline.design https://unpkg.com;
   font-src 'self';
   object-src 'none';
   base-uri 'self';

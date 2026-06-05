@@ -45,7 +45,7 @@ function YouTubePlayer({ youtubeId }: { youtubeId: string }) {
           className="w-full h-full"
           src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`}
           allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-          sandbox="allow-scripts allow-same-origin allow-presentation allow-fullscreen"
+          sandbox="allow-scripts allow-same-origin allow-presentation"
           allowFullScreen
           style={{ border: "none" }}
         />
