@@ -40,21 +40,20 @@ export default function Partners() {
       </div>
 
       {/* Infinite slider — logo lockups */}
-      <div className="relative mt-12 h-[160px] md:h-[220px] lg:h-[280px] z-10">
+      <div className="relative mt-12 h-[160px] md:h-[220px] lg:h-[280px] z-40">
         <InfiniteSlider className="flex h-full w-full items-center" duration={45} gap={100}>
           {partners.map((src, idx) => (
             <div
               key={idx}
               dir="ltr"
-              className="group flex items-center justify-center whitespace-nowrap select-none transition-opacity duration-300"
-              style={{ opacity: 0.55 }}
+              className="group flex items-center justify-center whitespace-nowrap select-none transition-all duration-300"
+              style={{ opacity: 0.9 }}
               onMouseEnter={(e) => ((e.currentTarget as HTMLDivElement).style.opacity = '1')}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.opacity = '0.55')}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.opacity = '0.9')}
             >
               <img 
                 src={src} 
                 alt={`Sponsor ${idx + 1}`} 
-                loading="lazy"
                 decoding="async"
                 className="h-28 md:h-40 lg:h-[200px] w-auto object-contain transition-transform duration-300 group-hover:scale-105"
               />
