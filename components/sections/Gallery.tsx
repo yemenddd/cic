@@ -83,7 +83,7 @@ export default function Gallery() {
       <audio ref={audioRef} src="/music/gallery.m4a" loop />
 
       {/* Audio Toggle Button */}
-      <div className={`fixed bottom-8 z-50 ${isRtl ? 'left-6' : 'right-6'}`}>
+      <div className={`absolute top-28 z-30 ${isRtl ? 'left-6' : 'right-6'}`}>
         <motion.button
           onClick={toggleAudio}
           aria-label="Toggle music"
