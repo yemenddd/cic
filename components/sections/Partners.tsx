@@ -17,7 +17,8 @@ const partners = [
   '/images/sponsors/8.png',
   '/images/sponsors/9.png',
   '/images/sponsors/10.png',
-];
+// Duplicate the array to ensure it's wide enough for any screen to prevent cutting
+const duplicatedPartners = [...partners, ...partners, ...partners];
 
 export default function Partners() {
   const { t } = useLang();
@@ -40,23 +41,23 @@ export default function Partners() {
       </div>
 
       {/* Infinite slider — logo lockups */}
-      <div className="relative mt-12 h-[64px] z-10">
-        <InfiniteSlider className="flex h-full w-full items-center" duration={35} gap={56}>
-          {partners.map((src, idx) => (
+      <div className="relative mt-12 h-[80px] md:h-[120px] z-10">
+        <InfiniteSlider className="flex h-full w-full items-center" duration={60} gap={64}>
+          {duplicatedPartners.map((src, idx) => (
             <div
               key={idx}
               dir="ltr"
               className="group flex items-center justify-center whitespace-nowrap select-none transition-opacity duration-300"
-              style={{ opacity: 0.55 }}
+              style={{ opacity: 0.65 }}
               onMouseEnter={(e) => ((e.currentTarget as HTMLDivElement).style.opacity = '1')}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.opacity = '0.55')}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.opacity = '0.65')}
             >
               <img 
                 src={src} 
                 alt={`Sponsor ${idx + 1}`} 
                 loading="lazy"
                 decoding="async"
-                className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                className="h-16 md:h-24 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                 style={{ filter: 'brightness(0) invert(1)' }} /* Makes them all white if they are dark logos, optional but good for dark theme */
               />
             </div>
