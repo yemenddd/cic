@@ -60,7 +60,6 @@ export default function Partners() {
                 loading="lazy"
                 decoding="async"
                 className="h-16 md:h-24 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                style={{ filter: 'brightness(0) invert(1)' }} /* Makes them all white if they are dark logos, optional but good for dark theme */
               />
             </div>
           ))}
