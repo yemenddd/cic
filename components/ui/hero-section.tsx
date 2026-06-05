@@ -5,6 +5,7 @@ import { motion, useScroll, useMotionValueEvent, useTransform } from 'framer-mot
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLang } from '@/lib/i18n';
+import Link from 'next/link';
 
 export interface FinancialHeroProps {
   titleLine1: string;
@@ -111,7 +112,7 @@ export const FinancialHero = ({
             </motion.div>
 
             <motion.div className={cn('mt-2', isRtl && 'w-full text-right')} {...reveal(0.38)}>
-              <a
+              <Link
                 href={buttonLink}
                 dir={isRtl ? 'rtl' : 'ltr'}
                 className="inline-flex items-center gap-2 text-sm font-semibold group bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
@@ -139,7 +140,7 @@ export const FinancialHero = ({
                     </motion.div>
                   </>
                 )}
-              </a>
+              </Link>
             </motion.div>
           </div>
 
