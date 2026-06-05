@@ -97,14 +97,6 @@ export default function Header() {
                       transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                     />
                   )}
-                  {active && (
-                    <motion.span
-                      layoutId="nav-active"
-                      className="absolute inset-0 rounded-full"
-                      style={{ background: 'rgba(255,255,255,0.10)' }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                    />
-                  )}
                   <span className="relative z-10">{t(`nav.${link.key}`)}</span>
                   {active && (
                     <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500" />
