@@ -7,14 +7,16 @@ import { useLang } from '@/lib/i18n';
 import { motion } from 'framer-motion';
 
 const partners = [
-  { name: 'TECHNO YEMEN',      initials: 'TY', color: '#0078D4' },
-  { name: 'INNOVA LABS',       initials: 'IL', color: '#038387' },
-  { name: 'SANA’A UNIVERSITY', initials: 'SU', color: '#8764B8' },
-  { name: 'FUTURE FUND',       initials: 'FF', color: '#C19C00' },
-  { name: 'ROBOTICS CO.',      initials: 'RC', color: '#0078D4' },
-  { name: 'DELTA VENTURES',    initials: 'DV', color: '#038387' },
-  { name: 'NEXUS AI',          initials: 'NA', color: '#8764B8' },
-  { name: 'ATLAS GROUP',       initials: 'AG', color: '#C19C00' },
+  '/images/sponsors/1.png',
+  '/images/sponsors/2.png',
+  '/images/sponsors/3.png',
+  '/images/sponsors/4.png',
+  '/images/sponsors/5.png',
+  '/images/sponsors/6.png',
+  '/images/sponsors/7.png',
+  '/images/sponsors/8.png',
+  '/images/sponsors/9.png',
+  '/images/sponsors/10.png',
 ];
 
 export default function Partners() {
@@ -40,30 +42,23 @@ export default function Partners() {
       {/* Infinite slider — logo lockups */}
       <div className="relative mt-12 h-[64px] z-10">
         <InfiniteSlider className="flex h-full w-full items-center" duration={35} gap={56}>
-          {partners.map((p) => (
+          {partners.map((src, idx) => (
             <div
-              key={p.name}
+              key={idx}
               dir="ltr"
-              className="group flex items-center gap-3 whitespace-nowrap select-none transition-opacity duration-300"
+              className="group flex items-center justify-center whitespace-nowrap select-none transition-opacity duration-300"
               style={{ opacity: 0.55 }}
               onMouseEnter={(e) => ((e.currentTarget as HTMLDivElement).style.opacity = '1')}
               onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.opacity = '0.55')}
             >
-              {/* Monogram badge */}
-              <div
-                className="flex items-center justify-center w-10 h-10 rounded-xl font-outfit font-bold text-sm shrink-0"
-                style={{
-                  background: `${p.color}1f`,
-                  border: `1px solid ${p.color}40`,
-                  color: p.color,
-                }}
-              >
-                {p.initials}
-              </div>
-              {/* Wordmark */}
-              <span className="font-outfit font-semibold text-lg tracking-tight text-white/70">
-                {p.name}
-              </span>
+              <img 
+                src={src} 
+                alt={`Sponsor ${idx + 1}`} 
+                loading="lazy"
+                decoding="async"
+                className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                style={{ filter: 'brightness(0) invert(1)' }} /* Makes them all white if they are dark logos, optional but good for dark theme */
+              />
             </div>
           ))}
         </InfiniteSlider>
