@@ -109,8 +109,8 @@ export default function Hero() {
           <div className="absolute inset-0 bg-[#030712]/40" />
         </div>
 
-        {/* ── Robot — desktop only, drifts right + scales on scroll ── */}
-        <motion.div className="hidden md:block absolute inset-0 z-10" style={{ x: robotX, scale: robotScale }}>
+        {/* ── Robot — desktop only, not mounted on mobile to avoid WebGL 0×0 errors ── */}
+        {isDesktop && <motion.div className="absolute inset-0 z-10" style={{ x: robotX, scale: robotScale }}>
           <motion.div
             className="w-full h-full"
             initial={{ opacity: 0, scale: 1.06 }}
@@ -123,7 +123,7 @@ export default function Hero() {
               className="w-full h-full"
             />
           </motion.div>
-        </motion.div>
+        </motion.div>}
 
         {/* ── Text panel ── */}
         <div className="absolute inset-0 z-30 flex items-center pointer-events-none">
