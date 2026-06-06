@@ -432,26 +432,26 @@ function StatsSection() {
 
           <motion.div
             ref={statsRef}
-            className="flex flex-wrap items-center justify-center gap-0"
+            className="grid grid-cols-4 w-full"
             initial={{ opacity: 0, y: 20 }}
             animate={p >= 0.28 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             {stats.map((stat, i) => (
               <div key={stat.label} className="flex items-center">
-                <div className="flex flex-col items-center gap-3 px-10 py-2">
+                <div className="flex flex-col items-center gap-3 px-4 py-2 w-full">
                   <span
                     className="font-outfit font-black tabular-nums leading-none text-white"
-                    style={{ fontSize: 'clamp(2.8rem, 5vw, 4.2rem)' }}
+                    style={{ fontSize: 'clamp(2.2rem, 4vw, 4.2rem)' }}
                   >
                     <Counter target={stat.target} suffix={stat.suffix} visible={inView} />
                   </span>
-                  <span className="text-xl text-white/50 tracking-[0.08em] uppercase font-medium">
+                  <span className="text-base sm:text-lg text-white/50 tracking-[0.06em] uppercase font-medium text-center">
                     {stat.label}
                   </span>
                 </div>
                 {i < stats.length - 1 && (
-                  <div className="w-px h-10 bg-white/10 hidden sm:block" />
+                  <div className="w-px h-10 bg-white/10 shrink-0" />
                 )}
               </div>
             ))}
