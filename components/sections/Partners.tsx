@@ -49,7 +49,7 @@ export default function Partners() {
               alt={p.alt}
               loading="lazy"
               decoding="async"
-              className="h-12 w-auto max-w-[140px] object-contain select-none transition-all duration-300 grayscale opacity-50 hover:grayscale-0 hover:opacity-100"
+              className="h-12 w-auto max-w-[140px] object-contain select-none transition-opacity duration-300 opacity-80 hover:opacity-100"
             />
           ))}
         </InfiniteSlider>
