@@ -4,7 +4,6 @@ import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useMotionValueEvent, useTransform } from 'framer-motion';
 import { Lightbulb, FlaskConical, Users, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useLang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 /* ─── Animated counter — resets and replays every time it enters view ─── */
@@ -422,8 +421,8 @@ function StatsSection() {
         <div className="relative z-10 max-w-4xl mx-auto px-6 w-full text-center" dir="rtl">
 
           {/* Headline */}
-          <h2 className="font-outfit font-bold leading-[0.9] tracking-tight mb-20"
-            style={{ fontSize: 'clamp(3.5rem, 7vw, 7rem)' }}>
+          <h2 className="font-outfit font-bold leading-[0.9] tracking-tight mb-16"
+            style={{ fontSize: 'clamp(2.6rem, 5vw, 4.5rem)' }}>
             <motion.span className="block text-white" {...revealWord(0.10)}>
               أربع سنوات من
             </motion.span>
@@ -449,11 +448,11 @@ function StatsSection() {
                 <div className="flex flex-col items-center gap-3 px-10 py-2">
                   <span
                     className="font-outfit font-black tabular-nums leading-none text-white"
-                    style={{ fontSize: 'clamp(3.5rem, 6vw, 6rem)' }}
+                    style={{ fontSize: 'clamp(2.8rem, 5vw, 4.2rem)' }}
                   >
                     <Counter target={stat.target} suffix={stat.suffix} visible={inView} />
                   </span>
-                  <span className="text-[13px] text-white/40 tracking-[0.18em] uppercase font-medium">
+                  <span className="text-xl text-white/50 tracking-[0.08em] uppercase font-medium">
                     {stat.label}
                   </span>
                 </div>
@@ -497,7 +496,7 @@ const PILLARS = [
 ];
 
 function ValuesSection() {
-  const { ref, p, reveal, revealWord } = useSection();
+  const { ref, p, revealWord } = useSection();
   return (
     <div ref={ref} className="relative h-[130vh]">
       <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden bg-black">
