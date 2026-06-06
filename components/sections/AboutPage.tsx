@@ -421,16 +421,6 @@ function StatsSection() {
 
         <div className="relative z-10 max-w-4xl mx-auto px-6 w-full text-center" dir="rtl">
 
-          {/* Eyebrow */}
-          <motion.span
-            className="inline-block text-[11px] font-semibold uppercase tracking-[0.28em] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent mb-8"
-            initial={{ opacity: 0, y: 12 }}
-            animate={p >= 0.05 ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: 0.5 }}
-          >
-            منذ ٢٠٢٣
-          </motion.span>
-
           {/* Headline */}
           <h2 className="font-outfit font-bold leading-[0.9] tracking-tight mb-16"
             style={{ fontSize: 'clamp(2.6rem, 5vw, 4.5rem)' }}>
