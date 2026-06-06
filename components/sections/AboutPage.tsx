@@ -22,7 +22,7 @@ function Counter({ target, suffix = '', prefix = '', visible }: { target: number
     }, 16);
     return () => clearInterval(id);
   }, [visible, target]);
-  return <>{prefix}{count.toLocaleString('ar-EG')}{suffix}</>;
+  return <>{prefix}{count.toLocaleString('en-US')}{suffix}</>;
 }
 
 /* ─── Section scroll hook ─── */
@@ -392,46 +392,29 @@ const STATS = [
   { label: 'مسار متخصص', target: 4, suffix: '', color: '#a78bfa', colorB: '#8b5cf6' },
 ];
 
-function StatCard({ stat, visible }: { stat: typeof STATS[0]; visible: boolean }) {
+function StatCard({ stat, visible, index }: { stat: typeof STATS[0]; visible: boolean; index: number }) {
   return (
     <motion.div
-      className="relative rounded-2xl overflow-hidden flex flex-col justify-between p-6 lg:p-7 min-h-[160px]"
-      style={{ background: 'rgba(255,255,255,0.025)', border: `1px solid ${stat.color}22` }}
-      initial={{ opacity: 0, scale: 0.94, y: 20 }}
-      animate={visible ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.94, y: 20 }}
-      transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+      className="flex flex-col gap-4 p-6 rounded-2xl"
+      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+      initial={{ opacity: 0, y: 24 }}
+      animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+      transition={{ duration: 0.6, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Inner micro-grid */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(to right,rgba(255,255,255,0.025) 1px,transparent 1px)',
-        backgroundSize: '1.5rem 1.5rem',
-      }} />
+      {/* Thin colored accent line */}
+      <div className="h-px w-10 rounded-full" style={{ background: stat.color }} />
 
-      {/* Top gradient accent bar */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl"
-        style={{ background: `linear-gradient(to right, ${stat.color}, ${stat.colorB})` }} />
-
-      {/* Corner glow */}
-      <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full blur-3xl pointer-events-none"
-        style={{ background: stat.color, opacity: 0.06, transform: 'translate(-30%,30%)' }} />
-
-      {/* Label */}
-      <span className="relative z-10 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/35">
-        {stat.label}
-      </span>
-
-      {/* Big gradient number */}
+      {/* Number */}
       <span
-        className="relative z-10 font-outfit font-black tabular-nums leading-none"
-        style={{
-          fontSize: 'clamp(3rem, 5.5vw, 5.5rem)',
-          background: `linear-gradient(135deg, #fff 30%, ${stat.color})`,
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-        }}
+        className="font-outfit font-black tabular-nums leading-none text-white"
+        style={{ fontSize: 'clamp(2.8rem, 4.5vw, 4.5rem)' }}
       >
         <Counter target={stat.target} suffix={stat.suffix} visible={visible} />
+      </span>
+
+      {/* Label */}
+      <span className="text-[12px] text-white/40 tracking-[0.14em] uppercase font-medium">
+        {stat.label}
       </span>
     </motion.div>
   );
@@ -488,7 +471,7 @@ function StatsSection() {
             {/* RIGHT: 2x2 bento cards */}
             <div className="w-[55%] grid grid-cols-2 gap-3">
               {STATS.map((stat, i) => (
-                <StatCard key={stat.label} stat={stat} visible={p >= 0.26 + i * 0.08} />
+                <StatCard key={stat.label} stat={stat} visible={p >= 0.26 + i * 0.06} index={i} />
               ))}
             </div>
 
