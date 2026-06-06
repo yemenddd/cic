@@ -54,10 +54,10 @@ export default function Footer() {
       logo={C4Logo}
       brandName={t("footer.copyright")}
       socialLinks={[
-        { icon: <FacebookIcon className="h-5 w-5" />, href: "#", label: "Facebook" },
-        { icon: <InstagramIcon className="h-5 w-5" />, href: "#", label: "Instagram" },
-        { icon: <YoutubeIcon className="h-5 w-5" />, href: "#", label: "YouTube" },
-        { icon: <XIcon className="h-5 w-5" />, href: "#", label: "X" },
+        { icon: <FacebookIcon className="h-5 w-5" />, href: "https://www.facebook.com/yemenddd", label: "Facebook" },
+        { icon: <InstagramIcon className="h-5 w-5" />, href: "https://www.instagram.com/yemen.ddd", label: "Instagram" },
+        { icon: <YoutubeIcon className="h-5 w-5" />, href: "https://www.youtube.com/channel/UCwnyiuNKFCSQpvk50-m1sWg", label: "YouTube" },
+        { icon: <XIcon className="h-5 w-5" />, href: "https://x.com/yemenddd", label: "X" },
       ]}
       mainLinks={[
         { href: "/", label: t("nav.home") },
