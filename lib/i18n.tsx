@@ -30,12 +30,12 @@ function resolve(lang: Lang, key: string): unknown {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  // Arabic is the official / default language
-  const [lang, setLangState] = useState<Lang>('ar');
+  // Turkish is the default language
+  const [lang, setLangState] = useState<Lang>('tr');
 
   useEffect(() => {
     const saved = (typeof window !== 'undefined' && localStorage.getItem('cict-lang')) as Lang | null;
-    if (saved === 'ar' || saved === 'en') setLangState(saved);
+    if (saved === 'ar' || saved === 'en' || saved === 'tr') setLangState(saved);
   }, []);
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     lang,
     dir: lang === 'ar' ? 'rtl' : 'ltr',
     setLang: setLangState,
-    toggle: () => setLangState((l) => (l === 'ar' ? 'en' : 'ar')),
+    toggle: () => setLangState((l) => (l === 'tr' ? 'en' : l === 'en' ? 'ar' : 'tr')),
     t,
     tx,
   };

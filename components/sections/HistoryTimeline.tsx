@@ -407,7 +407,7 @@ export default function HistoryTimeline() {
                 animate={progress >= 0.97 ? { opacity: 1 } : { opacity: 0 }}
                 transition={{ duration: 0.6, delay: 0.65 }}
               >
-                {isRtl ? 'الفصل الأكثر طموحاً حتى الآن.' : 'Our most ambitious edition yet.'}
+                {t('history.ambition')}
               </motion.p>
 
               <motion.div
