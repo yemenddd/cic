@@ -30,8 +30,8 @@ function resolve(lang: Lang, key: string): unknown {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  // Turkish is the default language
-  const [lang, setLangState] = useState<Lang>('tr');
+  // Arabic is the official / default language
+  const [lang, setLangState] = useState<Lang>('ar');
 
   useEffect(() => {
     const saved = (typeof window !== 'undefined' && localStorage.getItem('cict-lang')) as Lang | null;
