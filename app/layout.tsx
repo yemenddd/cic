@@ -35,6 +35,12 @@ export const metadata: Metadata = {
   title: "CICT 2026 | مؤتمر الإبداع والابتكار الرابع",
   description:
     "انضم إلينا في مؤتمر الإبداع والابتكار الرابع يومي ١٥–١٦ أغسطس ٢٠٢٦. اكتشف مستقبل الابتكار.",
+  icons: {
+    icon: [
+      { url: "/images/logos/logo_colored.png", media: "(prefers-color-scheme: light)" },
+      { url: "/icon.png", media: "(prefers-color-scheme: dark)" },
+    ],
+  },
 };
 
 export default function RootLayout({
