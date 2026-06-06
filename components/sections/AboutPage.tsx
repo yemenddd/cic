@@ -7,20 +7,23 @@ import Link from 'next/link';
 import { useLang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
-/* ─── Animated counter ─── */
+/* ─── Animated counter — resets and replays every time it enters view ─── */
 function Counter({ target, suffix = '', prefix = '', visible }: { target: number; suffix?: string; prefix?: string; visible: boolean }) {
   const [count, setCount] = useState(0);
   useEffect(() => {
     if (!visible) { setCount(0); return; }
-    const duration = 1600;
-    const start = Date.now();
-    const id = setInterval(() => {
-      const t = Math.min((Date.now() - start) / duration, 1);
+    const duration = 2000;
+    const start = performance.now();
+    let id: number;
+    const step = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
       const eased = 1 - Math.pow(1 - t, 3);
       setCount(Math.floor(eased * target));
-      if (t >= 1) clearInterval(id);
-    }, 16);
-    return () => clearInterval(id);
+      if (t < 1) id = requestAnimationFrame(step);
+      else setCount(target);
+    };
+    id = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(id);
   }, [visible, target]);
   return <>{prefix}{count.toLocaleString('en-US')}{suffix}</>;
 }
@@ -392,90 +395,87 @@ const STATS = [
   { label: 'مسار متخصص', target: 4, suffix: '', color: '#a78bfa', colorB: '#8b5cf6' },
 ];
 
-function StatCard({ stat, visible, index }: { stat: typeof STATS[0]; visible: boolean; index: number }) {
-  return (
-    <motion.div
-      className="flex flex-col gap-4 p-6 rounded-2xl"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
-      initial={{ opacity: 0, y: 24 }}
-      animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-      transition={{ duration: 0.6, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
-    >
-      {/* Thin colored accent line */}
-      <div className="h-px w-10 rounded-full" style={{ background: stat.color }} />
-
-      {/* Number */}
-      <span
-        className="font-outfit font-black tabular-nums leading-none text-white"
-        style={{ fontSize: 'clamp(2.8rem, 4.5vw, 4.5rem)' }}
-      >
-        <Counter target={stat.target} suffix={stat.suffix} visible={visible} />
-      </span>
-
-      {/* Label */}
-      <span className="text-[12px] text-white/40 tracking-[0.14em] uppercase font-medium">
-        {stat.label}
-      </span>
-    </motion.div>
-  );
-}
-
 function StatsSection() {
   const { ref, p, revealWord } = useSection();
+  const statsRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = statsRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.4 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div ref={ref} className="relative h-[130vh]">
-      <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden bg-[#030712]">
+    <div ref={ref} className="relative h-[150vh]">
+      <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-[#030712]">
         <Grid />
 
-        {/* Ambient glow */}
-        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(96,165,250,0.05) 0%, transparent 70%)' }} />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full"
+          style={{ background: 'radial-gradient(ellipse, rgba(96,165,250,0.04) 0%, transparent 70%)' }} />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full" dir="ltr">
-          <div className="flex items-center gap-16 lg:gap-24">
+        <div className="relative z-10 max-w-4xl mx-auto px-6 w-full text-center" dir="rtl">
 
-            {/* LEFT: title */}
-            <div className="flex-1 shrink-0" dir="rtl">
-              <motion.span
-                className="inline-block py-[0.1em] text-[11px] font-semibold uppercase tracking-[0.28em] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent mb-6"
-                initial={{ opacity: 0, y: 16 }}
-                animate={p >= 0.05 ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-                transition={{ duration: 0.5 }}
-              >
-                منذ ٢٠٢٣
-              </motion.span>
+          {/* Eyebrow */}
+          <motion.span
+            className="inline-block text-[11px] font-semibold uppercase tracking-[0.28em] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent mb-8"
+            initial={{ opacity: 0, y: 12 }}
+            animate={p >= 0.05 ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+            transition={{ duration: 0.5 }}
+          >
+            منذ ٢٠٢٣
+          </motion.span>
 
-              <h2 className="font-outfit font-bold leading-[0.9] tracking-tight"
-                style={{ fontSize: 'clamp(2.4rem, 4vw, 4rem)' }}>
-                <motion.span className="block text-white" {...revealWord(0.10)}>
-                  أربع سنوات من
-                </motion.span>
-                <motion.span
-                  className="block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
-                  {...revealWord(0.17)}
-                >
-                  الأثر الحقيقي.
-                </motion.span>
-              </h2>
+          {/* Headline */}
+          <h2 className="font-outfit font-bold leading-[0.9] tracking-tight mb-16"
+            style={{ fontSize: 'clamp(2.6rem, 5vw, 4.5rem)' }}>
+            <motion.span className="block text-white" {...revealWord(0.10)}>
+              أربع سنوات من
+            </motion.span>
+            <motion.span
+              className="block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
+              {...revealWord(0.17)}
+            >
+              الأثر الحقيقي.
+            </motion.span>
+          </h2>
 
-              <motion.p
-                className="mt-6 text-[14px] text-white/40 leading-relaxed max-w-xs"
-                initial={{ opacity: 0, y: 16 }}
-                animate={p >= 0.28 ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-                transition={{ duration: 0.5 }}
-              >
-                أرقام تحكي قصة مؤتمر نما من حفل افتتاح إلى منصة وطنية.
-              </motion.p>
-            </div>
+          {/* Stats row */}
+          <motion.div
+            ref={statsRef}
+            className="flex flex-wrap items-center justify-center gap-0"
+            initial={{ opacity: 0, y: 20 }}
+            animate={p >= 0.28 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {STATS.map((stat, i) => (
+              <div key={stat.label} className="flex items-center">
+                {/* Stat item */}
+                <div className="flex flex-col items-center gap-3 px-10 py-2">
+                  <span
+                    className="font-outfit font-black tabular-nums leading-none text-white"
+                    style={{ fontSize: 'clamp(2.8rem, 5vw, 4.2rem)' }}
+                  >
+                    <Counter target={stat.target} suffix={stat.suffix} visible={inView} />
+                  </span>
+                  <span className="text-[11px] text-white/40 tracking-[0.18em] uppercase font-medium">
+                    {stat.label}
+                  </span>
+                </div>
 
-            {/* RIGHT: 2x2 bento cards */}
-            <div className="w-[55%] grid grid-cols-2 gap-3">
-              {STATS.map((stat, i) => (
-                <StatCard key={stat.label} stat={stat} visible={p >= 0.26 + i * 0.06} index={i} />
-              ))}
-            </div>
+                {/* Divider — hidden after last item */}
+                {i < STATS.length - 1 && (
+                  <div className="w-px h-10 bg-white/10 hidden sm:block" />
+                )}
+              </div>
+            ))}
+          </motion.div>
 
-          </div>
         </div>
       </div>
     </div>
