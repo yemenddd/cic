@@ -422,8 +422,8 @@ function StatsSection() {
         <div className="relative z-10 max-w-4xl mx-auto px-6 w-full text-center" dir="rtl">
 
           {/* Headline */}
-          <h2 className="font-outfit font-bold leading-[0.9] tracking-tight mb-16"
-            style={{ fontSize: 'clamp(2.6rem, 5vw, 4.5rem)' }}>
+          <h2 className="font-outfit font-bold leading-[0.9] tracking-tight mb-20"
+            style={{ fontSize: 'clamp(3.5rem, 7vw, 7rem)' }}>
             <motion.span className="block text-white" {...revealWord(0.10)}>
               أربع سنوات من
             </motion.span>
@@ -449,11 +449,11 @@ function StatsSection() {
                 <div className="flex flex-col items-center gap-3 px-10 py-2">
                   <span
                     className="font-outfit font-black tabular-nums leading-none text-white"
-                    style={{ fontSize: 'clamp(2.8rem, 5vw, 4.2rem)' }}
+                    style={{ fontSize: 'clamp(3.5rem, 6vw, 6rem)' }}
                   >
                     <Counter target={stat.target} suffix={stat.suffix} visible={inView} />
                   </span>
-                  <span className="text-[11px] text-white/40 tracking-[0.18em] uppercase font-medium">
+                  <span className="text-[13px] text-white/40 tracking-[0.18em] uppercase font-medium">
                     {stat.label}
                   </span>
                 </div>
