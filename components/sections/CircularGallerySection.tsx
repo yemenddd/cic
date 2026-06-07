@@ -91,7 +91,6 @@ export default function CircularGallerySection() {
     : lang === 'tr'
     ? 'Üç baskıdan konferans anlarını keşfetmek için aşağı kaydırın.'
     : 'Scroll down to explore conference moments across three editions.';
-  const hint = lang === 'ar' ? '↓ مرّر للتدوير' : lang === 'tr' ? '↓ Döndürmek için kaydır' : '↓ Scroll to rotate';
 
   return (
     // Outer: tall container that provides the scroll space (300vh)
@@ -138,15 +137,6 @@ export default function CircularGallerySection() {
           />
         </div>
 
-        {/* Scroll hint — visible only at the very start */}
-        <motion.div
-          style={{ opacity: useTransform(scrollYProgress, [0, 0.08], [1, 0]) }}
-          className="absolute bottom-10 inset-x-0 flex justify-center pointer-events-none"
-        >
-          <span className="animate-bounce text-xs font-medium tracking-widest text-white/30">
-            {hint}
-          </span>
-        </motion.div>
 
         {/* Bottom edge fade into next section */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32"
