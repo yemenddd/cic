@@ -110,7 +110,7 @@ export default function CircularGallerySection() {
         {/* Section heading — fades in then out */}
         <motion.div
           style={{ opacity: headingOpacity, y: headingY }}
-          className="absolute inset-x-0 top-24 md:top-44 z-20 text-center px-6 pointer-events-none"
+          className="absolute inset-x-0 top-28 md:top-44 z-20 text-center px-6 pointer-events-none"
           dir={isRtl ? 'rtl' : 'ltr'}
         >
           <h2 className="text-4xl font-black text-white sm:text-5xl leading-tight">
