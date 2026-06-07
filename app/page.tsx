@@ -5,8 +5,9 @@ import HorizontalGallery from "@/components/sections/HorizontalGallery";
 import Speakers from "@/components/sections/Speakers";
 import Program from "@/components/sections/Program";
 import ScrollGallery from "@/components/sections/ScrollGallery";
+import GalleryRegisterHero from "@/components/sections/GalleryRegisterHero";
 import Partners from "@/components/sections/Partners";
-import WordHero from "@/components/sections/WordHero";
+import RegisterCTA from "@/components/sections/RegisterCTA";
 
 export default function Home() {
   return (
@@ -29,11 +30,14 @@ export default function Home() {
       {/* 05 · Program streams — Fluent light */}
       <Program />
 
-      {/* 06 · Scroll gallery — Fluent light */}
+      {/* 06 · Gallery register hero — dark, arc animation */}
+      <GalleryRegisterHero />
+
+      {/* 07 · Scroll gallery — Fluent light */}
       <ScrollGallery />
 
-      {/* 07 · Word cycling hero CTA — sticky scroll, register */}
-      <WordHero />
+      {/* 07 · Final register CTA — dark, countdown + email */}
+      <RegisterCTA />
 
       {/* 08 · Partners & sponsors — dark */}
       <Partners />
