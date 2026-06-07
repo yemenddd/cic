@@ -1,14 +1,34 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useMotionValueEvent, useTransform } from 'framer-motion';
-import { Lightbulb, FlaskConical, Users, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useLang } from '@/lib/i18n';
 import CircularGallerySection from '@/components/sections/CircularGallerySection';
-import DotCard from '@/components/ui/dot-card';
+import WordHero from '@/components/sections/WordHero';
 
+/* ─── Animated counter — resets and replays every time it enters view ─── */
+function Counter({ target, suffix = '', prefix = '', visible }: { target: number; suffix?: string; prefix?: string; visible: boolean }) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!visible) { setCount(0); return; }
+    const duration = 2000;
+    const start = performance.now();
+    let id: number;
+    const step = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setCount(Math.floor(eased * target));
+      if (t < 1) id = requestAnimationFrame(step);
+      else setCount(target);
+    };
+    id = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(id);
+  }, [visible, target]);
+  return <>{prefix}{count.toLocaleString('en-US')}{suffix}</>;
+}
 
 /* ─── Section scroll hook ─── */
 function useSection() {
@@ -84,8 +104,6 @@ const Grid = () => (
   }} />
 );
 
-const PILLAR_ICONS = [Lightbulb, FlaskConical, Users];
-const PILLAR_COLORS = ['#67e8f9', '#818cf8', '#a78bfa'];
 
 const STAT_META = [
   { target: 4,    suffix: '',  color: '#67e8f9', colorB: '#3b82f6' },
@@ -373,6 +391,18 @@ function StatsSection() {
   const { ref, p, revealWord } = useSection();
   const { t, tx, dir } = useLang();
   const statsRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = statsRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.4 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const statLabels = tx<{ label: string }[]>('about.statsItems');
   const stats = STAT_META.map((m, i) => ({ ...m, label: statLabels?.[i]?.label ?? '' }));
@@ -402,19 +432,28 @@ function StatsSection() {
 
           <motion.div
             ref={statsRef}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5 w-full"
+            className="grid grid-cols-1 sm:grid-cols-4 w-full gap-y-8 sm:gap-y-0"
             initial={{ opacity: 0, y: 20 }}
             animate={p >= 0.28 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
-            {stats.map((stat) => (
-              <DotCard
-                key={stat.label}
-                target={stat.target}
-                duration={2000}
-                label={stat.label}
-                suffix={stat.suffix}
-              />
+            {stats.map((stat, i) => (
+              <div key={stat.label} className="flex items-center">
+                <div className="flex flex-col items-center gap-3 px-4 py-2 w-full">
+                  <span
+                    className="font-outfit font-black tabular-nums leading-none text-white"
+                    style={{ fontSize: 'clamp(2.2rem, 4vw, 4.2rem)' }}
+                  >
+                    <Counter target={stat.target} suffix={stat.suffix} visible={inView} />
+                  </span>
+                  <span className="text-base sm:text-lg text-white/50 tracking-[0.06em] uppercase font-medium text-center">
+                    {stat.label}
+                  </span>
+                </div>
+                {i < stats.length - 1 && (
+                  <div className="hidden sm:block w-px h-10 bg-white/10 shrink-0" />
+                )}
+              </div>
             ))}
           </motion.div>
 
@@ -424,70 +463,6 @@ function StatsSection() {
   );
 }
 
-/* ─────────────────────────────────────────
-   SECTION 4 — Values / Pillars
-───────────────────────────────────────── */
-function ValuesSection() {
-  const { ref, p, revealWord } = useSection();
-  const { t, tx, dir } = useLang();
-
-  const pillarData = tx<{ title: string; body: string }[]>('about.pillars');
-  const pillars = PILLAR_ICONS.map((Icon, i) => ({
-    icon: Icon,
-    color: PILLAR_COLORS[i],
-    title: pillarData?.[i]?.title ?? '',
-    body: pillarData?.[i]?.body ?? '',
-  }));
-
-  return (
-    <div ref={ref} className="relative h-[130vh]">
-      <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden bg-black">
-        <div
-          className="pointer-events-none absolute left-1/2 bottom-0 -translate-x-1/2 w-[600px] h-[400px]"
-          style={{ background: 'radial-gradient(ellipse, rgba(139,92,246,0.08) 0%, transparent 70%)' }}
-        />
-        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full" dir={dir}>
-
-          <div className="text-center mb-14">
-            <h2 className="font-outfit font-bold leading-[0.9] tracking-tight"
-              style={{ fontSize: 'clamp(2.4rem, 5vw, 4.5rem)' }}>
-              <motion.span className="block text-white" {...revealWord(0.10)}>
-                {t('about.valsTitleA')}
-              </motion.span>
-              <motion.span
-                className="block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
-                {...revealWord(0.17)}
-              >
-                {t('about.valsTitleB')}
-              </motion.span>
-            </h2>
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-5">
-            {pillars.map((pillar, i) => (
-              <motion.div
-                key={pillar.title}
-                initial={{ opacity: 0, y: 36 }}
-                animate={{ opacity: p >= 0.26 + i * 0.08 ? 1 : 0, y: p >= 0.26 + i * 0.08 ? 0 : 36 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="rounded-2xl p-7 flex flex-col"
-                style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
-              >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-6"
-                  style={{ background: `${pillar.color}18` }}>
-                  <pillar.icon size={20} style={{ color: pillar.color }} />
-                </div>
-                <h3 className="font-outfit font-bold text-white text-2xl mb-3">{pillar.title}</h3>
-                <p className="text-[15px] text-white/50 leading-relaxed flex-1">{pillar.body}</p>
-              </motion.div>
-            ))}
-          </div>
-
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ─────────────────────────────────────────
    PAGE EXPORT
@@ -500,7 +475,7 @@ export default function AboutPage() {
       <PresidentSection />
       <StatsSection />
       <CircularGallerySection />
-      <ValuesSection />
+      <WordHero />
     </main>
   );
 }

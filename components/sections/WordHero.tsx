@@ -1,263 +1,319 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
 
-// ── Cycling words per language ────────────────────────────────────────────────
+// ── Cycling words per language ───────────────────────────────────────────────
 const WORDS = {
-  ar: ['ابتكر.', 'أبدع.', 'اكتشف.', 'ابنِ.', 'طوِّر.', 'تعلَّم.', 'تواصل.', 'أثِّر.', 'سجِّل.'],
-  en: ['innovate.', 'create.', 'discover.', 'build.', 'develop.', 'learn.', 'connect.', 'impact.', 'register.'],
-  tr: ['yenile.', 'yarat.', 'keşfet.', 'inşa et.', 'geliştir.', 'öğren.', 'bağlan.', 'etki et.', 'kaydol.'],
-} as const;
-
-const STATIC = { ar: 'يمكنك أن', en: 'you can', tr: 'yapabilirsin' };
-
-const TAGLINE = {
-  ar: { a: 'ونحن سنريك كيف.', b: 'انضم إلى مؤتمر الإبداع والابتكار ٢٠٢٦ — وكن جزءاً من حركة التغيير.' },
-  en: { a: "and we'll show you how.", b: 'Join the Creativity & Innovation Conference 2026 — be part of the movement.' },
-  tr: { a: 've biz size nasıl yapacağınızı göstereceğiz.', b: 'CICT 2026\'ya katılın — değişimin bir parçası olun.' },
+  ar: ['إبداع.', 'ابتكار.', 'روبوتات.', 'أبحاث.', 'تقنية.', 'ريادة.'],
+  en: ['Creativity.', 'Innovation.', 'Robotics.', 'Research.', 'Technology.', 'Leadership.'],
+  tr: ['Yaratıcılık.', 'İnovasyon.', 'Robotik.', 'Araştırma.', 'Teknoloji.', 'Liderlik.'],
 };
 
-const CTA = { ar: 'سجّل مقعدك الآن', en: 'Register Your Seat', tr: 'Yerinizi Kaydedin' };
-const SUB = { ar: 'المقاعد محدودة · مجاني', en: 'Limited seats · Free', tr: 'Sınırlı kontenjan · Ücretsiz' };
+// ── CTA copy per language ────────────────────────────────────────────────────
+const COPY = {
+  ar: {
+    taglineA: 'يوم التقاء العقل اليمني',
+    taglineB: 'بأدوات مستقبله.',
+    sub:      'كن جزءاً من مؤتمر الإبداع والابتكار — النسخة الرابعة. مكان واحد لكل من يؤمن بأن اليمن يستحق أكثر.',
+    primary:  'احجز مقعدك الآن',
+    secondary:'استعرض البرنامج',
+    meta:     '15-16 أغسطس 2026  ·  إسطنبول، تركيا',
+  },
+  en: {
+    taglineA: 'Where Yemeni minds',
+    taglineB: 'meet the tools of the future.',
+    sub:      'Join the 4th Creativity & Innovation Conference — two days for everyone who believes Yemen deserves more.',
+    primary:  'Reserve Your Seat',
+    secondary:'View the Program',
+    meta:     'Aug 15–16, 2026  ·  Istanbul, Turkey',
+  },
+  tr: {
+    taglineA: "Yemenli zihinlerin",
+    taglineB: 'geleceğin araçlarıyla buluştuğu yer.',
+    sub:      '4. Yaratıcılık ve İnovasyon Konferansı — Yemen\'in daha fazlasını hak ettiğine inanan herkes için iki gün.',
+    primary:  'Yerini Ayırt Şimdi',
+    secondary:'Programı İncele',
+    meta:     '15-16 Ağustos 2026  ·  İstanbul, Türkiye',
+  },
+};
 
 export default function WordHero() {
   const { lang, dir } = useLang();
   const isRtl = dir === 'rtl';
-  const l = lang as keyof typeof WORDS;
-  const words = WORDS[l] ?? WORDS.ar;
+  const words = WORDS[lang as keyof typeof WORDS] ?? WORDS.ar;
+  const c     = COPY[lang as keyof typeof COPY]   ?? COPY.ar;
   const count = words.length;
 
   return (
     <div
-      className="cict-wh"
+      className="wh-root"
       dir={isRtl ? 'rtl' : 'ltr'}
-      style={{ ['--count' as string]: count } as React.CSSProperties}
+      style={{ '--count': count } as React.CSSProperties}
     >
-      {/* ── Sticky cycling header ────────────────────────────────── */}
-      <header className="cict-wh-header">
-        <div className="cict-wh-header-inner">
-          <h1 className="cict-wh-static" aria-hidden="true">
-            {STATIC[l]}&nbsp;
-          </h1>
-          <ul className="cict-wh-list" aria-hidden="true">
+      {/* ── Sticky cycling words ──────────────────────────────────── */}
+      <header className="wh-header">
+        <section className="wh-words-wrap">
+          <ul className="wh-ul" aria-label={words.join(', ')}>
             {words.map((word, i) => (
-              <li key={i} style={{ ['--i' as string]: i } as React.CSSProperties}>
+              <li
+                key={i}
+                className="wh-li"
+                style={{ '--i': i } as React.CSSProperties}
+              >
                 {word}
               </li>
             ))}
           </ul>
-          <span className="sr-only">{STATIC[l]} {words[words.length - 1]}</span>
-        </div>
+        </section>
       </header>
 
-      {/* ── CTA main panel ───────────────────────────────────────── */}
-      <main className="cict-wh-main">
-        <section className="cict-wh-main-inner">
-          <div className="cict-wh-cta-content">
-            {/* Conference mark */}
-            <span className="cict-wh-eyebrow">CICT 2026 · إسطنبول · أغسطس ١٥-١٦</span>
+      {/* ── Registration CTA ─────────────────────────────────────── */}
+      <main className="wh-main">
+        <section className="wh-cta">
+          <div className="wh-inner" dir={isRtl ? 'rtl' : 'ltr'}>
 
-            {/* Tagline */}
-            <p className="cict-wh-tagline-a">{TAGLINE[l].a}</p>
-            <p className="cict-wh-tagline-b">{TAGLINE[l].b}</p>
-
-            {/* Register button */}
-            <div className="cict-wh-actions">
-              <Link
-                href="/register"
-                className="cict-wh-btn-primary"
-              >
-                {CTA[l]}
-                <ArrowRight
-                  className="cict-wh-btn-icon"
-                  style={{ transform: isRtl ? 'rotate(180deg)' : 'none' }}
-                />
-              </Link>
-              <p className="cict-wh-sub">{SUB[l]}</p>
+            {/* Eyebrow */}
+            <div className="wh-eyebrow">
+              <span className="wh-dot" />
+              CICT 2026
+              <span className="wh-dot" />
             </div>
+
+            {/* Headline */}
+            <h2 className="wh-headline">
+              <span className="wh-line-a">{c.taglineA}</span>
+              <span className="wh-line-b">{c.taglineB}</span>
+            </h2>
+
+            {/* Sub-text */}
+            <p className="wh-sub">{c.sub}</p>
+
+            {/* Buttons */}
+            <div className="wh-btns">
+              <Link href="/register" className="wh-btn-primary">
+                {c.primary}
+              </Link>
+              <Link href="/program" className="wh-btn-secondary">
+                {c.secondary}
+              </Link>
+            </div>
+
+            {/* Meta */}
+            <p className="wh-meta">{c.meta}</p>
           </div>
         </section>
       </main>
 
       {/* ── Scoped styles ────────────────────────────────────────── */}
       <style>{`
-        .cict-wh {
+        .wh-root {
           --start: 50vh;
-          --space: 40vh;
+          --space: 50vh;
           background: #030712;
-          width: 100%;
-          overflow: hidden;
         }
 
         /* ── Sticky header ── */
-        .cict-wh-header {
+        .wh-header {
           position: sticky;
           top: calc((var(--count) - 1) * -1lh);
-          line-height: 1.25;
-          font-size: clamp(2.4rem, 5.5vw, 5rem);
-          font-weight: 800;
+          line-height: 1.15;
+          display: flex;
+          align-items: flex-start;
           width: 100%;
           margin-bottom: var(--space);
-          background: #030712;
-          z-index: 1;
         }
 
-        .cict-wh-header-inner {
+        .wh-words-wrap {
           display: flex;
           width: 100%;
           align-items: flex-start;
           justify-content: center;
-          padding-top: calc(var(--start) - 0.55lh);
-          padding-bottom: 0;
+          padding-top: calc(var(--start) - 0.5lh);
         }
 
-        .cict-wh-static {
-          position: sticky;
-          top: calc(var(--start) - 0.55lh);
-          margin: 0;
-          color: rgba(255,255,255,0.25);
-          white-space: nowrap;
-        }
-
-        .cict-wh-list {
+        /* ── Cycling word list ── */
+        .wh-ul {
           list-style: none;
           padding: 0;
           margin: 0;
+          font-size: clamp(2.8rem, 9vw, 8rem);
+          font-weight: 900;
+          text-align: center;
+          letter-spacing: -0.02em;
         }
 
-        .cict-wh-list li {
+        .wh-li {
+          /* Gradient band: dimmed above/below, accent at --start */
           background: linear-gradient(
             180deg,
-            rgba(255,255,255,0.15) 0 calc(var(--start) - 0.55lh),
-            #06b6d4                  calc(var(--start) - 0.55lh) calc(var(--start)),
-            #a78bfa                  calc(var(--start))           calc(var(--start) + 0.55lh),
-            rgba(255,255,255,0.15) calc(var(--start) + 0.55lh)
+            rgba(255,255,255,0.1)  0 calc(var(--start) - 0.5lh),
+            #06b6d4                calc(var(--start) - 0.55lh) calc(var(--start) + 0.08lh),
+            #a78bfa                calc(var(--start) + 0.08lh) calc(var(--start) + 0.55lh),
+            rgba(255,255,255,0.1)  calc(var(--start) + 0.5lh)
           );
           background-attachment: fixed;
-          color: transparent;
           -webkit-background-clip: text;
           background-clip: text;
-          line-height: inherit;
+          color: transparent;
         }
 
-        /* ── Main CTA panel ── */
-        .cict-wh-main {
-          width: 100%;
-          min-height: 100vh;
+        /* ── CTA main section ── */
+        .wh-main {
           position: relative;
           z-index: 2;
+          width: 100%;
+          min-height: 100vh;
         }
 
-        .cict-wh-main::before {
+        .wh-main::before {
           content: '';
           position: absolute;
           inset: 0;
           z-index: -1;
           background: #030712;
-          border-radius: 1.5rem 1.5rem 0 0;
+          border-radius: 2rem 2rem 0 0;
         }
 
-        .cict-wh-main-inner {
+        .wh-cta {
           min-height: 100vh;
           width: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 5rem 1.5rem;
+          padding: 6rem 1.5rem;
         }
 
-        .cict-wh-cta-content {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
+        .wh-inner {
+          max-width: 760px;
+          width: 100%;
           text-align: center;
-          max-width: 680px;
-          gap: 0;
         }
 
-        .cict-wh-eyebrow {
-          font-size: 0.7rem;
-          font-weight: 700;
-          letter-spacing: 0.22em;
-          text-transform: uppercase;
-          color: rgba(6,182,212,0.8);
-          margin-bottom: 1.5rem;
-          font-family: monospace;
-        }
-
-        .cict-wh-tagline-a {
-          margin: 0 0 0.5rem;
-          font-weight: 800;
-          font-size: clamp(1.8rem, 4vw, 3.2rem);
-          line-height: 1.1;
-          color: #ffffff;
-        }
-
-        .cict-wh-tagline-b {
-          margin: 0 0 2.5rem;
-          font-weight: 400;
-          font-size: clamp(0.9rem, 1.5vw, 1.15rem);
-          line-height: 1.7;
-          color: rgba(255,255,255,0.45);
-          max-width: 520px;
-        }
-
-        .cict-wh-actions {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0.75rem;
-        }
-
-        .cict-wh-btn-primary {
+        .wh-eyebrow {
           display: inline-flex;
           align-items: center;
           gap: 0.6rem;
-          padding: 1rem 2.25rem;
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.25em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.3);
+          margin-bottom: 1.5rem;
+        }
+        .wh-dot {
+          display: inline-block;
+          width: 4px; height: 4px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.2);
+        }
+
+        .wh-headline {
+          margin: 0 0 1.5rem;
+          font-weight: 900;
+          line-height: 1.1;
+        }
+        .wh-line-a {
+          display: block;
+          font-size: clamp(1.8rem, 4.5vw, 3.8rem);
+          color: rgba(255,255,255,0.9);
+        }
+        .wh-line-b {
+          display: block;
+          font-size: clamp(1.8rem, 4.5vw, 3.8rem);
+          background: linear-gradient(135deg, #06b6d4 0%, #a78bfa 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+
+        .wh-sub {
+          margin: 0 0 2.5rem;
+          font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+          line-height: 1.75;
+          color: rgba(255,255,255,0.45);
+          max-width: 580px;
+          margin-left: auto;
+          margin-right: auto;
+          margin-bottom: 2.5rem;
+        }
+
+        .wh-btns {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.85rem;
+          justify-content: center;
+          margin-bottom: 2rem;
+        }
+
+        .wh-btn-primary {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.9rem 2.4rem;
           border-radius: 9999px;
-          font-size: 1rem;
+          font-size: 0.95rem;
           font-weight: 700;
           color: #fff;
-          text-decoration: none;
           background: linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6);
-          box-shadow: 0 0 48px rgba(139,92,246,0.35);
-          transition: opacity 0.2s, transform 0.15s;
+          text-decoration: none;
+          box-shadow: 0 0 40px rgba(139,92,246,0.4);
+          transition: opacity 0.2s ease, transform 0.2s ease;
         }
-        .cict-wh-btn-primary:hover { opacity: 0.88; }
-        .cict-wh-btn-primary:active { transform: scale(0.97); }
+        .wh-btn-primary:hover { opacity: 0.88; transform: translateY(-2px); }
 
-        .cict-wh-btn-icon {
-          width: 1.1rem;
-          height: 1.1rem;
-          flex-shrink: 0;
+        .wh-btn-secondary {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.9rem 2.4rem;
+          border-radius: 9999px;
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: rgba(255,255,255,0.6);
+          border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.04);
+          text-decoration: none;
+          transition: border-color 0.2s ease, color 0.2s ease;
+        }
+        .wh-btn-secondary:hover {
+          border-color: rgba(255,255,255,0.22);
+          color: #fff;
         }
 
-        .cict-wh-sub {
+        .wh-meta {
           margin: 0;
-          font-size: 0.75rem;
-          color: rgba(255,255,255,0.25);
-          letter-spacing: 0.05em;
+          font-size: 0.72rem;
+          font-weight: 600;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.2);
         }
 
-        /* ── Scroll-driven entrance animation ── */
+        /* ── View-timeline reveal animation ── */
         @supports (animation-timeline: view()) {
-          .cict-wh-main { view-timeline: --cict-wh-panel; }
-          .cict-wh-main::before {
+          .wh-main { view-timeline: --wh-main; }
+
+          .wh-main::before {
             transform-origin: 50% 100%;
-            scale: 0.92;
-            animation: cict-wh-grow both ease-in-out;
-            animation-timeline: --cict-wh-panel;
-            animation-range: entry 40%;
+            scale: 0.9;
+            animation: wh-grow both ease-in-out;
+            animation-timeline: --wh-main;
+            animation-range: entry 50%;
           }
-          .cict-wh-main-inner {
-            animation: cict-wh-fade both ease-in-out;
-            animation-timeline: --cict-wh-panel;
-            animation-range: entry 40%;
+
+          .wh-cta {
+            position: fixed;
+            top: 50%; left: 50%;
+            translate: -50% -50%;
+            opacity: 0;
+            pointer-events: none;
+            animation: wh-fade both ease-in-out;
+            animation-timeline: --wh-main;
+            animation-range: entry 50%;
           }
-          @keyframes cict-wh-fade  { from { opacity: 0; } to { opacity: 1; } }
-          @keyframes cict-wh-grow  { to   { scale: 1; border-radius: 0; } }
+          .wh-cta.wh-active { pointer-events: auto; }
+
+          @keyframes wh-grow { to { scale: 1; border-radius: 0; } }
+          @keyframes wh-fade { from { opacity: 0; } to { opacity: 1; } }
         }
       `}</style>
     </div>
