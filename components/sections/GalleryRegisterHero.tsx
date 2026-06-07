@@ -49,11 +49,10 @@ function FlipCard({ src, target }: {
 }) {
   return (
     <motion.div
-      animate={{ x: target.x, y: target.y, rotate: target.rotation, scale: target.scale }}
+      animate={{ x: target.x, y: target.y, rotate: target.rotation, scale: target.scale, opacity: 1 }}
       initial={{ opacity: 0 }}
-      animate-opacity={1}
       transition={{ type: 'spring', stiffness: 50, damping: 18 }}
-      style={{ position: 'absolute', width: IMG_W, height: IMG_H, perspective: '1000px', opacity: 1 }}
+      style={{ position: 'absolute', width: IMG_W, height: IMG_H, perspective: '1000px' }}
       className="cursor-pointer group"
     >
       <motion.div
