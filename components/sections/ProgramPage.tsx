@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 
 // Lazy-load particles — only needed after hero section scrolls into view
 const SparklesCore = dynamic(() => import('@/components/ui/sparkles').then(m => ({ default: m.SparklesCore })), { ssr: false });
+const GalleryRegisterHero = dynamic(() => import('@/components/sections/GalleryRegisterHero'), { ssr: false });
 
 /* ─── Session card data ─── */
 type Session = {
@@ -201,7 +202,7 @@ export default function ProgramPage() {
       </div>
 
       {/* ── Program cards ── */}
-      <div className="relative z-10 max-w-6xl mx-auto px-6 pb-24">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 pb-0">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           <DayStack
             day={0}
@@ -219,6 +220,10 @@ export default function ProgramPage() {
           />
         </div>
       </div>{/* end program cards */}
+
+      {/* ── Register CTA with gallery animation ── */}
+      <GalleryRegisterHero />
+
     </section>
     </motion.div>
   );
