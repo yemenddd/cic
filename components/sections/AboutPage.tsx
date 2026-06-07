@@ -6,7 +6,6 @@ import { Lightbulb, FlaskConical, Users, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useLang } from '@/lib/i18n';
-import PhotoMarquee from '@/components/sections/PhotoMarquee';
 import CircularGallerySection from '@/components/sections/CircularGallerySection';
 
 /* ─── Animated counter — resets and replays every time it enters view ─── */
@@ -540,7 +539,6 @@ export default function AboutPage() {
       <MissionSection />
       <PresidentSection />
       <StatsSection />
-      <PhotoMarquee />
       <CircularGallerySection />
       <ValuesSection />
     </main>
