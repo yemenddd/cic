@@ -52,7 +52,16 @@ function FlipCard({ src, target }: {
       animate={{ x: target.x, y: target.y, rotate: target.rotation, scale: target.scale, opacity: 1 }}
       initial={{ opacity: 0 }}
       transition={{ type: 'spring', stiffness: 50, damping: 18 }}
-      style={{ position: 'absolute', width: IMG_W, height: IMG_H, perspective: '1000px' }}
+      style={{
+        position: 'absolute',
+        width: IMG_W,
+        height: IMG_H,
+        left: '50%',
+        top: '50%',
+        marginLeft: -IMG_W / 2,
+        marginTop: -IMG_H / 2,
+        perspective: '1000px',
+      }}
       className="cursor-pointer group"
     >
       <motion.div
@@ -232,10 +241,9 @@ export default function GalleryRegisterHero() {
         <div className="relative flex items-center justify-center w-full h-full">
           {IMAGES.map((src, i) => {
             const isMobile = size.w < 768;
-            const minDim   = Math.min(size.w, size.h);
 
-            // Circle position (centred in viewport)
-            const circleR = Math.min(minDim * 0.35, 340);
+            // Circle position — centred, clean fixed radius
+            const circleR = isMobile ? 190 : 270;
             const cAngle  = (i / TOTAL) * 360;
             const cRad    = (cAngle * Math.PI) / 180;
             const circle  = {
@@ -245,12 +253,10 @@ export default function GalleryRegisterHero() {
               scale: 1,
             };
 
-            // Arc position (fan sliding to the bottom)
-            const baseR  = Math.min(size.w, size.h * 1.5);
-            const arcR   = baseR * (isMobile ? 1.4 : 1.1);
-            const apexY  = size.h * (isMobile ? 0.38 : 0.30);
-            const arcCY  = apexY + arcR;
-            const spread = isMobile ? 105 : 135;
+            // Arc: bottom fan, all coords relative to container CENTER
+            const arcR   = isMobile ? 300 : 430;
+            const arcCY  = arcR + (isMobile ? 90 : 130); // centre of arc circle below centre
+            const spread = isMobile ? 110 : 140;
             const start  = -90 - spread / 2;
             const step   = spread / (TOTAL - 1);
             const arcAngle = start + i * step;
@@ -259,7 +265,7 @@ export default function GalleryRegisterHero() {
               x: Math.cos(arcRad) * arcR + px,
               y: Math.sin(arcRad) * arcR + arcCY,
               rotation: arcAngle + 90,
-              scale: isMobile ? 1.45 : 1.85,
+              scale: isMobile ? 1.4 : 1.75,
             };
 
             // Lerp driven by page scroll — fully reversible
