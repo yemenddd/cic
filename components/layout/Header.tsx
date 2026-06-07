@@ -203,7 +203,7 @@ export default function Header() {
 
             {/* CTA — desktop */}
             <motion.a
-              href="#register"
+              href="/register"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               className="hidden md:flex items-center px-4 py-1.5 rounded-full text-[13px] font-semibold text-white"
@@ -344,7 +344,7 @@ export default function Header() {
             >
               <span className="text-[12px] text-white/25 tracking-wide">{t('nav.date')}</span>
               <a
-                href="#register"
+                href="/register"
                 onClick={() => setMenuOpen(false)}
                 className="px-6 py-2.5 rounded-full text-[14px] font-semibold text-white"
                 style={{ background: 'linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6)' }}

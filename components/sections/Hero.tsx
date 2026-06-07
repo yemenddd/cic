@@ -235,6 +235,7 @@ export default function Hero() {
               >
                 <Button
                   size={SIZE.large}
+                  onClick={() => router.push('/register')}
                   overrides={{
                     BaseButton: {
                       style: {

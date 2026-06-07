@@ -6,13 +6,13 @@ const ContentSecurityPolicy = `
   style-src 'self' 'unsafe-inline';
   img-src 'self' data: blob: https://img.youtube.com https://*.spline.design;
   frame-src https://www.youtube.com;
-  connect-src 'self' blob: https://prod.spline.design https://*.spline.design https://unpkg.com;
+  connect-src 'self' blob: https://prod.spline.design https://*.spline.design https://unpkg.com https://docs.google.com;
   worker-src 'self' blob:;
   media-src 'self' data: blob:;
   font-src 'self';
   object-src 'none';
   base-uri 'self';
-  form-action 'self';
+  form-action 'self' https://docs.google.com;
 `.replace(/\n/g, ' ').trim();
 
 const securityHeaders = [

@@ -165,7 +165,7 @@ export default function RegisterCTA() {
           {/* Primary CTA */}
           <motion.div {...reveal(0.34)}>
             <motion.a
-              href="#"
+              href="/register"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               className="group inline-flex items-center gap-2.5 px-9 py-4 rounded-full text-[15px] font-semibold text-white mb-6"

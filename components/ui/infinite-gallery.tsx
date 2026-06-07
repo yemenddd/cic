@@ -290,11 +290,193 @@ function GalleryScene({ images, speed = 1, visibleCount = 8, fadeSettings, blurS
   );
 }
 
-function FallbackGallery({ images }: { images: ImageItem[] }) {
-  const items = useMemo(() => images.map((img) => typeof img === 'string' ? { src: img, alt: '' } : img), [images]);
+const CSS_PERSPECTIVE = 1000;
+const CSS_Z_FAR = -2200;
+const CSS_Z_NEAR = -120;
+
+function CSSGalleryFallback({
+  images,
+  speed = 1,
+  visibleCount = 8,
+  fadeSettings,
+  blurSettings,
+}: {
+  images: { src: string; alt?: string }[];
+  speed?: number;
+  visibleCount?: number;
+  fadeSettings: FadeSettings;
+  blurSettings: BlurSettings;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const slotEls = useRef<(HTMLDivElement | null)[]>([]);
+
+  const spatialPositions = useMemo(
+    () =>
+      Array.from({ length: visibleCount }, (_, i) => {
+        const hAngle = (i * 2.618) % (Math.PI * 2);
+        const vAngle = (i * 1.618 + Math.PI / 3) % (Math.PI * 2);
+        const hRadius = (i % 3) * 1.2;
+        const vRadius = ((i + 1) % 4) * 0.8;
+        return {
+          x: (Math.sin(hAngle) * hRadius * MAX_HORIZONTAL_OFFSET) / 3,
+          y: (Math.cos(vAngle) * vRadius * MAX_VERTICAL_OFFSET) / 4,
+        };
+      }),
+    [visibleCount],
+  );
+
+  const slotsData = useRef<PlaneData[]>(
+    Array.from({ length: visibleCount }, (_, i) => ({
+      index: i,
+      z: visibleCount > 0 ? ((DEFAULT_DEPTH_RANGE / visibleCount) * i) % DEFAULT_DEPTH_RANGE : 0,
+      imageIndex: images.length > 0 ? i % images.length : 0,
+      x: spatialPositions[i]?.x ?? 0,
+      y: spatialPositions[i]?.y ?? 0,
+    })),
+  );
+
+  const velRef = useRef(0);
+  const autoPlayRef = useRef(true);
+  const lastInteractionRef = useRef(Date.now());
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    let touchY = 0;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      velRef.current += e.deltaY * 0.01 * speed;
+      autoPlayRef.current = false;
+      lastInteractionRef.current = Date.now();
+    };
+    const onTouchStart = (e: TouchEvent) => { touchY = e.touches[0].clientY; };
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      const dy = touchY - e.touches[0].clientY;
+      touchY = e.touches[0].clientY;
+      velRef.current += dy * 0.06 * speed;
+      autoPlayRef.current = false;
+      lastInteractionRef.current = Date.now();
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        velRef.current -= 2 * speed; autoPlayRef.current = false; lastInteractionRef.current = Date.now();
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        velRef.current += 2 * speed; autoPlayRef.current = false; lastInteractionRef.current = Date.now();
+      }
+    };
+    container.addEventListener('wheel', onWheel, { passive: false });
+    container.addEventListener('touchstart', onTouchStart, { passive: true });
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      container.removeEventListener('wheel', onWheel);
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [speed]);
+
+  useEffect(() => {
+    const totalImages = images.length;
+    if (totalImages === 0) return;
+    const depthRange = DEFAULT_DEPTH_RANGE;
+    const imageAdvance = visibleCount % totalImages || totalImages;
+    let lastTime = performance.now();
+    let rafId: number;
+
+    const tick = (now: number) => {
+      const delta = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
+      if (Date.now() - lastInteractionRef.current > 3000) autoPlayRef.current = true;
+      if (autoPlayRef.current) velRef.current += 0.3 * delta;
+      velRef.current *= 0.95;
+
+      slotsData.current.forEach((slot, i) => {
+        let newZ = slot.z + velRef.current * delta * 10;
+        let wrapsForward = 0;
+        let wrapsBackward = 0;
+        if (newZ >= depthRange) {
+          wrapsForward = Math.floor(newZ / depthRange);
+          newZ -= depthRange * wrapsForward;
+        } else if (newZ < 0) {
+          wrapsBackward = Math.ceil(-newZ / depthRange);
+          newZ += depthRange * wrapsBackward;
+        }
+        if (wrapsForward > 0) {
+          slot.imageIndex = (slot.imageIndex + wrapsForward * imageAdvance) % totalImages;
+          const imgEl = slotEls.current[i]?.querySelector('img') as HTMLImageElement | null;
+          if (imgEl) imgEl.src = images[slot.imageIndex].src;
+        }
+        if (wrapsBackward > 0) {
+          const s = slot.imageIndex - wrapsBackward * imageAdvance;
+          slot.imageIndex = ((s % totalImages) + totalImages) % totalImages;
+          const imgEl = slotEls.current[i]?.querySelector('img') as HTMLImageElement | null;
+          if (imgEl) imgEl.src = images[slot.imageIndex].src;
+        }
+        slot.z = ((newZ % depthRange) + depthRange) % depthRange;
+
+        const norm = slot.z / depthRange;
+
+        const { fadeIn, fadeOut } = fadeSettings;
+        let opacity = 1;
+        if (norm < fadeIn.start) opacity = 0;
+        else if (norm < fadeIn.end) opacity = (norm - fadeIn.start) / (fadeIn.end - fadeIn.start);
+        else if (norm >= fadeOut.start && norm < fadeOut.end) opacity = 1 - (norm - fadeOut.start) / (fadeOut.end - fadeOut.start);
+        else if (norm >= fadeOut.end) opacity = 0;
+
+        const { blurIn, blurOut, maxBlur } = blurSettings;
+        let blur = 0;
+        if (norm < blurIn.start) blur = maxBlur;
+        else if (norm < blurIn.end) blur = maxBlur * (1 - (norm - blurIn.start) / (blurIn.end - blurIn.start));
+        else if (norm >= blurOut.start && norm < blurOut.end) blur = maxBlur * ((norm - blurOut.start) / (blurOut.end - blurOut.start));
+        else if (norm >= blurOut.end) blur = maxBlur;
+
+        const translateZ = CSS_Z_FAR + norm * (CSS_Z_NEAR - CSS_Z_FAR);
+        const el = slotEls.current[i];
+        if (!el) return;
+        el.style.transform = `translateX(calc(-50% + ${(slot.x * 9).toFixed(1)}vw)) translateY(calc(-50% + ${(slot.y * 7).toFixed(1)}vh)) translateZ(${translateZ.toFixed(0)}px)`;
+        el.style.opacity = Math.max(0, Math.min(1, opacity)).toFixed(3);
+        el.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : '';
+      });
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [images, visibleCount, speed, fadeSettings, blurSettings]);
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 overflow-y-auto h-full">
-      {items.map((img, i) => <img key={i} src={img.src} alt={img.alt} className="w-full h-40 object-cover rounded-xl" />)}
+    <div
+      ref={containerRef}
+      className="relative w-full h-full overflow-hidden"
+      style={{ perspective: `${CSS_PERSPECTIVE}px`, perspectiveOrigin: '50% 50%' }}
+    >
+      {Array.from({ length: visibleCount }, (_, i) => (
+        <div
+          key={i}
+          ref={(el) => { slotEls.current[i] = el; }}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: 'clamp(280px, 58vw, 820px)',
+            opacity: 0,
+            willChange: 'transform, opacity, filter',
+            transform: `translateX(-50%) translateY(-50%) translateZ(${CSS_Z_FAR}px)`,
+          }}
+        >
+          <img
+            src={images[i % images.length]?.src}
+            alt=""
+            style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover', borderRadius: '8px' }}
+            loading="eager"
+            draggable={false}
+          />
+        </div>
+      ))}
     </div>
   );
 }
@@ -317,7 +499,23 @@ export default function InfiniteGallery({
     } catch { setWebglSupported(false); }
   }, []);
 
-  if (!webglSupported) return <div className={className} style={style}><FallbackGallery images={images} /></div>;
+  const normalizedImages = useMemo(
+    () => images.map((img) => (typeof img === 'string' ? { src: img, alt: '' } : img)),
+    [images],
+  );
+
+  if (!webglSupported)
+    return (
+      <div className={className} style={style}>
+        <CSSGalleryFallback
+          images={normalizedImages}
+          speed={speed}
+          visibleCount={visibleCount}
+          fadeSettings={fadeSettings}
+          blurSettings={blurSettings}
+        />
+      </div>
+    );
 
   return (
     <div className={className} style={style}>
