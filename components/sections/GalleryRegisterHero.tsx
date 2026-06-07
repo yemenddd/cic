@@ -109,10 +109,10 @@ export default function GalleryRegisterHero() {
   });
 
   // 400vh split into 3 phases:
-  //  Stage 1 → 0.00–0.28  : circle visible & stable  (حلقة ثابتة)
-  //  Stage 2 → 0.28–0.62  : morph animation           (الحركة)
-  //  Stage 3 → 0.62–1.00  : arc + CTA stable          (قوس + زر تسجيل)
-  const morphRaw = useTransform(scrollYProgress, [0.28, 0.62], [0, 1]);
+  //  Stage 1 → 0.00–0.20  : circle visible & stable
+  //  Stage 2 → 0.20–0.65  : morph animation
+  //  Stage 3 → 0.65–1.00  : arc + CTA stable
+  const morphRaw = useTransform(scrollYProgress, [0.20, 0.65], [0, 1]);
   const morph    = useSpring(morphRaw, { stiffness: 55, damping: 22 });
 
   // Mouse parallax (horizontal only, for arc depth)
@@ -152,8 +152,8 @@ export default function GalleryRegisterHero() {
   };
 
   return (
-    // ── Outer: 400vh → Stage1(circle) + Stage2(morph) + Stage3(arc+CTA) ────────
-    <div ref={outerRef} style={{ height: '400vh' }}>
+    // ── Outer: 220vh → Stage1(circle) + Stage2(morph) + Stage3(arc+CTA) ────────
+    <div ref={outerRef} style={{ height: '220vh' }}>
 
       {/* ── Inner: sticky viewport ────────────────────────────────────────── */}
       <div
