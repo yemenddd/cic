@@ -108,8 +108,11 @@ export default function GalleryRegisterHero() {
     offset: ['start start', 'end end'],
   });
 
-  // morph: 0 = circle  →  1 = arc    (driven by page scroll, fully reversible)
-  const morphRaw = useTransform(scrollYProgress, [0.05, 0.65], [0, 1]);
+  // 400vh split into 3 phases:
+  //  Stage 1 → 0.00–0.28  : circle visible & stable  (حلقة ثابتة)
+  //  Stage 2 → 0.28–0.62  : morph animation           (الحركة)
+  //  Stage 3 → 0.62–1.00  : arc + CTA stable          (قوس + زر تسجيل)
+  const morphRaw = useTransform(scrollYProgress, [0.28, 0.62], [0, 1]);
   const morph    = useSpring(morphRaw, { stiffness: 55, damping: 22 });
 
   // Mouse parallax (horizontal only, for arc depth)
@@ -131,13 +134,13 @@ export default function GalleryRegisterHero() {
   useMotionValueEvent(morph,    'change', setM);
   useMotionValueEvent(smoothPx, 'change', setPx);
 
-  // Text in circle center — fades out as cards start moving
-  const circleTxtOpacity = useTransform(morph, [0, 0.35], [1, 0]);
-  const circleTxtScale   = useTransform(morph, [0, 0.35], [1, 0.85]);
+  // Stage 1 → circle text: fully visible until morph starts, then fades
+  const circleTxtOpacity = useTransform(morph, [0, 0.25], [1, 0]);
+  const circleTxtScale   = useTransform(morph, [0, 0.25], [1, 0.88]);
 
-  // CTA — fades in when arc is mostly formed
-  const ctaOpacity = useTransform(morph, [0.55, 0.95], [0, 1]);
-  const ctaY       = useTransform(morph, [0.55, 0.95], [28, 0]);
+  // Stage 3 → CTA: fades in once arc is nearly formed
+  const ctaOpacity = useTransform(morph, [0.72, 1], [0, 1]);
+  const ctaY       = useTransform(morph, [0.72, 1], [28, 0]);
 
   const text = {
     center: lang === 'ar' ? 'معاً نبني المستقبل'     : lang === 'tr' ? 'Birlikte Geleceği İnşa Ediyoruz' : 'Together We Build The Future',
@@ -149,8 +152,8 @@ export default function GalleryRegisterHero() {
   };
 
   return (
-    // ── Outer: provides 250vh of scroll space ─────────────────────────────────
-    <div ref={outerRef} style={{ height: '250vh' }}>
+    // ── Outer: 400vh → Stage1(circle) + Stage2(morph) + Stage3(arc+CTA) ────────
+    <div ref={outerRef} style={{ height: '400vh' }}>
 
       {/* ── Inner: sticky viewport ────────────────────────────────────────── */}
       <div
