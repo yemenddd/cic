@@ -1,33 +1,14 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { motion, useScroll, useMotionValueEvent, useTransform } from 'framer-motion';
 import { Lightbulb, FlaskConical, Users, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useLang } from '@/lib/i18n';
 import CircularGallerySection from '@/components/sections/CircularGallerySection';
+import DotCard from '@/components/ui/dot-card';
 
-/* ─── Animated counter — resets and replays every time it enters view ─── */
-function Counter({ target, suffix = '', prefix = '', visible }: { target: number; suffix?: string; prefix?: string; visible: boolean }) {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    if (!visible) { setCount(0); return; }
-    const duration = 2000;
-    const start = performance.now();
-    let id: number;
-    const step = (now: number) => {
-      const t = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setCount(Math.floor(eased * target));
-      if (t < 1) id = requestAnimationFrame(step);
-      else setCount(target);
-    };
-    id = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(id);
-  }, [visible, target]);
-  return <>{prefix}{count.toLocaleString('en-US')}{suffix}</>;
-}
 
 /* ─── Section scroll hook ─── */
 function useSection() {
@@ -392,18 +373,6 @@ function StatsSection() {
   const { ref, p, revealWord } = useSection();
   const { t, tx, dir } = useLang();
   const statsRef = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(false);
-
-  useEffect(() => {
-    const el = statsRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      { threshold: 0.4 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   const statLabels = tx<{ label: string }[]>('about.statsItems');
   const stats = STAT_META.map((m, i) => ({ ...m, label: statLabels?.[i]?.label ?? '' }));
@@ -433,28 +402,19 @@ function StatsSection() {
 
           <motion.div
             ref={statsRef}
-            className="grid grid-cols-1 sm:grid-cols-4 w-full gap-y-8 sm:gap-y-0"
+            className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5 w-full"
             initial={{ opacity: 0, y: 20 }}
             animate={p >= 0.28 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
-            {stats.map((stat, i) => (
-              <div key={stat.label} className="flex items-center">
-                <div className="flex flex-col items-center gap-3 px-4 py-2 w-full">
-                  <span
-                    className="font-outfit font-black tabular-nums leading-none text-white"
-                    style={{ fontSize: 'clamp(2.2rem, 4vw, 4.2rem)' }}
-                  >
-                    <Counter target={stat.target} suffix={stat.suffix} visible={inView} />
-                  </span>
-                  <span className="text-base sm:text-lg text-white/50 tracking-[0.06em] uppercase font-medium text-center">
-                    {stat.label}
-                  </span>
-                </div>
-                {i < stats.length - 1 && (
-                  <div className="hidden sm:block w-px h-10 bg-white/10 shrink-0" />
-                )}
-              </div>
+            {stats.map((stat) => (
+              <DotCard
+                key={stat.label}
+                target={stat.target}
+                duration={2000}
+                label={stat.label}
+                suffix={stat.suffix}
+              />
             ))}
           </motion.div>
 
