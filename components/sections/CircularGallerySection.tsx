@@ -83,7 +83,7 @@ export default function CircularGallerySection() {
   const headingOpacity = useTransform(scrollYProgress, [0, 0.1, 0.85, 1], [0, 1, 1, 0]);
   const headingY       = useTransform(scrollYProgress, [0, 0.12], [32, 0]);
 
-  const eyebrow  = lang === 'ar' ? 'معرض الصور الدوّار' : lang === 'tr' ? 'Dönen Galeri' : 'Circular Gallery';
+  const eyebrow  = '';
   const titleA   = lang === 'ar' ? 'استعرض '            : lang === 'tr' ? 'Baskılarımıza '   : 'Explore ';
   const titleB   = lang === 'ar' ? 'دوراتنا'             : lang === 'tr' ? 'Göz Atın'         : 'Our Editions';
   const subtitle = lang === 'ar'
@@ -114,9 +114,6 @@ export default function CircularGallerySection() {
           className="absolute inset-x-0 top-16 z-20 text-center px-6 pointer-events-none"
           dir={isRtl ? 'rtl' : 'ltr'}
         >
-          <span className="inline-block text-[11px] font-semibold uppercase tracking-[0.25em] text-cyan-400/70 mb-3">
-            {eyebrow}
-          </span>
           <h2 className="text-4xl font-black text-white sm:text-5xl leading-tight">
             {titleA}
             <span style={{
