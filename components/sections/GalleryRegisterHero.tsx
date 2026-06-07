@@ -37,7 +37,8 @@ const IMG_H = 90;
 /** Returns translateX, translateY (both relative to container centre), rotate, scale */
 function calcCard(i: number, m: number, hw: number, hh: number) {
   const isMobile  = hw * 2 < 768;
-  const circleR   = isMobile ? Math.min(hw * 0.7, 175) : Math.min(hw * 0.38, 270);
+  // Full-screen circle: radius reaches near the top/bottom edges
+  const circleR   = isMobile ? Math.min(hw * 0.85, hh * 0.78) : Math.min(hw * 0.52, hh * 0.78);
   const arcR      = isMobile ? Math.min(hw * 0.85, 300) : Math.min(hw * 0.52, 400);
   const arcOffY   = isMobile ? 80 : 110;   // top-of-arc below centre
   const spread    = isMobile ? 110 : 140;
@@ -145,13 +146,11 @@ export default function GalleryRegisterHero() {
     });
   }, []);
 
-  // ── Text opacity via spring ──────────────────────────────────────────────────
-  const circleTxtOp = useTransform(morph, [0, 0.28], [1, 0]);
-  const ctaOp       = useTransform(morph, [0.65, 1],  [0, 1]);
-  const ctaY        = useTransform(morph, [0.65, 1],  [24, 0]);
+  // CTA is always visible — same position in both circle and arc phases
+  const ctaOp = useTransform(morph, [0, 0.15], [0, 1]);
+  const ctaY  = useTransform(morph, [0, 0.15], [16, 0]);
 
   const text = {
-    center: lang === 'ar' ? 'معاً نبني المستقبل'       : lang === 'tr' ? 'Birlikte Geleceği İnşa Ediyoruz' : 'Together We Build The Future',
     tag:    lang === 'ar' ? 'انضم إلى المؤتمر'          : lang === 'tr' ? 'Konferansa Katıl'  : 'Join the Conference',
     titleA: lang === 'ar' ? 'احجز مقعدك '               : lang === 'tr' ? 'Yerinizi '         : 'Secure your ',
     titleB: lang === 'ar' ? 'قبل نفاد الأماكن'          : lang === 'tr' ? 'Şimdi Ayırın'      : 'seat now.',
@@ -173,24 +172,7 @@ export default function GalleryRegisterHero() {
             style={{ background: 'radial-gradient(ellipse,#7c3aed 0%,#06b6d4 60%,transparent 100%)' }} />
         </div>
 
-        {/* "معاً نبني المستقبل" */}
-        <motion.div
-          style={{ opacity: circleTxtOp }}
-          className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center text-center px-6"
-        >
-          <h2 className="font-black text-white" style={{ fontSize: 'clamp(1.6rem,4vw,3.2rem)' }}>
-            {text.center.split(' ').map((w, i) => (
-              <span key={i}>
-                {i === 1
-                  ? <span style={{ background: 'linear-gradient(135deg,#06b6d4,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{w}</span>
-                  : w}
-                {i < text.center.split(' ').length - 1 ? ' ' : ''}
-              </span>
-            ))}
-          </h2>
-        </motion.div>
-
-        {/* Registration CTA */}
+        {/* Registration CTA — always at top, visible in both circle and arc */}
         <motion.div
           style={{ opacity: ctaOp, y: ctaY }}
           className="pointer-events-none absolute top-[8%] inset-x-0 z-20 flex flex-col items-center text-center px-6"
