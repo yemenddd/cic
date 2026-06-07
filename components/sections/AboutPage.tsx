@@ -262,7 +262,7 @@ function PresidentSection() {
         >
           {/* Desktop Image */}
           <img
-            src="/images/about/president2.jpg"
+            src="/images/about/president.jpg"
             alt={t('about.presidentImgAlt')}
             loading="lazy"
             decoding="async"
@@ -271,14 +271,14 @@ function PresidentSection() {
           />
           {/* Mobile Image */}
           <img
-            src="/images/about/president_mobile.jpg"
+            src="/images/about/president-mobile.jpg"
             alt={t('about.presidentImgAlt')}
             loading="lazy"
             decoding="async"
             className="block md:hidden w-full h-full object-cover"
             style={{ objectPosition: 'center center' }}
             onError={(e) => {
-              e.currentTarget.src = "/images/about/president2.jpg";
+              e.currentTarget.src = "/images/about/president.jpg";
               e.currentTarget.style.objectPosition = "30% 20%";
             }}
           />
