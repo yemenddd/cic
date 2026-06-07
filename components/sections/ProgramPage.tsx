@@ -221,10 +221,12 @@ export default function ProgramPage() {
         </div>
       </div>{/* end program cards */}
 
-      {/* ── Register CTA with gallery animation ── */}
-      <GalleryRegisterHero />
-
     </section>
+
+    {/* GalleryRegisterHero MUST live outside the overflow-x-hidden section —
+        any overflow:hidden ancestor breaks position:sticky */}
+    <GalleryRegisterHero />
+
     </motion.div>
   );
 }
