@@ -1,7 +1,14 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, useTransform, useSpring, useMotionValue } from 'framer-motion';
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useMotionValue,
+  useMotionValueEvent,
+} from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
@@ -30,23 +37,23 @@ const IMAGES = [
   '/images/gallery/feature.jpg',
 ];
 
-const TOTAL  = IMAGES.length;
-const MAX_SCROLL = 2000;
-const IMG_W  = 60;
-const IMG_H  = 85;
-const lerp   = (a: number, b: number, t: number) => a * (1 - t) + b * t;
+const TOTAL = IMAGES.length;
+const IMG_W = 60;
+const IMG_H = 85;
+const lerp  = (a: number, b: number, t: number) => a * (1 - t) + b * t;
 
-// ── Flip card ────────────────────────────────────────────────────────────────
+// ── Flip card ─────────────────────────────────────────────────────────────────
 function FlipCard({ src, target }: {
   src: string;
   target: { x: number; y: number; rotation: number; scale: number };
 }) {
   return (
     <motion.div
-      animate={{ x: target.x, y: target.y, rotate: target.rotation, scale: target.scale, opacity: 1 }}
+      animate={{ x: target.x, y: target.y, rotate: target.rotation, scale: target.scale }}
       initial={{ opacity: 0 }}
-      transition={{ type: 'spring', stiffness: 45, damping: 16 }}
-      style={{ position: 'absolute', width: IMG_W, height: IMG_H, perspective: '1000px' }}
+      animate-opacity={1}
+      transition={{ type: 'spring', stiffness: 50, damping: 18 }}
+      style={{ position: 'absolute', width: IMG_W, height: IMG_H, perspective: '1000px', opacity: 1 }}
       className="cursor-pointer group"
     >
       <motion.div
@@ -79,189 +86,198 @@ function FlipCard({ src, target }: {
   );
 }
 
-// ── Main ─────────────────────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function GalleryRegisterHero() {
   const { lang, dir } = useLang();
   const isRtl = dir === 'rtl';
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
 
   useEffect(() => {
-    const el = containerRef.current; if (!el) return;
+    const el = innerRef.current; if (!el) return;
     const obs = new ResizeObserver(e => setSize({ w: e[0].contentRect.width, h: e[0].contentRect.height }));
     obs.observe(el);
     setSize({ w: el.offsetWidth, h: el.offsetHeight });
     return () => obs.disconnect();
   }, []);
 
-  // Virtual scroll — wheel inside the container
-  const virtualScroll = useMotionValue(0);
-  const scrollRef     = useRef(0);
+  // ── Scroll tied to the outer container ──────────────────────────────────────
+  const { scrollYProgress } = useScroll({
+    target: outerRef,
+    offset: ['start start', 'end end'],
+  });
 
+  // morph: 0 = circle  →  1 = arc    (driven by page scroll, fully reversible)
+  const morphRaw = useTransform(scrollYProgress, [0.05, 0.65], [0, 1]);
+  const morph    = useSpring(morphRaw, { stiffness: 55, damping: 22 });
+
+  // Mouse parallax (horizontal only, for arc depth)
+  const mouseX   = useMotionValue(0);
+  const smoothPx = useSpring(mouseX, { stiffness: 30, damping: 20 });
   useEffect(() => {
-    const el = containerRef.current; if (!el) return;
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const next = Math.min(Math.max(scrollRef.current + e.deltaY, 0), MAX_SCROLL);
-      scrollRef.current = next;
-      virtualScroll.set(next);
-    };
-    let ty = 0;
-    const onTouchStart = (e: TouchEvent) => { ty = e.touches[0].clientY; };
-    const onTouchMove  = (e: TouchEvent) => {
-      e.preventDefault();
-      const dy = ty - e.touches[0].clientY; ty = e.touches[0].clientY;
-      const next = Math.min(Math.max(scrollRef.current + dy, 0), MAX_SCROLL);
-      scrollRef.current = next; virtualScroll.set(next);
-    };
-    el.addEventListener('wheel', onWheel, { passive: false });
-    el.addEventListener('touchstart', onTouchStart, { passive: false });
-    el.addEventListener('touchmove', onTouchMove, { passive: false });
-    return () => {
-      el.removeEventListener('wheel', onWheel);
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchmove', onTouchMove);
-    };
-  }, [virtualScroll]);
-
-  // morph: 0 = circle · 1 = arc   (bidirectional with scroll)
-  const morphRaw   = useTransform(virtualScroll, [0, 800], [0, 1]);
-  const morph      = useSpring(morphRaw, { stiffness: 45, damping: 18 });
-
-  // Arc shuffle rotation (after morph completes)
-  const rotateRaw  = useTransform(virtualScroll, [800, MAX_SCROLL], [0, 360]);
-  const smoothRot  = useSpring(rotateRaw, { stiffness: 40, damping: 20 });
-
-  // Mouse parallax
-  const mouseX     = useMotionValue(0);
-  const smoothPx   = useSpring(mouseX, { stiffness: 30, damping: 20 });
-  useEffect(() => {
-    const el = containerRef.current; if (!el) return;
+    const el = innerRef.current; if (!el) return;
     const fn = (e: MouseEvent) => {
       const r = el.getBoundingClientRect();
-      mouseX.set(((e.clientX - r.left) / r.width * 2 - 1) * 80);
+      mouseX.set(((e.clientX - r.left) / r.width * 2 - 1) * 70);
     };
     el.addEventListener('mousemove', fn);
     return () => el.removeEventListener('mousemove', fn);
   }, [mouseX]);
 
-  // Live values for JS calculations
+  // Live values for card position math
   const [m, setM]   = useState(0);
-  const [rot, setR] = useState(0);
   const [px, setPx] = useState(0);
-  useEffect(() => {
-    const u1 = morph.on('change', setM);
-    const u2 = smoothRot.on('change', setR);
-    const u3 = smoothPx.on('change', setPx);
-    return () => { u1(); u2(); u3(); };
-  }, [morph, smoothRot, smoothPx]);
+  useMotionValueEvent(morph,    'change', setM);
+  useMotionValueEvent(smoothPx, 'change', setPx);
+
+  // Text in circle center — fades out as cards start moving
+  const circleTxtOpacity = useTransform(morph, [0, 0.35], [1, 0]);
+  const circleTxtScale   = useTransform(morph, [0, 0.35], [1, 0.85]);
+
+  // CTA — fades in when arc is mostly formed
+  const ctaOpacity = useTransform(morph, [0.55, 0.95], [0, 1]);
+  const ctaY       = useTransform(morph, [0.55, 0.95], [28, 0]);
 
   const text = {
-    tag:   lang === 'ar' ? 'انضم إلى المؤتمر'       : lang === 'tr' ? 'Konferansa Katıl' : 'Join the Conference',
-    titleA:lang === 'ar' ? 'احجز مقعدك '             : lang === 'tr' ? 'Yerinizi '        : 'Secure your ',
-    titleB:lang === 'ar' ? 'قبل نفاد الأماكن'        : lang === 'tr' ? 'Şimdi Ayırın'     : 'seat now.',
-    sub:   lang === 'ar' ? 'يومان من الإلهام — كن جزءًا من اللحظة.' : lang === 'tr' ? 'İlhamın iki günü — bu anın parçası ol.' : 'Two days of inspiration — be part of the moment.',
-    btn:   lang === 'ar' ? 'سجّل الآن'               : lang === 'tr' ? 'Kayıt Ol'         : 'Register Now',
+    center: lang === 'ar' ? 'معاً نبني المستقبل'     : lang === 'tr' ? 'Birlikte Geleceği İnşa Ediyoruz' : 'Together We Build The Future',
+    tag:    lang === 'ar' ? 'انضم إلى المؤتمر'        : lang === 'tr' ? 'Konferansa Katıl'  : 'Join the Conference',
+    titleA: lang === 'ar' ? 'احجز مقعدك '             : lang === 'tr' ? 'Yerinizi '         : 'Secure your ',
+    titleB: lang === 'ar' ? 'قبل نفاد الأماكن'        : lang === 'tr' ? 'Şimdi Ayırın'      : 'seat now.',
+    sub:    lang === 'ar' ? 'يومان من الإلهام والابتكار — كن جزءًا من اللحظة.' : lang === 'tr' ? 'İlhamın iki günü — bu anın parçası ol.' : 'Two days of inspiration — be part of the moment.',
+    btn:    lang === 'ar' ? 'سجّل الآن'               : lang === 'tr' ? 'Kayıt Ol'          : 'Register Now',
   };
 
-  // CTA opacity: fades in when morph > 0.6, fades out when morph < 0.4
-  const ctaOpacity = useTransform(morph, [0.5, 0.9], [0, 1]);
-  const ctaY       = useTransform(morph, [0.5, 0.9], [20, 0]);
-
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full bg-[#030712] overflow-hidden"
-      style={{ height: '100vh' }}
-      dir={isRtl ? 'rtl' : 'ltr'}
-    >
-      {/* Ambient glow */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[700px] rounded-full opacity-20 blur-3xl"
-          style={{ background: 'radial-gradient(ellipse, #7c3aed 0%, #06b6d4 60%, transparent 100%)' }} />
-      </div>
+    // ── Outer: provides 250vh of scroll space ─────────────────────────────────
+    <div ref={outerRef} style={{ height: '250vh' }}>
 
-      {/* CTA text — fades in as arc forms, fades out as circle returns */}
-      <motion.div
-        style={{ opacity: ctaOpacity, y: ctaY }}
-        className="pointer-events-none absolute top-[8%] inset-x-0 z-20 flex flex-col items-center justify-center text-center px-6"
+      {/* ── Inner: sticky viewport ────────────────────────────────────────── */}
+      <div
+        ref={innerRef}
+        className="sticky top-0 w-full overflow-hidden bg-[#030712]"
+        style={{ height: '100vh' }}
+        dir={isRtl ? 'rtl' : 'ltr'}
       >
-        <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-cyan-400/70 mb-3">{text.tag}</p>
-        <h2 className="text-3xl font-black text-white sm:text-5xl mb-3">
-          {text.titleA}
-          <span style={{
-            background: 'linear-gradient(135deg, #06b6d4, #a78bfa)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-          }}>{text.titleB}</span>
-        </h2>
-        <p className="text-sm text-white/40 max-w-sm mb-6 leading-relaxed">{text.sub}</p>
-        <div className="pointer-events-auto">
-          <Link
-            href="/register"
-            className={cn(
-              'inline-flex items-center gap-2 rounded-full px-8 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.97]',
-              isRtl && 'flex-row-reverse',
-            )}
-            style={{ background: 'linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6)' }}
-          >
-            {text.btn}
-            <ArrowRight className={cn('h-4 w-4', isRtl && 'rotate-180')} />
-          </Link>
+        {/* Ambient glow */}
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[700px] rounded-full opacity-20 blur-3xl"
+            style={{ background: 'radial-gradient(ellipse, #7c3aed 0%, #06b6d4 60%, transparent 100%)' }}
+          />
         </div>
-      </motion.div>
 
-      {/* Cards */}
-      <div className="relative flex items-center justify-center w-full h-full">
-        {IMAGES.map((src, i) => {
-          const isMobile = size.w < 768;
-          const minDim   = Math.min(size.w, size.h);
+        {/* ── "معاً نبني المستقبل" — visible in circle state ─────────────── */}
+        <motion.div
+          style={{ opacity: circleTxtOpacity, scale: circleTxtScale }}
+          className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-6"
+        >
+          <h2
+            className="font-black text-white leading-tight"
+            style={{ fontSize: 'clamp(1.6rem, 4vw, 3.5rem)' }}
+          >
+            {text.center.split(' ').map((word, i) => (
+              <span key={i}>
+                {i === (isRtl ? 1 : 2) ? (
+                  <span style={{
+                    background: 'linear-gradient(135deg, #06b6d4, #a78bfa)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}>{word}</span>
+                ) : word}
+                {i < text.center.split(' ').length - 1 ? ' ' : ''}
+              </span>
+            ))}
+          </h2>
+        </motion.div>
 
-          // ── Circle position ──
-          const circleR   = Math.min(minDim * 0.35, 340);
-          const cAngle    = (i / TOTAL) * 360;
-          const cRad      = (cAngle * Math.PI) / 180;
-          const circle    = {
-            x: Math.cos(cRad) * circleR,
-            y: Math.sin(cRad) * circleR,
-            rotation: cAngle + 90,
-            scale: 1,
-          };
+        {/* ── Registration CTA — appears as arc forms ─────────────────────── */}
+        <motion.div
+          style={{ opacity: ctaOpacity, y: ctaY }}
+          className="pointer-events-none absolute top-[7%] inset-x-0 z-20 flex flex-col items-center justify-center text-center px-6"
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-cyan-400/70 mb-3">
+            {text.tag}
+          </p>
+          <h2 className="font-black text-white mb-3" style={{ fontSize: 'clamp(1.8rem, 4vw, 3.8rem)' }}>
+            {text.titleA}
+            <span style={{
+              background: 'linear-gradient(135deg, #06b6d4, #a78bfa)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>{text.titleB}</span>
+          </h2>
+          <p className="text-sm text-white/40 max-w-sm mb-7 leading-relaxed">{text.sub}</p>
+          <div className="pointer-events-auto">
+            <Link
+              href="/register"
+              className={cn(
+                'inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.97]',
+                isRtl && 'flex-row-reverse',
+              )}
+              style={{ background: 'linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6)' }}
+            >
+              {text.btn}
+              <ArrowRight className={cn('h-4 w-4', isRtl && 'rotate-180')} />
+            </Link>
+          </div>
+        </motion.div>
 
-          // ── Arc (bottom fan) position ──
-          const baseR  = Math.min(size.w, size.h * 1.5);
-          const arcR   = baseR * (isMobile ? 1.4 : 1.1);
-          const apexY  = size.h * (isMobile ? 0.35 : 0.28);
-          const arcCY  = apexY + arcR;
-          const spread = isMobile ? 100 : 130;
-          const start  = -90 - spread / 2;
-          const step   = spread / (TOTAL - 1);
-          const scrollPct  = Math.min(Math.max(rot / 360, 0), 1);
-          const boundedRot = -scrollPct * spread * 0.8;
-          const arcAngle   = start + i * step + boundedRot;
-          const arcRad     = (arcAngle * Math.PI) / 180;
-          const arc = {
-            x: Math.cos(arcRad) * arcR + px,
-            y: Math.sin(arcRad) * arcR + arcCY,
-            rotation: arcAngle + 90,
-            scale: isMobile ? 1.4 : 1.8,
-          };
+        {/* ── Cards ──────────────────────────────────────────────────────────── */}
+        <div className="relative flex items-center justify-center w-full h-full">
+          {IMAGES.map((src, i) => {
+            const isMobile = size.w < 768;
+            const minDim   = Math.min(size.w, size.h);
 
-          // ── Lerp between them using morph ──
-          const target = {
-            x:        lerp(circle.x,        arc.x,        m),
-            y:        lerp(circle.y,        arc.y,        m),
-            rotation: lerp(circle.rotation, arc.rotation, m),
-            scale:    lerp(circle.scale,    arc.scale,    m),
-          };
+            // Circle position (centred in viewport)
+            const circleR = Math.min(minDim * 0.35, 340);
+            const cAngle  = (i / TOTAL) * 360;
+            const cRad    = (cAngle * Math.PI) / 180;
+            const circle  = {
+              x: Math.cos(cRad) * circleR,
+              y: Math.sin(cRad) * circleR,
+              rotation: cAngle + 90,
+              scale: 1,
+            };
 
-          return <FlipCard key={i} src={src} target={target} />;
-        })}
+            // Arc position (fan sliding to the bottom)
+            const baseR  = Math.min(size.w, size.h * 1.5);
+            const arcR   = baseR * (isMobile ? 1.4 : 1.1);
+            const apexY  = size.h * (isMobile ? 0.38 : 0.30);
+            const arcCY  = apexY + arcR;
+            const spread = isMobile ? 105 : 135;
+            const start  = -90 - spread / 2;
+            const step   = spread / (TOTAL - 1);
+            const arcAngle = start + i * step;
+            const arcRad   = (arcAngle * Math.PI) / 180;
+            const arc = {
+              x: Math.cos(arcRad) * arcR + px,
+              y: Math.sin(arcRad) * arcR + arcCY,
+              rotation: arcAngle + 90,
+              scale: isMobile ? 1.45 : 1.85,
+            };
+
+            // Lerp driven by page scroll — fully reversible
+            const target = {
+              x:        lerp(circle.x,        arc.x,        m),
+              y:        lerp(circle.y,        arc.y,        m),
+              rotation: lerp(circle.rotation, arc.rotation, m),
+              scale:    lerp(circle.scale,    arc.scale,    m),
+            };
+
+            return <FlipCard key={i} src={src} target={target} />;
+          })}
+        </div>
+
+        {/* Bottom fade into next section */}
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-28"
+          style={{ background: 'linear-gradient(to top, #030712, transparent)' }}
+        />
       </div>
-
-      {/* Bottom fade */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24"
-        style={{ background: 'linear-gradient(to top, #030712, transparent)' }} />
     </div>
   );
 }
