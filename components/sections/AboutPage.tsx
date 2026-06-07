@@ -433,7 +433,7 @@ function StatsSection() {
 
           <motion.div
             ref={statsRef}
-            className="grid grid-cols-4 w-full"
+            className="grid grid-cols-1 sm:grid-cols-4 w-full gap-y-8 sm:gap-y-0"
             initial={{ opacity: 0, y: 20 }}
             animate={p >= 0.28 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -452,7 +452,7 @@ function StatsSection() {
                   </span>
                 </div>
                 {i < stats.length - 1 && (
-                  <div className="w-px h-10 bg-white/10 shrink-0" />
+                  <div className="hidden sm:block w-px h-10 bg-white/10 shrink-0" />
                 )}
               </div>
             ))}
