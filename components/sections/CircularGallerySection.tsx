@@ -110,7 +110,7 @@ export default function CircularGallerySection() {
         {/* Section heading — fades in then out */}
         <motion.div
           style={{ opacity: headingOpacity, y: headingY }}
-          className="absolute inset-x-0 top-16 z-20 text-center px-6 pointer-events-none"
+          className="absolute inset-x-0 top-28 z-20 text-center px-6 pointer-events-none"
           dir={isRtl ? 'rtl' : 'ltr'}
         >
           <h2 className="text-4xl font-black text-white sm:text-5xl leading-tight">
@@ -127,8 +127,8 @@ export default function CircularGallerySection() {
           <p className="mt-3 text-sm text-white/40 max-w-sm mx-auto">{subtitle}</p>
         </motion.div>
 
-        {/* Circular Gallery — fills the viewport */}
-        <div className="absolute inset-0 flex items-center justify-center">
+        {/* Circular Gallery — vertically centred in the space below the nav */}
+        <div className="absolute inset-0 pt-20 pb-8 flex items-center justify-center">
           <CircularGallery
             items={ITEMS}
             rotation={isRtl ? -rotation : rotation}
