@@ -1,14 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useSpring,
-  useMotionValue,
-  useMotionValueEvent,
-} from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { motion, useScroll, useTransform, useSpring, useMotionValueEvent } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
@@ -38,61 +31,79 @@ const IMAGES = [
 ];
 
 const TOTAL = IMAGES.length;
-const IMG_W = 60;
-const IMG_H = 85;
-const lerp  = (a: number, b: number, t: number) => a * (1 - t) + b * t;
+const IMG_W = 64;
+const IMG_H = 90;
 
-// ── Flip card ─────────────────────────────────────────────────────────────────
-function FlipCard({ src, target }: {
-  src: string;
-  target: { x: number; y: number; rotation: number; scale: number };
-}) {
+/** Returns translateX, translateY (both relative to container centre), rotate, scale */
+function calcCard(i: number, m: number, hw: number, hh: number) {
+  const isMobile  = hw * 2 < 768;
+  const circleR   = isMobile ? Math.min(hw * 0.7, 175) : Math.min(hw * 0.38, 270);
+  const arcR      = isMobile ? Math.min(hw * 0.85, 300) : Math.min(hw * 0.52, 400);
+  const arcOffY   = isMobile ? 80 : 110;   // top-of-arc below centre
+  const spread    = isMobile ? 110 : 140;
+  const startA    = -90 - spread / 2;
+
+  // Circle (tx, ty relative to centre)
+  const cAngle = (i / TOTAL) * Math.PI * 2;
+  const ctx    = Math.cos(cAngle) * circleR;
+  const cty    = Math.sin(cAngle) * circleR;
+  const cRot   = (i / TOTAL) * 360 + 90;
+
+  // Arc bottom-fan (tx, ty relative to centre)
+  const aAngleDeg = startA + (i / (TOTAL - 1)) * spread;
+  const aAngle    = aAngleDeg * (Math.PI / 180);
+  const atx       = Math.cos(aAngle) * arcR;
+  // arc centre sits arcOffY + arcR below screen centre  →  card.y = arcOffY + arcR + sin(angle)*arcR
+  const aty       = arcOffY + arcR + Math.sin(aAngle) * arcR;
+  const aRot      = aAngleDeg + 90;
+  const aScale    = isMobile ? 1.3 : 1.6;
+
+  // Lerp
+  const tx    = ctx    + (atx    - ctx)    * m;
+  const ty    = cty    + (aty    - cty)    * m;
+  const rot   = cRot   + (aRot   - cRot)   * m;
+  const scale = 1      + (aScale - 1)      * m;
+  return { tx, ty, rot, scale };
+}
+
+// ── Card component (hover = flip) ────────────────────────────────────────────
+const Card = ({ src, elRef }: { src: string; elRef: (el: HTMLDivElement | null) => void }) => {
+  const [flipped, setFlipped] = useState(false);
   return (
-    <motion.div
-      animate={{ x: target.x, y: target.y, rotate: target.rotation, scale: target.scale, opacity: 1 }}
-      initial={{ opacity: 0 }}
-      transition={{ type: 'spring', stiffness: 50, damping: 18 }}
+    <div
+      ref={elRef}
+      onMouseEnter={() => setFlipped(true)}
+      onMouseLeave={() => setFlipped(false)}
       style={{
         position: 'absolute',
-        width: IMG_W,
-        height: IMG_H,
-        left: '50%',
-        top: '50%',
-        marginLeft: -IMG_W / 2,
-        marginTop: -IMG_H / 2,
-        perspective: '1000px',
+        left: '50%', top: '50%',
+        marginLeft: -IMG_W / 2, marginTop: -IMG_H / 2,
+        width: IMG_W, height: IMG_H,
+        perspective: '800px',
+        willChange: 'transform',
       }}
-      className="cursor-pointer group"
     >
-      <motion.div
-        className="relative h-full w-full"
-        style={{ transformStyle: 'preserve-3d' }}
-        transition={{ duration: 0.55, type: 'spring', stiffness: 260, damping: 20 }}
-        whileHover={{ rotateY: 180 }}
-      >
+      <div style={{
+        width: '100%', height: '100%',
+        position: 'relative',
+        transformStyle: 'preserve-3d',
+        transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+        transition: 'transform 0.55s cubic-bezier(0.22,1,0.36,1)',
+      }}>
         {/* Front */}
-        <div className="absolute inset-0 overflow-hidden rounded-xl shadow-lg"
-          style={{ backfaceVisibility: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', borderRadius: 12, overflow: 'hidden', boxShadow: '0 6px 24px rgba(0,0,0,0.6)', outline: '1px solid rgba(255,255,255,0.08)' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt="" className="h-full w-full object-cover" draggable={false} />
-          <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
-          <div className="absolute inset-0 rounded-xl ring-1 ring-white/10" />
+          <img src={src} alt="" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         </div>
         {/* Back */}
-        <div className="absolute inset-0 overflow-hidden rounded-xl flex flex-col items-center justify-center"
-          style={{
-            backfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
-            background: 'rgba(6,182,212,0.12)',
-            border: '1px solid rgba(6,182,212,0.3)',
-          }}>
-          <p className="text-[8px] font-bold uppercase tracking-widest text-cyan-400 mb-0.5">CICT</p>
-          <p className="text-[9px] font-semibold text-white">2026</p>
+        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', borderRadius: 12, transform: 'rotateY(180deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(6,182,212,0.12)', border: '1px solid rgba(6,182,212,0.3)' }}>
+          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', color: '#67e8f9', textTransform: 'uppercase', marginBottom: 2 }}>CICT</p>
+          <p style={{ fontSize: 10, fontWeight: 600, color: '#fff' }}>2026</p>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
-}
+};
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function GalleryRegisterHero() {
@@ -101,190 +112,117 @@ export default function GalleryRegisterHero() {
 
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState({ w: 0, h: 0 });
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  useEffect(() => {
-    const el = innerRef.current; if (!el) return;
-    const obs = new ResizeObserver(e => setSize({ w: e[0].contentRect.width, h: e[0].contentRect.height }));
-    obs.observe(el);
-    setSize({ w: el.offsetWidth, h: el.offsetHeight });
-    return () => obs.disconnect();
-  }, []);
+  // ── Page-scroll → morph ──────────────────────────────────────────────────────
+  const { scrollYProgress } = useScroll({ target: outerRef, offset: ['start start', 'end end'] });
+  const morphRaw = useTransform(scrollYProgress, [0.18, 0.62], [0, 1]);
+  const morph    = useSpring(morphRaw, { stiffness: 60, damping: 22 });
 
-  // ── Scroll tied to the outer container ──────────────────────────────────────
-  const { scrollYProgress } = useScroll({
-    target: outerRef,
-    offset: ['start start', 'end end'],
+  // ── Update card DOM directly on every morph tick (no React re-render) ────────
+  useMotionValueEvent(morph, 'change', (m) => {
+    const el = innerRef.current;
+    if (!el) return;
+    const hw = el.offsetWidth  / 2;
+    const hh = el.offsetHeight / 2;
+    cardRefs.current.forEach((card, i) => {
+      if (!card) return;
+      const { tx, ty, rot, scale } = calcCard(i, m, hw, hh);
+      card.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) rotate(${rot.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
+    });
   });
 
-  // 400vh split into 3 phases:
-  //  Stage 1 → 0.00–0.20  : circle visible & stable
-  //  Stage 2 → 0.20–0.65  : morph animation
-  //  Stage 3 → 0.65–1.00  : arc + CTA stable
-  const morphRaw = useTransform(scrollYProgress, [0.20, 0.65], [0, 1]);
-  const morph    = useSpring(morphRaw, { stiffness: 55, damping: 22 });
-
-  // Mouse parallax (horizontal only, for arc depth)
-  const mouseX   = useMotionValue(0);
-  const smoothPx = useSpring(mouseX, { stiffness: 30, damping: 20 });
+  // Initial placement on mount
   useEffect(() => {
-    const el = innerRef.current; if (!el) return;
-    const fn = (e: MouseEvent) => {
-      const r = el.getBoundingClientRect();
-      mouseX.set(((e.clientX - r.left) / r.width * 2 - 1) * 70);
-    };
-    el.addEventListener('mousemove', fn);
-    return () => el.removeEventListener('mousemove', fn);
-  }, [mouseX]);
+    const el = innerRef.current;
+    if (!el) return;
+    const hw = el.offsetWidth  / 2;
+    const hh = el.offsetHeight / 2;
+    cardRefs.current.forEach((card, i) => {
+      if (!card) return;
+      const { tx, ty, rot, scale } = calcCard(i, 0, hw, hh);
+      card.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) rotate(${rot.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
+    });
+  }, []);
 
-  // Live values for card position math
-  const [m, setM]   = useState(0);
-  const [px, setPx] = useState(0);
-  useMotionValueEvent(morph,    'change', setM);
-  useMotionValueEvent(smoothPx, 'change', setPx);
-
-  // Stage 1 → circle text: fully visible until morph starts, then fades
-  const circleTxtOpacity = useTransform(morph, [0, 0.25], [1, 0]);
-  const circleTxtScale   = useTransform(morph, [0, 0.25], [1, 0.88]);
-
-  // Stage 3 → CTA: fades in once arc is nearly formed
-  const ctaOpacity = useTransform(morph, [0.72, 1], [0, 1]);
-  const ctaY       = useTransform(morph, [0.72, 1], [28, 0]);
+  // ── Text opacity via spring ──────────────────────────────────────────────────
+  const circleTxtOp = useTransform(morph, [0, 0.28], [1, 0]);
+  const ctaOp       = useTransform(morph, [0.65, 1],  [0, 1]);
+  const ctaY        = useTransform(morph, [0.65, 1],  [24, 0]);
 
   const text = {
-    center: lang === 'ar' ? 'معاً نبني المستقبل'     : lang === 'tr' ? 'Birlikte Geleceği İnşa Ediyoruz' : 'Together We Build The Future',
-    tag:    lang === 'ar' ? 'انضم إلى المؤتمر'        : lang === 'tr' ? 'Konferansa Katıl'  : 'Join the Conference',
-    titleA: lang === 'ar' ? 'احجز مقعدك '             : lang === 'tr' ? 'Yerinizi '         : 'Secure your ',
-    titleB: lang === 'ar' ? 'قبل نفاد الأماكن'        : lang === 'tr' ? 'Şimdi Ayırın'      : 'seat now.',
-    sub:    lang === 'ar' ? 'يومان من الإلهام والابتكار — كن جزءًا من اللحظة.' : lang === 'tr' ? 'İlhamın iki günü — bu anın parçası ol.' : 'Two days of inspiration — be part of the moment.',
-    btn:    lang === 'ar' ? 'سجّل الآن'               : lang === 'tr' ? 'Kayıt Ol'          : 'Register Now',
+    center: lang === 'ar' ? 'معاً نبني المستقبل'       : lang === 'tr' ? 'Birlikte Geleceği İnşa Ediyoruz' : 'Together We Build The Future',
+    tag:    lang === 'ar' ? 'انضم إلى المؤتمر'          : lang === 'tr' ? 'Konferansa Katıl'  : 'Join the Conference',
+    titleA: lang === 'ar' ? 'احجز مقعدك '               : lang === 'tr' ? 'Yerinizi '         : 'Secure your ',
+    titleB: lang === 'ar' ? 'قبل نفاد الأماكن'          : lang === 'tr' ? 'Şimdi Ayırın'      : 'seat now.',
+    sub:    lang === 'ar' ? 'يومان من الإلهام — كن جزءًا من اللحظة.' : lang === 'tr' ? 'İki gün ilham — bu anın parçası ol.' : 'Two days of inspiration — be part of the moment.',
+    btn:    lang === 'ar' ? 'سجّل الآن'                 : lang === 'tr' ? 'Kayıt Ol'          : 'Register Now',
   };
 
   return (
-    // ── Outer: 220vh → Stage1(circle) + Stage2(morph) + Stage3(arc+CTA) ────────
     <div ref={outerRef} style={{ height: '220vh' }}>
-
-      {/* ── Inner: sticky viewport ────────────────────────────────────────── */}
       <div
         ref={innerRef}
-        className="sticky top-0 w-full overflow-hidden bg-[#030712]"
-        style={{ height: '100vh' }}
         dir={isRtl ? 'rtl' : 'ltr'}
+        className="sticky top-0 w-full bg-[#030712]"
+        style={{ height: '100vh', overflow: 'hidden' }}
       >
         {/* Ambient glow */}
         <div className="pointer-events-none absolute inset-0 -z-10">
-          <div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[700px] rounded-full opacity-20 blur-3xl"
-            style={{ background: 'radial-gradient(ellipse, #7c3aed 0%, #06b6d4 60%, transparent 100%)' }}
-          />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[700px] rounded-full opacity-20 blur-3xl"
+            style={{ background: 'radial-gradient(ellipse,#7c3aed 0%,#06b6d4 60%,transparent 100%)' }} />
         </div>
 
-        {/* ── "معاً نبني المستقبل" — visible in circle state ─────────────── */}
+        {/* "معاً نبني المستقبل" */}
         <motion.div
-          style={{ opacity: circleTxtOpacity, scale: circleTxtScale }}
-          className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-6"
+          style={{ opacity: circleTxtOp }}
+          className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center text-center px-6"
         >
-          <h2
-            className="font-black text-white leading-tight"
-            style={{ fontSize: 'clamp(1.6rem, 4vw, 3.5rem)' }}
-          >
-            {text.center.split(' ').map((word, i) => (
+          <h2 className="font-black text-white" style={{ fontSize: 'clamp(1.6rem,4vw,3.2rem)' }}>
+            {text.center.split(' ').map((w, i) => (
               <span key={i}>
-                {i === (isRtl ? 1 : 2) ? (
-                  <span style={{
-                    background: 'linear-gradient(135deg, #06b6d4, #a78bfa)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}>{word}</span>
-                ) : word}
+                {i === 1
+                  ? <span style={{ background: 'linear-gradient(135deg,#06b6d4,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{w}</span>
+                  : w}
                 {i < text.center.split(' ').length - 1 ? ' ' : ''}
               </span>
             ))}
           </h2>
         </motion.div>
 
-        {/* ── Registration CTA — appears as arc forms ─────────────────────── */}
+        {/* Registration CTA */}
         <motion.div
-          style={{ opacity: ctaOpacity, y: ctaY }}
-          className="pointer-events-none absolute top-[7%] inset-x-0 z-20 flex flex-col items-center justify-center text-center px-6"
+          style={{ opacity: ctaOp, y: ctaY }}
+          className="pointer-events-none absolute top-[8%] inset-x-0 z-20 flex flex-col items-center text-center px-6"
         >
-          <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-cyan-400/70 mb-3">
-            {text.tag}
-          </p>
-          <h2 className="font-black text-white mb-3" style={{ fontSize: 'clamp(1.8rem, 4vw, 3.8rem)' }}>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-cyan-400/70 mb-3">{text.tag}</p>
+          <h2 className="font-black text-white mb-3" style={{ fontSize: 'clamp(1.8rem,4vw,3.5rem)' }}>
             {text.titleA}
-            <span style={{
-              background: 'linear-gradient(135deg, #06b6d4, #a78bfa)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>{text.titleB}</span>
+            <span style={{ background: 'linear-gradient(135deg,#06b6d4,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              {text.titleB}
+            </span>
           </h2>
           <p className="text-sm text-white/40 max-w-sm mb-7 leading-relaxed">{text.sub}</p>
           <div className="pointer-events-auto">
-            <Link
-              href="/register"
-              className={cn(
-                'inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.97]',
-                isRtl && 'flex-row-reverse',
-              )}
-              style={{ background: 'linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6)' }}
-            >
+            <Link href="/register"
+              className={cn('inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold text-white hover:opacity-90 active:scale-[0.97] transition-all', isRtl && 'flex-row-reverse')}
+              style={{ background: 'linear-gradient(135deg,#06b6d4,#3b82f6,#8b5cf6)' }}>
               {text.btn}
               <ArrowRight className={cn('h-4 w-4', isRtl && 'rotate-180')} />
             </Link>
           </div>
         </motion.div>
 
-        {/* ── Cards ──────────────────────────────────────────────────────────── */}
-        <div className="relative flex items-center justify-center w-full h-full">
-          {IMAGES.map((src, i) => {
-            const isMobile = size.w < 768;
-
-            // Circle position — centred, clean fixed radius
-            const circleR = isMobile ? 190 : 270;
-            const cAngle  = (i / TOTAL) * 360;
-            const cRad    = (cAngle * Math.PI) / 180;
-            const circle  = {
-              x: Math.cos(cRad) * circleR,
-              y: Math.sin(cRad) * circleR,
-              rotation: cAngle + 90,
-              scale: 1,
-            };
-
-            // Arc: bottom fan, all coords relative to container CENTER
-            const arcR   = isMobile ? 300 : 430;
-            const arcCY  = arcR + (isMobile ? 90 : 130); // centre of arc circle below centre
-            const spread = isMobile ? 110 : 140;
-            const start  = -90 - spread / 2;
-            const step   = spread / (TOTAL - 1);
-            const arcAngle = start + i * step;
-            const arcRad   = (arcAngle * Math.PI) / 180;
-            const arc = {
-              x: Math.cos(arcRad) * arcR + px,
-              y: Math.sin(arcRad) * arcR + arcCY,
-              rotation: arcAngle + 90,
-              scale: isMobile ? 1.4 : 1.75,
-            };
-
-            // Lerp driven by page scroll — fully reversible
-            const target = {
-              x:        lerp(circle.x,        arc.x,        m),
-              y:        lerp(circle.y,        arc.y,        m),
-              rotation: lerp(circle.rotation, arc.rotation, m),
-              scale:    lerp(circle.scale,    arc.scale,    m),
-            };
-
-            return <FlipCard key={i} src={src} target={target} />;
-          })}
+        {/* Cards — DOM updated directly, no React re-renders */}
+        <div className="absolute inset-0">
+          {IMAGES.map((src, i) => (
+            <Card key={i} src={src} elRef={(el) => { cardRefs.current[i] = el; }} />
+          ))}
         </div>
 
-        {/* Bottom fade into next section */}
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-28"
-          style={{ background: 'linear-gradient(to top, #030712, transparent)' }}
-        />
+        {/* Bottom fade */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24"
+          style={{ background: 'linear-gradient(to top,#030712,transparent)' }} />
       </div>
     </div>
   );
