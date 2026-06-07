@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useLang } from '@/lib/i18n';
 import PhotoMarquee from '@/components/sections/PhotoMarquee';
+import CircularGallerySection from '@/components/sections/CircularGallerySection';
 
 /* ─── Animated counter — resets and replays every time it enters view ─── */
 function Counter({ target, suffix = '', prefix = '', visible }: { target: number; suffix?: string; prefix?: string; visible: boolean }) {
@@ -540,6 +541,7 @@ export default function AboutPage() {
       <PresidentSection />
       <StatsSection />
       <PhotoMarquee />
+      <CircularGallerySection />
       <ValuesSection />
     </main>
   );
