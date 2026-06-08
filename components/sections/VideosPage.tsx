@@ -37,10 +37,10 @@ const FILM_EDITIONS: Edition[] = [
     labelEn: 'Second Edition',
     labelTr: 'İkinci Baskı',
     videos: [
-      { id: 'REGcpGlNvC8', titleAr: 'الفيلم الرسمي — الدورة الثانية', titleEn: 'Official Film — Edition 2', titleTr: 'Resmi Film — 2. Baskı' },
-      { id: 'XMZ4htBi20s', titleAr: 'الكلمة الافتتاحية 2024', titleEn: 'Opening Keynote 2024', titleTr: 'Açılış Konuşması 2024' },
-      { id: 'REGcpGlNvC8', titleAr: 'ورش العمل التفاعلية', titleEn: 'Interactive Workshops', titleTr: 'İnteraktif Atölyeler' },
-      { id: 'XMZ4htBi20s', titleAr: 'ملخص الدورة الثانية', titleEn: 'Second Edition Highlights', titleTr: '2. Baskı Öne Çıkanlar' },
+      { id: 'nKb0KFXdmDs', titleAr: 'الفيلم الرسمي — الدورة الثانية', titleEn: 'Official Film — Edition 2', titleTr: 'Resmi Film — 2. Baskı' },
+      { id: 'AS_Pj9ECTUw', titleAr: 'ملخص الدورة الثانية', titleEn: 'Second Edition Highlights', titleTr: '2. Baskı Öne Çıkanlar' },
+      { id: 'd7eDsdRygBw', titleAr: 'الكلمة الافتتاحية 2024', titleEn: 'Opening Keynote 2024', titleTr: 'Açılış Konuşması 2024' },
+      { id: '82pGZ55yUdc', titleAr: 'ورش العمل التفاعلية', titleEn: 'Interactive Workshops', titleTr: 'İnteraktif Atölyeler' },
     ],
   },
   {
