@@ -106,20 +106,29 @@ const MULHAMOON_SECTION: FlatSection = {
 type SectionKey = 'films' | 'tv' | 'mulhamoon';
 const SECTION_ORDER: SectionKey[] = ['films', 'tv', 'mulhamoon'];
 
-const GRID_POSITIONS = [
-  { x: 0, y: 0 }, { x: 6, y: 0 },
-  { x: 0, y: 6 }, { x: 6, y: 6 },
-];
+const GRID_COLS = 2;
 
+// Dynamically calculates grid positions based on actual video count
 function videosToFrames(videos: Video[], lang: string) {
-  return videos.map((v, i) => ({
-    id: i,
-    youtubeId: v.id,
-    title: lang === 'ar' ? v.titleAr : lang === 'tr' ? v.titleTr : v.titleEn,
-    defaultPos: { x: GRID_POSITIONS[i % 4].x, y: GRID_POSITIONS[i % 4].y, w: 6, h: 6 },
-    corner: '', edgeHorizontal: '', edgeVertical: '',
-    mediaSize: 1, borderThickness: 0, borderSize: 100, isHovered: false,
-  }));
+  const cols = GRID_COLS;
+  const rows = Math.ceil(videos.length / cols);
+  return videos.map((v, i) => {
+    const colIdx = i % cols;
+    const rowIdx = Math.floor(i / cols);
+    return {
+      id: i,
+      youtubeId: v.id,
+      title: lang === 'ar' ? v.titleAr : lang === 'tr' ? v.titleTr : v.titleEn,
+      defaultPos: {
+        x: colIdx * (12 / cols),
+        y: rowIdx * (12 / rows),
+        w: 12 / cols,
+        h: 12 / rows,
+      },
+      corner: '', edgeHorizontal: '', edgeVertical: '',
+      mediaSize: 1, borderThickness: 0, borderSize: 100, isHovered: false,
+    };
+  });
 }
 
 function label(obj: { labelAr: string; labelEn: string; labelTr: string }, lang: string) {
@@ -155,6 +164,8 @@ export default function VideosPage() {
   }
 
   const frames = videosToFrames(currentVideos, lang);
+  const gridRows = Math.ceil(currentVideos.length / GRID_COLS);
+  const gridHeight = Math.max(320, gridRows * 220);
 
   const sectionLabel = (key: SectionKey) => {
     if (key === 'films') return lang === 'ar' ? 'الأفلام' : lang === 'tr' ? 'Filmler' : 'Films';
@@ -275,7 +286,7 @@ export default function VideosPage() {
           <motion.div
             key={`${activeSection}-${activeEdition}`}
             className="w-full rounded-2xl overflow-hidden mt-2"
-            style={{ height: 'clamp(320px, 60vh, 640px)' }}
+            style={{ height: `${gridHeight}px` }}
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.97 }}
@@ -283,8 +294,8 @@ export default function VideosPage() {
           >
             <DynamicFrameLayout
               frames={frames}
-              cols={2}
-              rows={2}
+              cols={GRID_COLS}
+              rows={gridRows}
               gapSize={6}
               hoverSize={7}
               onPlay={setActiveVideo}
