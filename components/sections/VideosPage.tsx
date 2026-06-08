@@ -6,7 +6,6 @@ import { useLang } from '@/lib/i18n';
 import { DynamicFrameLayout } from '@/components/ui/dynamic-frame-layout';
 import { X, Film, Tv, Sparkles } from 'lucide-react';
 import UniversalPlayer from '@/components/ui/video-player';
-import DotCard from '@/components/ui/dot-card';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -193,18 +192,6 @@ export default function VideosPage() {
             </motion.span>
           </h1>
         </div>
-
-        {/* Stats row */}
-        <motion.div
-          className="flex flex-wrap gap-6 mb-10"
-          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.6, ease: EASE }}
-          dir="ltr"
-        >
-          <DotCard target={777000} duration={2000} label={lang === 'ar' ? 'مشاهدة' : lang === 'tr' ? 'İzlenme' : 'Views'} />
-          <DotCard target={12}     duration={1200} label={lang === 'ar' ? 'فيلم'    : lang === 'tr' ? 'Film'     : 'Films'} />
-          <DotCard target={3}      duration={800}  label={lang === 'ar' ? 'دورة'    : lang === 'tr' ? 'Baskı'    : 'Editions'} />
-        </motion.div>
 
         {/* ── Sticky tab area ── */}
         <div

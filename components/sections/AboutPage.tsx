@@ -2,12 +2,11 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useMotionValueEvent, useTransform } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { Lightbulb, FlaskConical, Users, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useLang } from '@/lib/i18n';
 import CircularGallerySection from '@/components/sections/CircularGallerySection';
-import WordHero from '@/components/sections/WordHero';
 
 /* ─── Animated counter — resets and replays every time it enters view ─── */
 function Counter({ target, suffix = '', prefix = '', visible }: { target: number; suffix?: string; prefix?: string; visible: boolean }) {
@@ -104,6 +103,8 @@ const Grid = () => (
   }} />
 );
 
+const PILLAR_ICONS = [Lightbulb, FlaskConical, Users];
+const PILLAR_COLORS = ['#67e8f9', '#818cf8', '#a78bfa'];
 
 const STAT_META = [
   { target: 4,    suffix: '',  color: '#67e8f9', colorB: '#3b82f6' },
@@ -463,6 +464,70 @@ function StatsSection() {
   );
 }
 
+/* ─────────────────────────────────────────
+   SECTION 4 — Values / Pillars
+───────────────────────────────────────── */
+function ValuesSection() {
+  const { ref, p, revealWord } = useSection();
+  const { t, tx, dir } = useLang();
+
+  const pillarData = tx<{ title: string; body: string }[]>('about.pillars');
+  const pillars = PILLAR_ICONS.map((Icon, i) => ({
+    icon: Icon,
+    color: PILLAR_COLORS[i],
+    title: pillarData?.[i]?.title ?? '',
+    body: pillarData?.[i]?.body ?? '',
+  }));
+
+  return (
+    <div ref={ref} className="relative h-[130vh]">
+      <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden bg-black">
+        <div
+          className="pointer-events-none absolute left-1/2 bottom-0 -translate-x-1/2 w-[600px] h-[400px]"
+          style={{ background: 'radial-gradient(ellipse, rgba(139,92,246,0.08) 0%, transparent 70%)' }}
+        />
+        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full" dir={dir}>
+
+          <div className="text-center mb-14">
+            <h2 className="font-outfit font-bold leading-[0.9] tracking-tight"
+              style={{ fontSize: 'clamp(2.4rem, 5vw, 4.5rem)' }}>
+              <motion.span className="block text-white" {...revealWord(0.10)}>
+                {t('about.valsTitleA')}
+              </motion.span>
+              <motion.span
+                className="block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
+                {...revealWord(0.17)}
+              >
+                {t('about.valsTitleB')}
+              </motion.span>
+            </h2>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-5">
+            {pillars.map((pillar, i) => (
+              <motion.div
+                key={pillar.title}
+                initial={{ opacity: 0, y: 36 }}
+                animate={{ opacity: p >= 0.26 + i * 0.08 ? 1 : 0, y: p >= 0.26 + i * 0.08 ? 0 : 36 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="rounded-2xl p-7 flex flex-col"
+                style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-6"
+                  style={{ background: `${pillar.color}18` }}>
+                  <pillar.icon size={20} style={{ color: pillar.color }} />
+                </div>
+                <h3 className="font-outfit font-bold text-white text-2xl mb-3">{pillar.title}</h3>
+                <p className="text-[15px] text-white/50 leading-relaxed flex-1">{pillar.body}</p>
+              </motion.div>
+            ))}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ─────────────────────────────────────────
    PAGE EXPORT
@@ -475,7 +540,7 @@ export default function AboutPage() {
       <PresidentSection />
       <StatsSection />
       <CircularGallerySection />
-      <WordHero />
+      <ValuesSection />
     </main>
   );
 }
