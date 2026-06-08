@@ -1,7 +1,75 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
+
+// YouTube serves thumbnails at multiple qualities — try each in order until one loads
+const THUMB_QUALITIES = ["maxresdefault", "hqdefault", "mqdefault", "default"] as const;
+
+function YouTubeThumbnail({
+  youtubeId,
+  title,
+  isHovered,
+}: {
+  youtubeId: string;
+  title: string;
+  isHovered: boolean;
+}) {
+  const [qualityIdx, setQualityIdx] = useState(0);
+  const [failed, setFailed] = useState(false);
+
+  const handleError = useCallback(() => {
+    if (qualityIdx < THUMB_QUALITIES.length - 1) {
+      setQualityIdx((q) => q + 1);
+    } else {
+      setFailed(true);
+    }
+  }, [qualityIdx]);
+
+  if (failed) {
+    return (
+      <div
+        className="absolute inset-0 flex flex-col items-center justify-center"
+        style={{
+          background: "linear-gradient(135deg, #0c1228 0%, #0f172a 50%, #0c1228 100%)",
+        }}
+      >
+        {/* Decorative grid */}
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(6,182,212,0.4) 1px,transparent 1px),linear-gradient(to right,rgba(6,182,212,0.4) 1px,transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+        {/* Logo mark */}
+        <div
+          className="relative z-10 flex h-14 w-14 items-center justify-center rounded-2xl mb-3"
+          style={{ background: "linear-gradient(135deg, #06b6d4, #8b5cf6)" }}
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </div>
+        <p className="relative z-10 text-white/50 text-xs font-medium text-center px-4 line-clamp-2">
+          {title}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      key={qualityIdx}
+      src={`https://img.youtube.com/vi/${youtubeId}/${THUMB_QUALITIES[qualityIdx]}.jpg`}
+      alt={title}
+      onError={handleError}
+      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
+      style={{ transform: isHovered ? "scale(1.06)" : "scale(1)" }}
+    />
+  );
+}
 
 interface Frame {
   id: number;
@@ -26,13 +94,8 @@ function FrameComponent({
       className="relative w-full h-full overflow-hidden rounded-xl md:rounded-2xl cursor-pointer"
       onClick={onClick}
     >
-      {/* Thumbnail */}
-      <img
-        src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
-        alt={title}
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
-        style={{ transform: isHovered ? "scale(1.06)" : "scale(1)" }}
-      />
+      {/* Thumbnail with quality fallback */}
+      <YouTubeThumbnail youtubeId={youtubeId} title={title} isHovered={isHovered} />
 
       {/* Dark overlay */}
       <div
