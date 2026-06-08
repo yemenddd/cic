@@ -16,12 +16,13 @@ const LANG_OPTIONS: { code: Lang; label: string; dir: 'ltr' | 'rtl' }[] = [
 ];
 
 const navLinks = [
-  { key: 'home',    href: '/' },
-  { key: 'about',   href: '/about' },
-  { key: 'history', href: '/history' },
-  { key: 'program', href: '/program' },
-  { key: 'gallery', href: '/gallery' },
-  { key: 'videos', href: '/videos' },
+  { key: 'home',         href: '/' },
+  { key: 'about',        href: '/about' },
+  { key: 'history',      href: '/history' },
+  { key: 'program',      href: '/program' },
+  { key: 'achievements', href: '/achievements' },
+  { key: 'gallery',      href: '/gallery' },
+  { key: 'videos',       href: '/videos' },
 ];
 
 const EASE = [0.22, 1, 0.36, 1] as const;
