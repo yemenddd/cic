@@ -49,10 +49,10 @@ const FILM_EDITIONS: Edition[] = [
     labelEn: 'Third Edition',
     labelTr: 'Üçüncü Baskı',
     videos: [
-      { id: 'XMZ4htBi20s', titleAr: 'الفيلم الرسمي — مؤتمر 2025', titleEn: 'Official Film — CICT 2025', titleTr: 'Resmi Film — CICT 2025' },
-      { id: 'REGcpGlNvC8', titleAr: 'أبرز لحظات مؤتمر 2025', titleEn: 'CICT 2025 Highlights', titleTr: 'CICT 2025 Öne Çıkanlar' },
-      { id: 'XMZ4htBi20s', titleAr: 'جلسات الذكاء الاصطناعي', titleEn: 'AI Sessions 2025', titleTr: 'Yapay Zeka Oturumları 2025' },
-      { id: 'REGcpGlNvC8', titleAr: 'معرض المشاريع 2025', titleEn: 'Projects Exhibition 2025', titleTr: 'Projeler Sergisi 2025' },
+      { id: 'XMZ4htBi20s', titleAr: 'الفيلم الرسمي — الدورة الثالثة', titleEn: 'Official Film — Edition 3', titleTr: 'Resmi Film — 3. Baskı' },
+      { id: 'M1p9SkPmv1M', titleAr: 'ملخص الدورة الثالثة', titleEn: 'Third Edition Highlights', titleTr: '3. Baskı Öne Çıkanlar' },
+      { id: 'sxLvItf-DSo', titleAr: 'الكلمة الافتتاحية 2025', titleEn: 'Opening Keynote 2025', titleTr: 'Açılış Konuşması 2025' },
+      { id: 'OmCqiIk4mlU', titleAr: 'جلسات ومشاريع 2025', titleEn: 'Sessions & Projects 2025', titleTr: 'Oturumlar ve Projeler 2025' },
     ],
   },
 ];
