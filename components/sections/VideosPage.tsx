@@ -75,10 +75,16 @@ const TV_SECTION: FlatSection = {
   labelTr: 'TV Kanalları',
   icon: <Tv size={14} />,
   videos: [
-    { id: 'REGcpGlNvC8', titleAr: 'تغطية قناة الجزيرة', titleEn: 'Al Jazeera Coverage', titleTr: 'Al Jazeera Yayını' },
-    { id: 'XMZ4htBi20s', titleAr: 'تغطية القناة الرسمية', titleEn: 'Official Channel Coverage', titleTr: 'Resmi Kanal Yayını' },
-    { id: 'REGcpGlNvC8', titleAr: 'مقابلة قناة المسيرة', titleEn: 'Al Masirah Interview', titleTr: 'Al Masirah Röportajı' },
-    { id: 'XMZ4htBi20s', titleAr: 'البث المباشر للمؤتمر', titleEn: 'Conference Live Broadcast', titleTr: 'Konferans Canlı Yayını' },
+    { id: '0ChQcGOzx9E', titleAr: 'تغطية تلفزيونية 1',  titleEn: 'TV Coverage 1',  titleTr: 'TV Yayını 1'  },
+    { id: 'CZ2fgVoW4S4', titleAr: 'تغطية تلفزيونية 2',  titleEn: 'TV Coverage 2',  titleTr: 'TV Yayını 2'  },
+    { id: 'Xgbi_G3rPnI', titleAr: 'تغطية تلفزيونية 3',  titleEn: 'TV Coverage 3',  titleTr: 'TV Yayını 3'  },
+    { id: 'EQYVdcu3_9I', titleAr: 'تغطية تلفزيونية 4',  titleEn: 'TV Coverage 4',  titleTr: 'TV Yayını 4'  },
+    { id: 'eCCgJ2Yz3QE', titleAr: 'تغطية تلفزيونية 5',  titleEn: 'TV Coverage 5',  titleTr: 'TV Yayını 5'  },
+    { id: 'IgiMmmG6hRQ', titleAr: 'تغطية تلفزيونية 6',  titleEn: 'TV Coverage 6',  titleTr: 'TV Yayını 6'  },
+    { id: 'seUq51Yr5XM', titleAr: 'تغطية تلفزيونية 7',  titleEn: 'TV Coverage 7',  titleTr: 'TV Yayını 7'  },
+    { id: 'yPil2yzJCQI', titleAr: 'تغطية تلفزيونية 8',  titleEn: 'TV Coverage 8',  titleTr: 'TV Yayını 8'  },
+    { id: 'E5y_MCFV-3c', titleAr: 'تغطية تلفزيونية 9',  titleEn: 'TV Coverage 9',  titleTr: 'TV Yayını 9'  },
+    { id: 'xDewSb8zV7A', titleAr: 'تغطية تلفزيونية 10', titleEn: 'TV Coverage 10', titleTr: 'TV Yayını 10' },
   ],
 };
 
