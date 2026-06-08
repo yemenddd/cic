@@ -27,10 +27,8 @@ const FILM_EDITIONS: Edition[] = [
     labelEn: 'First Edition',
     labelTr: 'Birinci Baskı',
     videos: [
-      { id: 'XMZ4htBi20s', titleAr: 'الفيلم الرسمي — الدورة الأولى', titleEn: 'Official Film — Edition 1', titleTr: 'Resmi Film — 1. Baskı' },
-      { id: 'REGcpGlNvC8', titleAr: 'ملخص الدورة الأولى', titleEn: 'First Edition Highlights', titleTr: '1. Baskı Öne Çıkanlar' },
-      { id: 'XMZ4htBi20s', titleAr: 'الكلمة الافتتاحية 2023', titleEn: 'Opening Keynote 2023', titleTr: 'Açılış Konuşması 2023' },
-      { id: 'REGcpGlNvC8', titleAr: 'جلسات الابتكار', titleEn: 'Innovation Sessions', titleTr: 'İnovasyon Oturumları' },
+      { id: 'iYxPgs3AG28', titleAr: 'الفيلم الرسمي — الدورة الأولى', titleEn: 'Official Film — Edition 1', titleTr: 'Resmi Film — 1. Baskı' },
+      { id: 'ObWDgJNe9jY', titleAr: 'ملخص الدورة الأولى', titleEn: 'First Edition Highlights', titleTr: '1. Baskı Öne Çıkanlar' },
     ],
   },
   {
