@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useState, useCallback } from 'react';
 import ConferenceBadge from '@/components/ui/ConferenceBadge';
+import { downloadBadgePDF } from '@/lib/download-badge-pdf';
 
 function ConfirmationContent() {
   const params = useSearchParams();
@@ -19,7 +20,7 @@ function ConfirmationContent() {
 
   const [copied, setCopied] = useState(false);
 
-  const handleDownloadPDF = useCallback(() => window.print(), []);
+  const handleDownloadPDF = useCallback(() => downloadBadgePDF(name), [name]);
   const handleCopyLink    = useCallback(() => {
     navigator.clipboard.writeText(window.location.href).then(() => {
       setCopied(true);

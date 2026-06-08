@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useLang } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import ConferenceBadge from '@/components/ui/ConferenceBadge';
+import { downloadBadgePDF } from '@/lib/download-badge-pdf';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GOOGLE FORMS CONFIG
@@ -139,8 +140,8 @@ export default function RegisterForm() {
   };
 
   const handleDownloadPDF = useCallback(() => {
-    window.print();
-  }, []);
+    downloadBadgePDF(fields.fullName);
+  }, [fields.fullName]);
 
   const handleCopyLink = useCallback(() => {
     const cat = CATEGORIES.find(c => c.id === selected);

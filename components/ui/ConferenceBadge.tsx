@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Check, CircleCheck, Download, Copy, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
@@ -138,6 +138,7 @@ export default function ConferenceBadge({
           initial={{ opacity: 0, y: 28, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.55, ease: EASE }}
+          id="cict-badge-card"
           dir={isRtl ? 'rtl' : 'ltr'}
           className="w-full overflow-hidden rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
           style={{ maxWidth: 380, background: '#ffffff' }}
