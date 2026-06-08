@@ -76,7 +76,6 @@ const TV_SECTION: FlatSection = {
   icon: <Tv size={14} />,
   videos: [
     { id: '0ChQcGOzx9E', titleAr: 'تغطية تلفزيونية 1',  titleEn: 'TV Coverage 1',  titleTr: 'TV Yayını 1'  },
-    { id: 'CZ2fgVoW4S4', titleAr: 'تغطية تلفزيونية 2',  titleEn: 'TV Coverage 2',  titleTr: 'TV Yayını 2'  },
     { id: 'Xgbi_G3rPnI', titleAr: 'تغطية تلفزيونية 3',  titleEn: 'TV Coverage 3',  titleTr: 'TV Yayını 3'  },
     { id: 'EQYVdcu3_9I', titleAr: 'تغطية تلفزيونية 4',  titleEn: 'TV Coverage 4',  titleTr: 'TV Yayını 4'  },
     { id: 'eCCgJ2Yz3QE', titleAr: 'تغطية تلفزيونية 5',  titleEn: 'TV Coverage 5',  titleTr: 'TV Yayını 5'  },
