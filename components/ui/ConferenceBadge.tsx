@@ -127,25 +127,45 @@ export default function ConferenceBadge({
               backgroundSize: '18px 18px',
             }} />
 
-            {/* Gradient glow orb */}
+            {/* Gradient glow orb — left side */}
             <div style={{
-              position: 'absolute', top: -30, right: -30, width: 120, height: 120,
-              borderRadius: '50%', opacity: 0.15,
+              position: 'absolute', top: -30, left: -30, width: 130, height: 130,
+              borderRadius: '50%', opacity: 0.18,
               background: `radial-gradient(circle, ${accent.to}, transparent)`,
             }} />
 
-            {/* Logo row */}
-            <div className={row(isRtl)} style={{ position: 'relative', marginBottom: 16 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/logos/logo_white.png"
-                alt="CICT"
-                style={{ width: 44, height: 44, objectFit: 'contain', flexShrink: 0 }}
-              />
-              <div style={{ textAlign: isRtl ? 'right' : 'left' }}>
-                <p style={{ color: '#fff', fontWeight: 800, fontSize: 15, letterSpacing: '0.06em', margin: 0 }}>CICT 2026</p>
-                <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, margin: 0 }}>{lbl.edition}</p>
+            {/* Header row: Logo+Name on right · 2026 on left */}
+            <div style={{
+              position: 'relative', marginBottom: 16,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              {/* Logo + conference name */}
+              <div className={row(isRtl)} style={{ gap: 10 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/logos/logo_white.png"
+                  alt="CICT"
+                  style={{ width: 42, height: 42, objectFit: 'contain', flexShrink: 0 }}
+                />
+                <div style={{ textAlign: isRtl ? 'right' : 'left' }}>
+                  <p style={{ color: '#fff', fontWeight: 800, fontSize: 14, margin: 0, lineHeight: 1.3 }}>
+                    {isRtl ? 'مؤتمر الإبداع والابتكار' : lang === 'tr' ? 'Yaratıcılık ve İnovasyon' : 'Creativity & Innovation'}
+                  </p>
+                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, margin: 0 }}>
+                    {isRtl ? 'النسخة الرابعة' : lang === 'tr' ? '4. Baskı' : '4th Edition'}
+                  </p>
+                </div>
               </div>
+
+              {/* Year — opposite side */}
+              <span style={{
+                color: 'rgba(255,255,255,0.22)',
+                fontSize: 28, fontWeight: 900,
+                letterSpacing: '-0.02em', lineHeight: 1,
+                fontVariantNumeric: 'tabular-nums',
+              }}>
+                2026
+              </span>
             </div>
 
             {/* Confirmed badge */}
