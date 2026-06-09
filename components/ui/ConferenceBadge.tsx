@@ -226,10 +226,13 @@ export default function ConferenceBadge({
               </p>
             )}
 
-            {/* Track */}
+            {/* Track — right-aligned in RTL, label before value */}
             {track && (
-              <div className={row(isRtl)} style={{ marginBottom: 20 }}>
-                <span style={{ color: '#94a3b8', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20,
+                justifyContent: 'flex-start',  // flex-start = RIGHT in RTL
+              }}>
+                <span style={{ color: '#94a3b8', fontSize: 11, fontWeight: 600, letterSpacing: '0.06em' }}>
                   {lbl.trackLabel}:
                 </span>
                 <span style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>{track}</span>
