@@ -136,13 +136,12 @@ export default function ConferenceBadge({
 
             {/* Logo row */}
             <div className={row(isRtl)} style={{ position: 'relative', marginBottom: 16 }}>
-              <div style={{
-                width: 42, height: 42, borderRadius: 12, flexShrink: 0,
-                background: `linear-gradient(135deg, ${accent.from}, ${accent.to})`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '-0.03em' }}>CI</span>
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/logos/logo_white.png"
+                alt="CICT"
+                style={{ width: 44, height: 44, objectFit: 'contain', flexShrink: 0 }}
+              />
               <div style={{ textAlign: isRtl ? 'right' : 'left' }}>
                 <p style={{ color: '#fff', fontWeight: 800, fontSize: 15, letterSpacing: '0.06em', margin: 0 }}>CICT 2026</p>
                 <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, margin: 0 }}>{lbl.edition}</p>
