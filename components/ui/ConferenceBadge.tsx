@@ -186,7 +186,7 @@ export default function ConferenceBadge({
 
             {/* Name — hero element */}
             <h1 className={cn('text-[26px] font-black leading-tight text-slate-900 mb-4', isRtl ? 'text-right' : 'text-left')}
-              style={{ fontVariant: 'all-small-caps', letterSpacing: '-0.01em' }}>
+              style={{ letterSpacing: isRtl ? '0' : '-0.01em' }}>
               {name || '—'}
             </h1>
 

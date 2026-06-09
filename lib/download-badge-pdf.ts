@@ -7,10 +7,16 @@ export async function downloadBadgePDF(name = 'CICT-Badge') {
   hidden.forEach(el => { el.style.visibility = 'hidden'; });
 
   try {
+    // Wait for all fonts (including Arabic) to finish loading
+    await document.fonts.ready;
+
     const [{ toPng }, { jsPDF }] = await Promise.all([
       import('html-to-image'),
       import('jspdf'),
     ]);
+
+    // Small delay to ensure Framer Motion animations have settled
+    await new Promise(r => setTimeout(r, 80));
 
     // Capture at high resolution with white background
     const dataUrl = await toPng(card, {
