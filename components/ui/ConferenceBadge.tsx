@@ -184,12 +184,11 @@ export default function ConferenceBadge({
 
               {/* Left: category pill */}
               <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 7,
-                padding: '6px 14px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '6px 16px',
                 borderRadius: 99, flexShrink: 0, marginTop: 2,
                 background: `linear-gradient(135deg, ${accent.from}, ${accent.to})`,
               }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.55)' }} />
                 <span style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{categoryLabel}</span>
               </div>
             </div>
