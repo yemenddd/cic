@@ -6,8 +6,10 @@ import { X, Globe, Check, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { useLang } from '@/lib/i18n';
 import type { Lang } from '@/lib/dictionary';
+import ThemeToggle from '@/components/layout/ThemeToggle';
 
 const LANG_OPTIONS: { code: Lang; label: string; dir: 'ltr' | 'rtl' }[] = [
   { code: 'ar', label: 'العربية', dir: 'rtl' },
@@ -36,6 +38,14 @@ export default function Header() {
   const langRef                   = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const logoSrc = mounted && resolvedTheme === 'light'
+    ? '/images/logos/logo_colored.png'
+    : '/images/logos/logo_white.png';
+
   useEffect(() => {
     const onMouse = (e: MouseEvent) => {
       if (langRef.current && !langRef.current.contains(e.target as Node)) setLangOpen(false);
@@ -46,7 +56,6 @@ export default function Header() {
     return () => { document.removeEventListener('mousedown', onMouse); document.removeEventListener('keydown', onKey); };
   }, []);
 
-  // Close dropdown whenever the mobile menu opens
   useEffect(() => { if (menuOpen) setLangOpen(false); }, [menuOpen]);
 
   useEffect(() => {
@@ -57,7 +66,6 @@ export default function Header() {
 
   useEffect(() => { setMenuOpen(false); }, [pathname]);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -74,23 +82,35 @@ export default function Header() {
         transition={{ duration: 0.6, ease: EASE }}
         className="fixed top-0 inset-x-0 z-50 transition-all duration-300"
         style={showBg ? {
-          background: 'rgba(3,7,18,0.75)',
+          background: 'var(--header-bg)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          borderBottom: '1px solid var(--header-border)',
         } : {}}
       >
         <div className="max-w-7xl mx-auto px-5 md:px-8 h-14 md:h-16 flex items-center justify-between gap-4">
 
           {/* ── Logo ── */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            <Image src="/images/logos/logo_white.png" alt="CICT" width={32} height={32} priority
-              className="w-8 h-8 object-contain opacity-90 group-hover:opacity-100 transition-opacity" />
+            <Image
+              src={logoSrc}
+              alt="CICT"
+              width={32}
+              height={32}
+              priority
+              className="w-8 h-8 object-contain opacity-90 group-hover:opacity-100 transition-opacity"
+            />
             <div className="flex flex-col leading-none">
-              <span className="font-outfit font-bold text-[13px] text-white tracking-tight">
+              <span
+                className="font-outfit font-bold text-[13px] tracking-tight"
+                style={{ color: 'var(--nav-text-active)' }}
+              >
                 {t('footer.copyright')}
               </span>
-              <span className="text-[9px] text-white/30 tracking-[0.16em] uppercase mt-[2px]">
+              <span
+                className="text-[9px] tracking-[0.16em] uppercase mt-[2px]"
+                style={{ color: 'var(--nav-text-muted)' }}
+              >
                 {t('nav.edition')}
               </span>
             </div>
@@ -109,13 +129,13 @@ export default function Header() {
                   href={link.href}
                   onMouseEnter={() => setHovered(link.key)}
                   className="relative px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors duration-100 select-none"
-                  style={{ color: active ? '#fff' : hovered === link.key ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)' }}
+                  style={{ color: active ? 'var(--nav-text-active)' : hovered === link.key ? 'var(--nav-text-hover)' : 'var(--nav-text)' }}
                 >
                   {hovered === link.key && !active && (
                     <motion.span
                       layoutId="nav-pill"
                       className="absolute inset-0 rounded-md"
-                      style={{ background: 'rgba(255,255,255,0.07)' }}
+                      style={{ background: 'var(--nav-pill-bg)' }}
                       transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                     />
                   )}
@@ -137,8 +157,12 @@ export default function Header() {
                 onClick={() => setLangOpen(v => !v)}
                 aria-label="Select language"
                 aria-expanded={langOpen}
-                className="flex items-center gap-1 px-2 py-1 rounded-full text-white/70 hover:text-white transition-colors text-[11px] font-semibold select-none"
-                style={{ border: `1px solid ${langOpen ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)'}`, background: langOpen ? 'rgba(255,255,255,0.06)' : 'transparent' }}
+                className="flex items-center gap-1 px-2 py-1 rounded-full transition-colors text-[11px] font-semibold select-none"
+                style={{
+                  color: 'var(--lang-btn-text)',
+                  border: `1px solid ${langOpen ? 'var(--lang-btn-border-open)' : 'var(--lang-btn-border)'}`,
+                  background: langOpen ? 'var(--lang-btn-bg-open)' : 'transparent',
+                }}
               >
                 <Globe size={11} className="shrink-0" />
                 <span className="tracking-wide">{lang.toUpperCase()}</span>
@@ -158,14 +182,13 @@ export default function Header() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -5, scale: 0.96 }}
                     transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-                    /* Anchor left when RTL (button is on left), right when LTR (button is on right) */
                     className={`absolute top-full mt-1.5 z-50 w-[152px] rounded-xl overflow-hidden ${lang === 'ar' ? 'left-0' : 'right-0'}`}
                     style={{
-                      background: 'rgba(8,12,26,0.96)',
+                      background: 'var(--lang-dropdown-bg)',
                       backdropFilter: 'blur(24px)',
                       WebkitBackdropFilter: 'blur(24px)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      boxShadow: '0 12px 32px rgba(0,0,0,0.55), 0 0 0 0.5px rgba(255,255,255,0.04)',
+                      border: '1px solid var(--lang-dropdown-border)',
+                      boxShadow: 'var(--lang-dropdown-shadow)',
                     }}
                   >
                     {LANG_OPTIONS.map((opt, i) => {
@@ -178,22 +201,25 @@ export default function Header() {
                           className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-[12px] transition-colors duration-150"
                           style={{
                             background: active ? 'linear-gradient(90deg, rgba(6,182,212,0.13), rgba(139,92,246,0.13))' : 'transparent',
-                            color: active ? '#fff' : 'rgba(255,255,255,0.45)',
-                            borderBottom: i < LANG_OPTIONS.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                            color: active ? 'var(--nav-text-active)' : 'var(--lang-item-text)',
+                            borderBottom: i < LANG_OPTIONS.length - 1 ? '1px solid var(--lang-item-border)' : 'none',
                           }}
-                          onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; }}
+                          onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--lang-item-hover-bg)'; }}
                           onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                         >
                           <span className="flex items-center gap-2">
                             <span
                               className="text-[9px] font-black tracking-widest px-1 py-0.5 rounded shrink-0"
-                              style={{ background: active ? 'rgba(6,182,212,0.2)' : 'rgba(255,255,255,0.07)', color: active ? '#67e8f9' : 'rgba(255,255,255,0.3)' }}
+                              style={{
+                                background: active ? 'rgba(6,182,212,0.2)' : 'var(--lang-code-bg)',
+                                color: active ? 'var(--lang-active-check)' : 'var(--lang-code-text)',
+                              }}
                             >
                               {opt.code.toUpperCase()}
                             </span>
                             <span className="font-medium">{opt.label}</span>
                           </span>
-                          {active && <Check size={11} style={{ color: '#67e8f9' }} className="shrink-0" />}
+                          {active && <Check size={11} style={{ color: 'var(--lang-active-check)' }} className="shrink-0" />}
                         </button>
                       );
                     })}
@@ -202,14 +228,29 @@ export default function Header() {
               </AnimatePresence>
             </div>
 
+            {/* Theme toggle */}
+            <ThemeToggle />
+
             {/* CTA — desktop */}
             <motion.a
               href="/register"
-              whileHover={{ scale: 1.03 }}
+              whileHover={{ scale: 1.02, boxShadow: '0 0 20px rgba(6,182,212,0.4)' }}
               whileTap={{ scale: 0.97 }}
-              className="hidden md:flex items-center px-4 py-1.5 rounded-full text-[13px] font-semibold text-white"
-              style={{ background: 'linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6)' }}
+              className="hidden md:flex items-center gap-2 px-4 py-[7px] text-[12px] font-bold text-white select-none"
+              style={{
+                borderRadius: 8,
+                background: 'linear-gradient(135deg, #060e1f, #0c1a35)',
+                border: '1px solid rgba(6,182,212,0.45)',
+                boxShadow: '0 0 10px rgba(6,182,212,0.15), inset 0 1px 0 rgba(255,255,255,0.05)',
+                letterSpacing: '0.05em',
+              }}
             >
+              <span style={{
+                width: 6, height: 6, borderRadius: '50%',
+                background: '#22d3ee',
+                boxShadow: '0 0 7px #22d3ee',
+                flexShrink: 0,
+              }} />
               {t('nav.register')}
             </motion.a>
 
@@ -220,17 +261,17 @@ export default function Header() {
               className="md:hidden w-8 h-8 flex flex-col items-center justify-center gap-[5px] rounded-lg"
             >
               <motion.span
-                className="block h-[1.5px] w-5 bg-white rounded-full origin-center"
+                className="block h-[1.5px] w-5 rounded-full origin-center bg-[var(--nav-text-active)]"
                 animate={menuOpen ? { rotate: 45, y: 3.5 } : { rotate: 0, y: 0 }}
                 transition={{ duration: 0.2 }}
               />
               <motion.span
-                className="block h-[1.5px] w-5 bg-white rounded-full"
+                className="block h-[1.5px] w-5 rounded-full bg-[var(--nav-text-active)]"
                 animate={menuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
                 transition={{ duration: 0.15 }}
               />
               <motion.span
-                className="block h-[1.5px] w-5 bg-white rounded-full origin-center"
+                className="block h-[1.5px] w-5 rounded-full origin-center bg-[var(--nav-text-active)]"
                 animate={menuOpen ? { rotate: -45, y: -3.5 } : { rotate: 0, y: 0 }}
                 transition={{ duration: 0.2 }}
               />
@@ -249,15 +290,24 @@ export default function Header() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
             className="fixed inset-0 z-40 md:hidden flex flex-col"
-            style={{ background: 'rgba(3,7,18,0.98)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
+            style={{ background: 'var(--mobile-menu-bg)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
           >
             {/* Close */}
             <div className="flex items-center justify-between px-5 h-14">
               <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5">
-                <Image src="/images/logos/logo_white.png" alt="CICT" width={28} height={28} className="w-7 h-7 object-contain" />
-                <span className="font-outfit font-bold text-[13px] text-white">{t('footer.copyright')}</span>
+                <Image src={logoSrc} alt="CICT" width={28} height={28} className="w-7 h-7 object-contain" />
+                <span
+                  className="font-outfit font-bold text-[13px]"
+                  style={{ color: 'var(--nav-text-active)' }}
+                >
+                  {t('footer.copyright')}
+                </span>
               </Link>
-              <button onClick={() => setMenuOpen(false)} className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white">
+              <button
+                onClick={() => setMenuOpen(false)}
+                className="w-8 h-8 flex items-center justify-center transition-opacity hover:opacity-100 opacity-60"
+                style={{ color: 'var(--nav-text-active)' }}
+              >
                 <X size={20} />
               </button>
             </div>
@@ -278,10 +328,12 @@ export default function Header() {
                       href={link.href}
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center justify-between py-4 border-b group"
-                      style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+                      style={{ borderColor: 'var(--mobile-border)' }}
                     >
-                      <span className={`font-outfit font-bold transition-colors ${active ? 'text-white' : 'text-white/40 group-hover:text-white'}`}
-                        style={{ fontSize: 'clamp(1.6rem, 6vw, 2.2rem)' }}>
+                      <span
+                        className={`font-outfit font-bold transition-opacity ${active ? '' : 'opacity-40 group-hover:opacity-100'}`}
+                        style={{ fontSize: 'clamp(1.6rem, 6vw, 2.2rem)', color: 'var(--nav-text-active)' }}
+                      >
                         {t(`nav.${link.key}`)}
                       </span>
                       {active && (
@@ -300,7 +352,10 @@ export default function Header() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.3 }}
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/25 mb-3">
+              <p
+                className="text-[10px] font-semibold uppercase tracking-[0.18em] mb-3"
+                style={{ color: 'var(--mobile-text-muted)' }}
+              >
                 Language
               </p>
               <div className="grid grid-cols-3 gap-2">
@@ -315,21 +370,21 @@ export default function Header() {
                       style={active ? {
                         background: 'linear-gradient(135deg, rgba(6,182,212,0.2), rgba(139,92,246,0.2))',
                         border: '1px solid rgba(103,232,249,0.3)',
-                        color: '#fff',
+                        color: 'var(--nav-text-active)',
                       } : {
-                        background: 'rgba(255,255,255,0.04)',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        color: 'rgba(255,255,255,0.4)',
+                        background: 'var(--mobile-lang-inactive-bg)',
+                        border: '1px solid var(--mobile-lang-inactive-bdr)',
+                        color: 'var(--mobile-lang-inactive-text)',
                       }}
                     >
                       <span
                         className="text-[10px] font-black tracking-widest"
-                        style={{ color: active ? '#67e8f9' : 'rgba(255,255,255,0.3)' }}
+                        style={{ color: active ? 'var(--lang-active-check)' : 'var(--lang-code-text)' }}
                       >
                         {opt.code.toUpperCase()}
                       </span>
                       <span>{opt.label}</span>
-                      {active && <Check size={10} style={{ color: '#67e8f9' }} />}
+                      {active && <Check size={10} style={{ color: 'var(--lang-active-check)' }} />}
                     </button>
                   );
                 })}
@@ -343,7 +398,12 @@ export default function Header() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.38, duration: 0.3 }}
             >
-              <span className="text-[12px] text-white/25 tracking-wide">{t('nav.date')}</span>
+              <span
+                className="text-[12px] tracking-wide"
+                style={{ color: 'var(--mobile-text-muted)' }}
+              >
+                {t('nav.date')}
+              </span>
               <a
                 href="/register"
                 onClick={() => setMenuOpen(false)}
