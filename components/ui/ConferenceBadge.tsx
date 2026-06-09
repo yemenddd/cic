@@ -79,8 +79,6 @@ export default function ConferenceBadge({
     backBtn:    isRtl ? 'الرئيسية'          : lang === 'tr' ? 'Ana Sayfa'          : 'Home',
   };
 
-  const row = (reverse = false) =>
-    `flex items-center gap-2${reverse ? ' flex-row-reverse' : ''}`;
 
   return (
     <>
@@ -134,39 +132,13 @@ export default function ConferenceBadge({
               background: `radial-gradient(circle, ${accent.to}, transparent)`,
             }} />
 
-            {/* Header row: Logo+Name on right · 2026 on left */}
-            <div style={{
-              position: 'relative', marginBottom: 16,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
-              {/* Logo + conference name */}
-              <div className={row(isRtl)} style={{ gap: 10 }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/images/logos/logo.svg"
-                  alt="CICT"
-                  style={{ width: 44, height: 44, objectFit: 'contain', flexShrink: 0 }}
-                />
-                <div style={{ textAlign: isRtl ? 'right' : 'left' }}>
-                  <p style={{ color: '#fff', fontWeight: 800, fontSize: 14, margin: 0, lineHeight: 1.3 }}>
-                    {isRtl ? 'مؤتمر الإبداع والابتكار' : lang === 'tr' ? 'Yaratıcılık ve İnovasyon' : 'Creativity & Innovation'}
-                  </p>
-                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, margin: 0 }}>
-                    {isRtl ? 'النسخة الرابعة' : lang === 'tr' ? '4. Baskı' : '4th Edition'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Year — opposite side */}
-              <span style={{
-                color: 'rgba(255,255,255,0.22)',
-                fontSize: 28, fontWeight: 900,
-                letterSpacing: '-0.02em', lineHeight: 1,
-                fontVariantNumeric: 'tabular-nums',
-              }}>
-                2026
-              </span>
-            </div>
+            {/* Full SVG logo */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/logos/logo.svg"
+              alt="CICT"
+              style={{ height: 60, width: 'auto', maxWidth: '100%', display: 'block' }}
+            />
 
           </div>
 
