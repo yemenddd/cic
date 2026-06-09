@@ -147,7 +147,7 @@ export default function ConferenceBadge({
               />
               <span style={{
                 color: 'rgba(255,255,255,0.25)',
-                fontSize: 32, fontWeight: 900,
+                fontSize: 18, fontWeight: 700,
                 letterSpacing: '-0.02em', lineHeight: 1,
               }}>
                 2026
