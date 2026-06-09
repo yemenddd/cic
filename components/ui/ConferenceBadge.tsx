@@ -141,7 +141,7 @@ export default function ConferenceBadge({
             }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/logos/logo_text_horizonal.png"
+                src="/images/logos/card_logo.png"
                 alt="CICT"
                 style={{ height: 36, width: 'auto', objectFit: 'contain', maxWidth: '70%' }}
               />
