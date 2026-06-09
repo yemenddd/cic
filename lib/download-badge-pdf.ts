@@ -2,6 +2,12 @@ export async function downloadBadgePDF(name = 'CICT-Badge') {
   const card = document.getElementById('cict-badge-card');
   if (!card) return;
 
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+  // iOS Safari blocks window.open() after await — must open synchronously
+  // while still inside the click handler (user gesture).
+  const iosWindow = isIOS ? window.open('', '_blank') : null;
+
   // Hide action buttons during capture
   const hidden = Array.from(card.querySelectorAll<HTMLElement>('.badge-no-print'));
   hidden.forEach(el => { el.style.visibility = 'hidden'; });
@@ -54,12 +60,12 @@ export async function downloadBadgePDF(name = 'CICT-Badge') {
     const safeName = name.replace(/\s+/g, '-') || 'Badge';
     const fileName = `${safeName}-CICT2026.pdf`;
 
-    // iOS Safari: open in new tab (can't trigger blob download)
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if (isIOS) {
+    if (isIOS && iosWindow) {
+      // Populate the pre-opened blank window with the PDF blob URL
       const blob = pdf.output('blob');
-      window.open(URL.createObjectURL(blob), '_blank');
+      iosWindow.location.href = URL.createObjectURL(blob);
     } else {
+      if (iosWindow) iosWindow.close(); // cleanup if somehow opened on non-iOS
       pdf.save(fileName);
     }
   } catch (err) {
