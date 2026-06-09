@@ -3,17 +3,13 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, Users, Quote } from 'lucide-react';
+import { ArrowLeft, Users, Quote, User } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
 import { ACHIEVEMENT_EDITIONS, type AchievementStudent } from '@/lib/achievements-data';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 // photos[0] = student portrait · photos[1,2] = project photos
-function getInitials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  return parts.length >= 2 ? parts[0][0] + parts[1][0] : parts[0][0];
-}
 
 function Avatar({
   src, name, color, size,
@@ -29,15 +25,13 @@ function Avatar({
         <img src={src} alt={name} className="w-full h-full object-cover"
           onError={() => setFailed(true)} />
       ) : (
-        <span style={{ color, fontSize: size * 0.36, fontWeight: 700 }}>
-          {getInitials(name)}
-        </span>
+        <User size={size * 0.45} style={{ color, opacity: 0.7 }} />
       )}
     </div>
   );
 }
 
-function ProjectPhoto({ src, color, name }: { src: string; color: string; name: string }) {
+function ProjectPhoto({ src, color }: { src: string; color: string }) {
   const [failed, setFailed] = useState(false);
   return (
     <div className="aspect-[4/3] rounded-xl overflow-hidden flex items-center justify-center"
@@ -47,9 +41,7 @@ function ProjectPhoto({ src, color, name }: { src: string; color: string; name: 
         <img src={src} alt="" className="w-full h-full object-cover"
           onError={() => setFailed(true)} />
       ) : (
-        <span className="text-[11px] font-bold opacity-40" style={{ color }}>
-          {getInitials(name)}
-        </span>
+        <Users size={28} style={{ color, opacity: 0.35 }} />
       )}
     </div>
   );
@@ -82,8 +74,8 @@ function IndividualCard({ student, index }: { student: AchievementStudent; index
 
       {/* 2 project photos */}
       <div className="grid grid-cols-2 gap-2">
-        <ProjectPhoto src={student.photos[1]} color={student.color} name={student.name} />
-        <ProjectPhoto src={student.photos[2]} color={student.color} name={student.name} />
+        <ProjectPhoto src={student.photos[1]} color={student.color} />
+        <ProjectPhoto src={student.photos[2]} color={student.color} />
       </div>
 
     </motion.div>
@@ -103,8 +95,8 @@ function TeamCard({ student, index }: { student: AchievementStudent; index: numb
     >
       {/* Project photos */}
       <div className="w-full sm:w-[45%] shrink-0 grid grid-cols-2 gap-2">
-        <ProjectPhoto src={student.photos[1]} color={student.color} name={student.name} />
-        <ProjectPhoto src={student.photos[2]} color={student.color} name={student.name} />
+        <ProjectPhoto src={student.photos[1]} color={student.color} />
+        <ProjectPhoto src={student.photos[2]} color={student.color} />
       </div>
 
       {/* Members + project info */}
@@ -128,9 +120,7 @@ function TeamCard({ student, index }: { student: AchievementStudent; index: numb
           {members.map((member, i) => (
             <div key={i} className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 bg-white/[0.06]">
-                <span className="text-[9px] font-bold text-white/50">
-                  {getInitials(member)}
-                </span>
+                <User size={13} className="text-white/40" />
               </div>
               <span className="text-[13px] text-white/60">{member}</span>
             </div>
