@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Check, CircleCheck, Download, Copy, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
 
 export interface BadgeProps {
   name:          string;
@@ -21,15 +20,13 @@ export interface BadgeProps {
   copied:        boolean;
 }
 
-// ── Category accent colors ──────────────────────────────────────────────────
-const CATEGORY_ACCENT: Record<string, { from: string; to: string; light: string }> = {
-  visitor:     { from: '#0891b2', to: '#06b6d4', light: '#ecfeff' },
-  participant: { from: '#7c3aed', to: '#8b5cf6', light: '#f5f3ff' },
-  volunteer:   { from: '#059669', to: '#10b981', light: '#ecfdf5' },
+const CATEGORY_ACCENT: Record<string, { from: string; to: string }> = {
+  visitor:     { from: '#0891b2', to: '#06b6d4' },
+  participant: { from: '#7c3aed', to: '#8b5cf6' },
+  volunteer:   { from: '#059669', to: '#10b981' },
 };
-const DEFAULT_ACCENT = { from: '#1e40af', to: '#3b82f6', light: '#eff6ff' };
+const DEFAULT_ACCENT = { from: '#1e40af', to: '#3b82f6' };
 
-// ── Deterministic barcode from code string ──────────────────────────────────
 function BarcodeSVG({ code }: { code: string }) {
   const bars = useMemo(() => {
     let h = 0;
@@ -44,17 +41,13 @@ function BarcodeSVG({ code }: { code: string }) {
 
   let x = 0;
   const rects: { x: number; w: number; tall: boolean }[] = [];
-  bars.forEach((w, i) => {
-    rects.push({ x, w, tall: i % 7 !== 0 });
-    x += w + 1.5;
-  });
-  const totalW = x;
+  bars.forEach((w, i) => { rects.push({ x, w, tall: i % 7 !== 0 }); x += w + 1.5; });
 
   return (
-    <svg width="100%" height="44" viewBox={`0 0 ${totalW} 44`} preserveAspectRatio="none">
+    <svg width="100%" height="40" viewBox={`0 0 ${x} 40`} preserveAspectRatio="none">
       {rects.map((r, i) => (
-        <rect key={i} x={r.x} y={r.tall ? 0 : 4} width={r.w} height={r.tall ? 44 : 36}
-          fill="#1e293b" opacity={r.tall ? 1 : 0.55} />
+        <rect key={i} x={r.x} y={r.tall ? 0 : 5} width={r.w} height={r.tall ? 40 : 30}
+          fill="#334155" opacity={r.tall ? 0.9 : 0.45} />
       ))}
     </svg>
   );
@@ -69,225 +62,297 @@ export default function ConferenceBadge({
 }: BadgeProps) {
   const isRtl = lang === 'ar';
   const accent = CATEGORY_ACCENT[categoryId] ?? DEFAULT_ACCENT;
+  const dir = isRtl ? 'rtl' : 'ltr';
 
-  const label = {
-    attendee:   isRtl ? 'المشارك'    : lang === 'tr' ? 'Katılımcı'   : 'Attendee',
-    confirmed:  isRtl ? 'تم تأكيد تسجيلك' : lang === 'tr' ? 'Kaydınız onaylandı' : 'Registration confirmed',
-    trackLabel: isRtl ? 'المسار'      : lang === 'tr' ? 'Alan'        : 'Track',
-    codeLabel:  isRtl ? 'رمز التأكيد' : lang === 'tr' ? 'Onay Kodu'  : 'Confirmation Code',
-    pdfBtn:     isRtl ? 'تحميل PDF'  : lang === 'tr' ? 'PDF İndir'   : 'Download PDF',
-    copyBtn:    isRtl ? 'نسخ الرابط' : lang === 'tr' ? 'Linki Kopyala' : 'Copy Link',
-    copiedBtn:  isRtl ? 'تم النسخ!'  : lang === 'tr' ? 'Kopyalandı!' : 'Copied!',
-    backBtn:    isRtl ? 'العودة للرئيسية' : lang === 'tr' ? 'Ana Sayfaya Dön' : 'Back to Home',
+  const lbl = {
+    confirmed:  isRtl ? 'تم تأكيد تسجيلك' : lang === 'tr' ? 'Kaydınız onaylandı' : 'Registration Confirmed',
+    attendee:   isRtl ? 'المشارك'           : lang === 'tr' ? 'Katılımcı'          : 'Attendee',
+    trackLabel: isRtl ? 'المسار'            : lang === 'tr' ? 'Alan'               : 'Track',
+    orgLabel:   isRtl ? 'الجهة'             : lang === 'tr' ? 'Kuruluş'            : 'Organization',
+    dateLabel:  isRtl ? 'التاريخ'           : lang === 'tr' ? 'Tarih'              : 'Date',
+    venueLabel: isRtl ? 'المكان'            : lang === 'tr' ? 'Mekan'              : 'Venue',
+    codeLabel:  isRtl ? 'رمز التأكيد'       : lang === 'tr' ? 'Onay Kodu'          : 'Confirmation Code',
     edition:    isRtl ? 'النسخة الرابعة · 2026' : lang === 'tr' ? '4. Baskı · 2026' : '4th Edition · 2026',
+    pdfBtn:     isRtl ? 'تحميل الشارة'      : lang === 'tr' ? 'Rozeti İndir'       : 'Download Badge',
+    copyBtn:    isRtl ? 'نسخ الرابط'        : lang === 'tr' ? 'Linki Kopyala'      : 'Copy Link',
+    copiedBtn:  isRtl ? 'تم النسخ!'         : lang === 'tr' ? 'Kopyalandı!'        : 'Copied!',
+    backBtn:    isRtl ? 'الرئيسية'          : lang === 'tr' ? 'Ana Sayfa'          : 'Home',
   };
+
+  const row = (reverse = false) =>
+    `flex items-center gap-2${reverse ? ' flex-row-reverse' : ''}`;
 
   return (
     <>
-      {/* ── Print CSS ─────────────────────────────────────────────────── */}
+      {/* Print CSS — kept for browser-print fallback only */}
       <style>{`
         @media print {
-          @page { size: A6 portrait; margin: 3mm; }
-
-          /* Force browser to print background colours and gradients */
-          *, *::before, *::after {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-
-          html, body { overflow: hidden !important; height: 100% !important; }
-
-          /* Hide everything on the page … */
+          @page { size: A5 portrait; margin: 6mm; }
+          *, *::before, *::after { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           body * { visibility: hidden !important; }
-
-          /* … then reveal the badge and all its children */
           #cict-badge, #cict-badge * { visibility: visible !important; }
-
-          /* Buttons/footer: truly remove from layout so they don't push to page 2 */
-          #cict-badge .badge-no-print {
-            display: none !important;
-            visibility: hidden !important;
-          }
-
-          /* Centre the badge on the A6 sheet */
-          #cict-badge {
-            position: fixed !important;
-            inset: 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            background: #ffffff !important;
-            padding: 0 !important;
-            margin: 0 !important;
-          }
-
-          /* Reset Framer Motion transform + give card a cut-line border */
-          #cict-badge > div {
-            transform: none !important;
-            box-shadow: none !important;
-            width: 96mm !important;
-            max-width: 96mm !important;
-            border-radius: 3mm !important;
-            border: 0.4mm solid #cbd5e1 !important;
-          }
+          .badge-no-print { display: none !important; }
+          #cict-badge { position: fixed !important; inset: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; }
         }
       `}</style>
 
-      <div id="cict-badge" className="flex items-center justify-center w-full">
+      <div id="cict-badge" className="flex flex-col items-center w-full">
+
+        {/* ── THE TICKET ─────────────────────────────────────────────── */}
         <motion.div
-          initial={{ opacity: 0, y: 28, scale: 0.97 }}
+          id="cict-badge-card"
+          dir={dir}
+          initial={{ opacity: 0, y: 28, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.55, ease: EASE }}
-          id="cict-badge-card"
-          dir={isRtl ? 'rtl' : 'ltr'}
-          className="w-full overflow-hidden rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
-          style={{ maxWidth: 380, background: '#ffffff' }}
+          className="w-full overflow-hidden"
+          style={{
+            maxWidth: 400,
+            background: '#ffffff',
+            borderRadius: 20,
+            boxShadow: '0 24px 64px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08)',
+          }}
         >
-          {/* ── Top gradient accent bar ──────────────────────────────── */}
-          <div className="relative h-10 w-full flex items-center justify-center overflow-hidden"
-            style={{ background: `linear-gradient(135deg, ${accent.from}, ${accent.to})` }}>
-            {/* Subtle geometric pattern */}
-            <div className="absolute inset-0 opacity-10"
-              style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)', backgroundSize: '8px 8px' }} />
-            {/* Hole punch circle */}
-            <div className="relative z-10 h-5 w-5 rounded-full bg-white shadow-inner ring-1 ring-black/10" />
+          {/* ── Dark header ── */}
+          <div style={{
+            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+            padding: '22px 24px 20px',
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            {/* Subtle dot pattern */}
+            <div style={{
+              position: 'absolute', inset: 0, opacity: 0.04,
+              backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)',
+              backgroundSize: '18px 18px',
+            }} />
+
+            {/* Gradient glow orb */}
+            <div style={{
+              position: 'absolute', top: -30, right: -30, width: 120, height: 120,
+              borderRadius: '50%', opacity: 0.15,
+              background: `radial-gradient(circle, ${accent.to}, transparent)`,
+            }} />
+
+            {/* Logo row */}
+            <div className={row(isRtl)} style={{ position: 'relative', marginBottom: 16 }}>
+              <div style={{
+                width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+                background: `linear-gradient(135deg, ${accent.from}, ${accent.to})`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, letterSpacing: '-0.03em' }}>CI</span>
+              </div>
+              <div style={{ textAlign: isRtl ? 'right' : 'left' }}>
+                <p style={{ color: '#fff', fontWeight: 800, fontSize: 15, letterSpacing: '0.06em', margin: 0 }}>CICT 2026</p>
+                <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, margin: 0 }}>{lbl.edition}</p>
+              </div>
+            </div>
+
+            {/* Confirmed badge */}
+            <div className={row(isRtl)}>
+              <div style={{
+                display: 'inline-flex', alignItems: 'center',
+                gap: 6, padding: '5px 10px 5px 8px',
+                borderRadius: 999,
+                background: 'rgba(6,182,212,0.15)',
+                border: '1px solid rgba(6,182,212,0.3)',
+              }}>
+                <Check size={12} color="#67e8f9" strokeWidth={3} />
+                <span style={{ color: '#67e8f9', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em' }}>
+                  {lbl.confirmed}
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* ── Conference header ────────────────────────────────────── */}
-          <div className={cn('flex items-center gap-3 px-6 pt-5 pb-4', isRtl ? 'flex-row-reverse' : '')}>
-            {/* Logo mark */}
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-white"
-              style={{ background: `linear-gradient(135deg, ${accent.from}, ${accent.to})` }}>
-              <span className="text-base font-black tracking-tighter">CI</span>
-            </div>
-            <div className={isRtl ? 'text-right' : 'text-left'}>
-              <p className="text-[13px] font-extrabold uppercase tracking-[0.15em] text-slate-800">CICT 2026</p>
-              <p className="text-[11px] text-slate-400">{label.edition}</p>
-            </div>
-          </div>
-
-          {/* ── Gradient divider ─────────────────────────────────────── */}
-          <div className="mx-6 h-px" style={{ background: `linear-gradient(to ${isRtl ? 'left' : 'right'}, ${accent.from}40, ${accent.to}40, transparent)` }} />
-
-          {/* ── Attendee info ────────────────────────────────────────── */}
-          <div className="px-6 pt-5 pb-4">
-            {/* Status row */}
-            <div className={cn('flex items-center gap-1.5 mb-3', isRtl ? 'flex-row-reverse' : '')}>
-              <Check className="h-3.5 w-3.5" style={{ color: accent.from }} strokeWidth={3} />
-              <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: accent.from }}>
-                {label.confirmed}
-              </span>
-            </div>
-
-            {/* Label */}
-            <p className={cn('text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-1.5', isRtl && 'text-right')}>
-              {label.attendee}
+          {/* ── Attendee body ── */}
+          <div style={{ padding: '20px 24px 0' }}>
+            <p style={{
+              color: '#94a3b8', fontSize: 10, fontWeight: 700,
+              letterSpacing: '0.18em', textTransform: 'uppercase',
+              marginBottom: 6, textAlign: isRtl ? 'right' : 'left',
+            }}>
+              {lbl.attendee}
             </p>
 
-            {/* Name — hero element */}
-            <h1 className={cn('text-[26px] font-black leading-tight text-slate-900 mb-4', isRtl ? 'text-right' : 'text-left')}
-              style={{ letterSpacing: isRtl ? '0' : '-0.01em' }}>
+            <h1 style={{
+              fontSize: 26, fontWeight: 900, color: '#0f172a',
+              lineHeight: 1.15, margin: '0 0 16px',
+              textAlign: isRtl ? 'right' : 'left',
+              letterSpacing: isRtl ? 0 : '-0.02em',
+            }}>
               {name || '—'}
             </h1>
 
-            {/* Category pill — color-coded */}
-            <div
-              className={cn('inline-flex items-center gap-2 rounded-lg px-4 py-2 mb-3 text-sm font-bold text-white w-full justify-center', isRtl && 'flex-row-reverse')}
-              style={{ background: `linear-gradient(135deg, ${accent.from}, ${accent.to})` }}
-            >
-              <span className="h-2 w-2 rounded-full bg-white/60" />
-              {categoryLabel}
+            {/* Category pill */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '7px 16px',
+              borderRadius: 10, marginBottom: 14,
+              background: `linear-gradient(135deg, ${accent.from}, ${accent.to})`,
+              flexDirection: isRtl ? 'row-reverse' : 'row',
+            }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.55)', flexShrink: 0 }} />
+              <span style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{categoryLabel}</span>
             </div>
 
-            {/* Organization */}
+            {/* Org */}
             {organization && (
-              <p className={cn('text-xs text-slate-500 mb-1 truncate', isRtl ? 'text-right' : 'text-left')}>
+              <p style={{
+                color: '#64748b', fontSize: 13, marginBottom: 6,
+                textAlign: isRtl ? 'right' : 'left',
+              }}>
                 {organization}
               </p>
             )}
 
             {/* Track */}
             {track && (
-              <div className={cn('flex items-center gap-1.5 mb-1', isRtl ? 'flex-row-reverse' : '')}>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{label.trackLabel}:</span>
-                <span className="text-[12px] font-medium text-slate-600">{track}</span>
+              <div className={row(isRtl)} style={{ marginBottom: 20 }}>
+                <span style={{ color: '#94a3b8', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                  {lbl.trackLabel}:
+                </span>
+                <span style={{ color: '#475569', fontSize: 13, fontWeight: 500 }}>{track}</span>
               </div>
             )}
           </div>
 
-          {/* ── Divider ──────────────────────────────────────────────── */}
-          <div className="mx-6 h-px bg-slate-100" />
+          {/* ── Perforated divider ── */}
+          <div style={{ position: 'relative', margin: '0 0', padding: '0 24px' }}>
+            <div style={{ borderTop: '2px dashed #e2e8f0' }} />
+            {/* Circle cutouts */}
+            <div style={{
+              position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
+              width: 22, height: 22, borderRadius: '50%',
+              background: '#f1f5f9', border: '2px dashed #e2e8f0',
+            }} />
+            <div style={{
+              position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)',
+              width: 22, height: 22, borderRadius: '50%',
+              background: '#f1f5f9', border: '2px dashed #e2e8f0',
+            }} />
+          </div>
 
-          {/* ── Event details ────────────────────────────────────────── */}
-          <div className="px-6 py-4 flex flex-col gap-1.5">
-            <div className={cn('flex items-center gap-2 text-[12px] text-slate-600', isRtl ? 'flex-row-reverse' : '')}>
-              <Calendar className="h-3.5 w-3.5 flex-shrink-0" style={{ color: accent.from }} />
-              <span>{date}</span>
-            </div>
-            <div className={cn('flex items-center gap-2 text-[12px] text-slate-600', isRtl ? 'flex-row-reverse' : '')}>
-              <MapPin className="h-3.5 w-3.5 flex-shrink-0" style={{ color: accent.to }} />
-              <span>{location}</span>
+          {/* ── Event details ── */}
+          <div style={{ padding: '16px 24px', background: '#f8fafc' }}>
+            <div style={{ display: 'flex', gap: 0, flexDirection: isRtl ? 'row-reverse' : 'row' }}>
+              <div style={{ flex: 1, textAlign: isRtl ? 'right' : 'left' }}>
+                <p style={{ color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 3px' }}>
+                  {lbl.dateLabel}
+                </p>
+                <div className={row(isRtl)}>
+                  <Calendar size={12} color={accent.from} />
+                  <span style={{ color: '#1e293b', fontWeight: 600, fontSize: 12 }}>{date}</span>
+                </div>
+              </div>
+              <div style={{ width: 1, background: '#e2e8f0', margin: '0 16px' }} />
+              <div style={{ flex: 1, textAlign: isRtl ? 'right' : 'left' }}>
+                <p style={{ color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 3px' }}>
+                  {lbl.venueLabel}
+                </p>
+                <div className={row(isRtl)}>
+                  <MapPin size={12} color={accent.to} />
+                  <span style={{ color: '#1e293b', fontWeight: 600, fontSize: 12 }}>{location}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* ── Barcode + code ───────────────────────────────────────── */}
-          <div className="mx-6 mb-2 rounded-xl border border-slate-100 bg-slate-50 px-4 pt-3 pb-2">
-            <BarcodeSVG code={code} />
-            <div className={cn('mt-2 flex items-center justify-between', isRtl ? 'flex-row-reverse' : '')}>
-              <span className="text-[9px] uppercase tracking-widest text-slate-400">{label.codeLabel}</span>
-              <span className="font-mono text-[11px] font-bold tracking-widest text-slate-700">{code}</span>
+          {/* ── Barcode ── */}
+          <div style={{ padding: '14px 24px 22px', background: '#f8fafc' }}>
+            <div style={{
+              background: '#fff', borderRadius: 10,
+              padding: '12px 12px 10px',
+              border: '1px solid #e2e8f0',
+            }}>
+              <BarcodeSVG code={code} />
+              <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                marginTop: 8, flexDirection: isRtl ? 'row-reverse' : 'row',
+              }}>
+                <span style={{ color: '#94a3b8', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.18em' }}>
+                  {lbl.codeLabel}
+                </span>
+                <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 800, color: '#334155', letterSpacing: '0.1em' }}>
+                  {code}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* ── Bottom watermark strip ───────────────────────────────── */}
-          <div className="mx-6 mb-5 overflow-hidden rounded-b-lg">
-            <div className="h-1 w-full" style={{ background: `linear-gradient(to ${isRtl ? 'left' : 'right'}, ${accent.from}, ${accent.to})` }} />
-          </div>
+          {/* ── Bottom gradient strip ── */}
+          <div style={{ height: 5, background: `linear-gradient(to ${isRtl ? 'left' : 'right'}, ${accent.from}, ${accent.to})` }} />
+        </motion.div>
 
-          {/* ── Action buttons (hidden on print) ─────────────────────── */}
-          <div className="badge-no-print px-6 pb-5 flex gap-3" dir={isRtl ? 'rtl' : 'ltr'}>
-            <button
-              onClick={onDownloadPDF}
-              className={cn('flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.97]', isRtl && 'flex-row-reverse')}
-              style={{ background: `linear-gradient(135deg, ${accent.from}, ${accent.to})` }}
-            >
-              <Download className="h-4 w-4" />
-              {label.pdfBtn}
-            </button>
+        {/* ── ACTION BUTTONS — outside the ticket ──────────────────── */}
+        <motion.div
+          className="badge-no-print"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3, ease: EASE }}
+          dir={dir}
+          style={{ width: '100%', maxWidth: 400, marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}
+        >
+          {/* Download */}
+          <button
+            onClick={onDownloadPDF}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: 8, padding: '13px 20px', borderRadius: 14, border: 'none', cursor: 'pointer',
+              background: `linear-gradient(135deg, ${accent.from}, ${accent.to})`,
+              color: '#fff', fontWeight: 700, fontSize: 14,
+              flexDirection: isRtl ? 'row-reverse' : 'row',
+              boxShadow: `0 4px 20px ${accent.from}40`,
+            }}
+          >
+            <Download size={16} />
+            {lbl.pdfBtn}
+          </button>
 
+          {/* Copy + Back row */}
+          <div style={{ display: 'flex', gap: 10 }}>
             <AnimatePresence mode="wait">
               <motion.button
                 key={copied ? 'copied' : 'copy'}
-                initial={{ opacity: 0, scale: 0.92 }}
+                initial={{ opacity: 0, scale: 0.93 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.92 }}
-                transition={{ duration: 0.15 }}
+                exit={{ opacity: 0, scale: 0.93 }}
+                transition={{ duration: 0.14 }}
                 onClick={onCopyLink}
-                className={cn(
-                  'flex flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 text-[13px] font-semibold transition-all active:scale-[0.97]',
-                  isRtl && 'flex-row-reverse',
-                  copied
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
-                )}
+                style={{
+                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  gap: 6, padding: '11px 16px', borderRadius: 14, cursor: 'pointer',
+                  background: copied ? '#f0fdf4' : 'rgba(255,255,255,0.07)',
+                  border: copied ? '1px solid #86efac' : '1px solid rgba(255,255,255,0.15)',
+                  color: copied ? '#16a34a' : 'rgba(255,255,255,0.75)',
+                  fontWeight: 600, fontSize: 13,
+                  flexDirection: isRtl ? 'row-reverse' : 'row',
+                }}
               >
                 {copied
-                  ? <><CircleCheck className="h-4 w-4" />{label.copiedBtn}</>
-                  : <><Copy className="h-4 w-4" />{label.copyBtn}</>
-                }
+                  ? <><CircleCheck size={15} />{lbl.copiedBtn}</>
+                  : <><Copy size={15} />{lbl.copyBtn}</>}
               </motion.button>
             </AnimatePresence>
-          </div>
 
-          {/* ── Footer nav ───────────────────────────────────────────── */}
-          <div className={cn('badge-no-print flex items-center justify-between border-t border-slate-100 bg-slate-50 px-6 py-3', isRtl ? 'flex-row-reverse' : '')}>
-            <Link href="/" className={cn('flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-slate-600 transition-colors', isRtl && 'flex-row-reverse')}>
-              <ArrowRight className={cn('h-3 w-3', isRtl && 'rotate-180')} />
-              {label.backBtn}
+            <Link
+              href="/"
+              style={{
+                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: 6, padding: '11px 16px', borderRadius: 14, textDecoration: 'none',
+                background: 'rgba(255,255,255,0.07)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: 'rgba(255,255,255,0.55)', fontWeight: 600, fontSize: 13,
+                flexDirection: isRtl ? 'row-reverse' : 'row',
+              }}
+            >
+              <ArrowRight size={14} style={{ transform: isRtl ? 'scaleX(-1)' : undefined }} />
+              {lbl.backBtn}
             </Link>
-            <span className="font-mono text-[9px] text-slate-300">{code}</span>
           </div>
         </motion.div>
+
       </div>
     </>
   );
