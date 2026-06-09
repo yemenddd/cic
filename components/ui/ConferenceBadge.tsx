@@ -218,21 +218,8 @@ export default function ConferenceBadge({
             )}
           </div>
 
-          {/* ── Perforated divider ── */}
-          <div style={{ position: 'relative', margin: '0 0', padding: '0 24px' }}>
-            <div style={{ borderTop: '2px dashed #e2e8f0' }} />
-            {/* Circle cutouts */}
-            <div style={{
-              position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
-              width: 22, height: 22, borderRadius: '50%',
-              background: '#f1f5f9', border: '2px dashed #e2e8f0',
-            }} />
-            <div style={{
-              position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)',
-              width: 22, height: 22, borderRadius: '50%',
-              background: '#f1f5f9', border: '2px dashed #e2e8f0',
-            }} />
-          </div>
+          {/* ── Cutting line ── */}
+          <div style={{ margin: '0 24px', borderTop: '2px dashed #e2e8f0' }} />
 
           {/* ── Event details ── */}
           <div style={{ padding: '16px 24px', background: '#f8fafc' }}>
