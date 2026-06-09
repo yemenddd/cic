@@ -99,7 +99,7 @@ function TeamCard({ student, index }: { student: AchievementStudent; index: numb
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: index * 0.055, ease: EASE }}
-      className="sm:col-span-2 flex flex-col sm:flex-row-reverse gap-5 items-start"
+      className="sm:col-span-2 flex flex-col-reverse sm:flex-row-reverse gap-5 items-start"
     >
       {/* Project photos */}
       <div className="w-full sm:w-[45%] shrink-0 grid grid-cols-2 gap-2">
