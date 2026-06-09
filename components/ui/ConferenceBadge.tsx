@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, Check, CircleCheck, Download, Copy, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, CircleCheck, Download, Copy, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export interface BadgeProps {
@@ -143,9 +143,9 @@ export default function ConferenceBadge({
               <div className={row(isRtl)} style={{ gap: 10 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/images/logos/logo_white.png"
+                  src="/images/logos/logo.svg"
                   alt="CICT"
-                  style={{ width: 42, height: 42, objectFit: 'contain', flexShrink: 0 }}
+                  style={{ width: 44, height: 44, objectFit: 'contain', flexShrink: 0 }}
                 />
                 <div style={{ textAlign: isRtl ? 'right' : 'left' }}>
                   <p style={{ color: '#fff', fontWeight: 800, fontSize: 14, margin: 0, lineHeight: 1.3 }}>
@@ -168,21 +168,6 @@ export default function ConferenceBadge({
               </span>
             </div>
 
-            {/* Confirmed badge */}
-            <div className={row(isRtl)}>
-              <div style={{
-                display: 'inline-flex', alignItems: 'center',
-                gap: 6, padding: '5px 10px 5px 8px',
-                borderRadius: 999,
-                background: 'rgba(6,182,212,0.15)',
-                border: '1px solid rgba(6,182,212,0.3)',
-              }}>
-                <Check size={12} color="#67e8f9" strokeWidth={3} />
-                <span style={{ color: '#67e8f9', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em' }}>
-                  {lbl.confirmed}
-                </span>
-              </div>
-            </div>
           </div>
 
           {/* ── Attendee body ── */}
@@ -238,8 +223,8 @@ export default function ConferenceBadge({
             {/* Track — right-aligned in RTL, label before value */}
             {track && (
               <div style={{
-                display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20,
-                justifyContent: 'flex-start',  // flex-start = RIGHT in RTL
+                display: 'flex', alignItems: 'center', gap: 6, marginBottom: 28,
+                justifyContent: 'flex-start',
               }}>
                 <span style={{ color: '#94a3b8', fontSize: 11, fontWeight: 600, letterSpacing: '0.06em' }}>
                   {lbl.trackLabel}:
