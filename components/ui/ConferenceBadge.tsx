@@ -258,22 +258,22 @@ export default function ConferenceBadge({
 
           {/* ── Event details ── */}
           <div style={{ padding: '16px 24px', background: '#f8fafc' }}>
-            <div style={{ display: 'flex', gap: 0, flexDirection: isRtl ? 'row-reverse' : 'row' }}>
-              <div style={{ flex: 1, textAlign: isRtl ? 'right' : 'left' }}>
+            <div style={{ display: 'flex', gap: 0 }}>
+              <div style={{ flex: 1, textAlign: 'center' }}>
                 <p style={{ color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 3px' }}>
                   {lbl.dateLabel}
                 </p>
-                <div className={row(isRtl)}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'center' }}>
                   <Calendar size={12} color={accent.from} />
                   <span style={{ color: '#1e293b', fontWeight: 600, fontSize: 12 }}>{date}</span>
                 </div>
               </div>
               <div style={{ width: 1, background: '#e2e8f0', margin: '0 16px' }} />
-              <div style={{ flex: 1, textAlign: isRtl ? 'right' : 'left' }}>
+              <div style={{ flex: 1, textAlign: 'center' }}>
                 <p style={{ color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 3px' }}>
                   {lbl.venueLabel}
                 </p>
-                <div className={row(isRtl)}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'center' }}>
                   <MapPin size={12} color={accent.to} />
                   <span style={{ color: '#1e293b', fontWeight: 600, fontSize: 12 }}>{location}</span>
                 </div>
