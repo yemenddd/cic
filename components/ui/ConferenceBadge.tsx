@@ -187,33 +187,42 @@ export default function ConferenceBadge({
 
           {/* ── Attendee body ── */}
           <div style={{ padding: '20px 24px 0' }}>
-            <p style={{
-              color: '#94a3b8', fontSize: 10, fontWeight: 700,
-              letterSpacing: '0.18em', textTransform: 'uppercase',
-              marginBottom: 6, textAlign: isRtl ? 'right' : 'left',
-            }}>
-              {lbl.attendee}
-            </p>
 
-            <h1 style={{
-              fontSize: 26, fontWeight: 900, color: '#0f172a',
-              lineHeight: 1.15, margin: '0 0 16px',
-              textAlign: isRtl ? 'right' : 'left',
-              letterSpacing: isRtl ? 0 : '-0.02em',
-            }}>
-              {name || '—'}
-            </h1>
-
-            {/* Category pill */}
+            {/* Top row: label+name on right · pill on left */}
             <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '7px 16px',
-              borderRadius: 10, marginBottom: 14,
-              background: `linear-gradient(135deg, ${accent.from}, ${accent.to})`,
-              flexDirection: isRtl ? 'row-reverse' : 'row',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginBottom: 14,
             }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.55)', flexShrink: 0 }} />
-              <span style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{categoryLabel}</span>
+              {/* Right: label + name */}
+              <div style={{ textAlign: isRtl ? 'right' : 'left' }}>
+                <p style={{
+                  color: '#94a3b8', fontSize: 13, fontWeight: 700,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  margin: '0 0 6px',
+                }}>
+                  {lbl.attendee}
+                </p>
+                <h1 style={{
+                  fontSize: 30, fontWeight: 900, color: '#0f172a',
+                  lineHeight: 1.1, margin: 0,
+                  letterSpacing: isRtl ? 0 : '-0.02em',
+                }}>
+                  {name || '—'}
+                </h1>
+              </div>
+
+              {/* Left: category pill */}
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                padding: '6px 14px',
+                borderRadius: 99, flexShrink: 0, marginTop: 2,
+                background: `linear-gradient(135deg, ${accent.from}, ${accent.to})`,
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.55)' }} />
+                <span style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{categoryLabel}</span>
+              </div>
             </div>
 
             {/* Org */}
