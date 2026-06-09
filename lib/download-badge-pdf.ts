@@ -2,67 +2,74 @@ export async function downloadBadgePDF(name = 'CICT-Badge') {
   const card = document.getElementById('cict-badge-card');
   if (!card) return;
 
-  // Hide action buttons
+  // Hide action buttons during capture
   const hidden = Array.from(card.querySelectorAll<HTMLElement>('.badge-no-print'));
-  hidden.forEach(el => { el.style.display = 'none'; });
+  hidden.forEach(el => { el.style.visibility = 'hidden'; });
 
   try {
-    const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-      import('html2canvas'),
+    const [{ toPng }, { jsPDF }] = await Promise.all([
+      import('html-to-image'),
       import('jspdf'),
     ]);
 
-    // Use device pixel ratio for crisp rendering on high-DPI mobile screens
-    const scale = Math.min(window.devicePixelRatio * 2, 4);
-
-    const canvas = await html2canvas(card, {
-      scale,
-      useCORS: true,
+    // Capture at high resolution with white background
+    const dataUrl = await toPng(card, {
+      quality: 1,
+      pixelRatio: 3,
       backgroundColor: '#ffffff',
-      logging: false,
-      width: card.offsetWidth,
-      height: card.offsetHeight,
-      onclone: (_, el) => {
-        el.style.background = '#ffffff';
-        el.style.boxShadow = 'none';
-      },
+      // Skip hidden elements naturally
+      filter: node => !(node as HTMLElement).classList?.contains('badge-no-print'),
     });
 
-    const imgData = canvas.toDataURL('image/png');
-
-    // A4 portrait, 20mm margins, card centered
+    // A4 portrait with 20mm margins, card centered
     const A4_W = 210;
     const A4_H = 297;
     const MARGIN = 20;
 
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
+    // White background
     pdf.setFillColor(255, 255, 255);
     pdf.rect(0, 0, A4_W, A4_H, 'F');
 
-    const maxW = A4_W - MARGIN * 2;
-    const aspect = canvas.height / canvas.width;
-    const imgW = maxW;
+    // Fit card width to page with margins, keep aspect ratio
+    const img = new Image();
+    img.src = dataUrl;
+    await new Promise(res => { img.onload = res; });
+
+    const aspect = img.naturalHeight / img.naturalWidth;
+    const imgW = A4_W - MARGIN * 2;
     const imgH = imgW * aspect;
     const x = MARGIN;
     const y = Math.max(MARGIN, (A4_H - imgH) / 2);
 
-    pdf.addImage(imgData, 'PNG', x, y, imgW, imgH);
+    pdf.addImage(dataUrl, 'PNG', x, y, imgW, imgH);
 
-    const safeName = name.replace(/\s+/g, '-');
+    const safeName = name.replace(/\s+/g, '-') || 'Badge';
     const fileName = `${safeName}-CICT2026.pdf`;
 
-    // iOS Safari cannot trigger blob downloads — open PDF in new tab instead
+    // iOS Safari: open in new tab (can't trigger blob download)
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
     if (isIOS) {
       const blob = pdf.output('blob');
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
+      window.open(URL.createObjectURL(blob), '_blank');
     } else {
       pdf.save(fileName);
     }
+  } catch (err) {
+    console.error('PDF generation failed:', err);
+    // Fallback: download as image
+    try {
+      const { toPng } = await import('html-to-image');
+      const dataUrl = await toPng(card, { pixelRatio: 3, backgroundColor: '#ffffff' });
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `${name.replace(/\s+/g, '-') || 'Badge'}-CICT2026.png`;
+      a.click();
+    } catch {
+      alert('Could not generate PDF. Please try again.');
+    }
   } finally {
-    hidden.forEach(el => { el.style.display = ''; });
+    hidden.forEach(el => { el.style.visibility = ''; });
   }
 }
