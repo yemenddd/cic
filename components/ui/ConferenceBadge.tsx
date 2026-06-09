@@ -105,16 +105,18 @@ export default function ConferenceBadge({
           transition={{ duration: 0.55, ease: EASE }}
           className="w-full overflow-hidden"
           style={{
-            maxWidth: 400,
+            /* Standard conference badge: 3.375" × 5.375" at 96dpi = 324 × 516px */
+            width: 324,
+            maxWidth: '100%',
             background: '#ffffff',
-            borderRadius: 20,
+            borderRadius: 16,
             boxShadow: '0 24px 64px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08)',
           }}
         >
           {/* ── Dark header ── */}
           <div style={{
             background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-            padding: '14px 24px 16px',
+            padding: '12px 20px 14px',
             position: 'relative',
             overflow: 'hidden',
           }}>
@@ -155,7 +157,7 @@ export default function ConferenceBadge({
           </div>
 
           {/* ── Attendee body ── */}
-          <div style={{ padding: '20px 24px 0' }}>
+          <div style={{ padding: '16px 20px 0' }}>
 
             {/* Top row: label+name on right · pill on left */}
             <div style={{
@@ -218,10 +220,10 @@ export default function ConferenceBadge({
           </div>
 
           {/* ── Cutting line ── */}
-          <div style={{ margin: '0 24px', borderTop: '2px dashed #e2e8f0' }} />
+          <div style={{ margin: '0 20px', borderTop: '2px dashed #e2e8f0' }} />
 
           {/* ── Event details ── */}
-          <div style={{ padding: '16px 24px', background: '#f8fafc' }}>
+          <div style={{ padding: '12px 20px', background: '#f8fafc' }}>
             <div style={{ display: 'flex', gap: 0 }}>
               <div style={{ flex: 1, textAlign: 'center' }}>
                 <p style={{ color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 3px' }}>
@@ -246,7 +248,7 @@ export default function ConferenceBadge({
           </div>
 
           {/* ── Barcode ── */}
-          <div style={{ padding: '14px 24px 22px', background: '#f8fafc' }}>
+          <div style={{ padding: '10px 20px 18px', background: '#f8fafc' }}>
             <div style={{
               background: '#fff', borderRadius: 10,
               padding: '12px 12px 10px',
@@ -278,7 +280,7 @@ export default function ConferenceBadge({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.3, ease: EASE }}
           dir={dir}
-          style={{ width: '100%', maxWidth: 400, marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}
+          style={{ width: '100%', maxWidth: 324, marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}
         >
           {/* Download */}
           <button
