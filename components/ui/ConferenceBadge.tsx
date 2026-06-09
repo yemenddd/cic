@@ -139,9 +139,9 @@ export default function ConferenceBadge({
             }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/logos/logo_white.png"
+                src="/images/logos/logo_text_horizonal.png"
                 alt="CICT"
-                style={{ height: 52, width: 'auto', objectFit: 'contain' }}
+                style={{ height: 36, width: 'auto', objectFit: 'contain', maxWidth: '70%' }}
               />
               <span style={{
                 color: 'rgba(255,255,255,0.25)',
