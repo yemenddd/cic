@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, CircleCheck, Download, Copy, ArrowRight } from 'lucide-react';
+import CICTLogo from '@/components/ui/CICTLogo';
 import Link from 'next/link';
 
 export interface BadgeProps {
@@ -132,13 +133,8 @@ export default function ConferenceBadge({
               background: `radial-gradient(circle, ${accent.to}, transparent)`,
             }} />
 
-            {/* Full SVG logo */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/logos/logo.svg"
-              alt="CICT"
-              style={{ height: 60, width: 'auto', maxWidth: '100%', display: 'block' }}
-            />
+            {/* Full inline SVG logo */}
+            <CICTLogo height={60} />
 
           </div>
 
