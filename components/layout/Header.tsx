@@ -236,21 +236,15 @@ export default function Header() {
               href="/register"
               whileHover={{ scale: 1.02, boxShadow: '0 0 20px rgba(6,182,212,0.4)' }}
               whileTap={{ scale: 0.97 }}
-              className="hidden md:flex items-center gap-2 px-4 py-[7px] text-[12px] font-bold text-white select-none"
+              className="hidden md:flex items-center px-4 py-[7px] text-[12px] font-bold text-white select-none"
               style={{
-                borderRadius: 8,
+                borderRadius: 999,
                 background: 'linear-gradient(135deg, #060e1f, #0c1a35)',
                 border: '1px solid rgba(6,182,212,0.45)',
                 boxShadow: '0 0 10px rgba(6,182,212,0.15), inset 0 1px 0 rgba(255,255,255,0.05)',
                 letterSpacing: '0.05em',
               }}
             >
-              <span style={{
-                width: 6, height: 6, borderRadius: '50%',
-                background: '#22d3ee',
-                boxShadow: '0 0 7px #22d3ee',
-                flexShrink: 0,
-              }} />
               {t('nav.register')}
             </motion.a>
 
