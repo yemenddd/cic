@@ -87,10 +87,9 @@ const CATEGORIES: Category[] = [
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-const inputClass =
-  'w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none transition-all focus:border-cyan-400/50 focus:bg-white/8 focus:ring-1 focus:ring-cyan-400/20';
+const inputClass = 'input-glass text-sm';
 
-const labelClass = 'block text-sm font-medium text-white/70 mb-1.5';
+const labelClass = 'block text-sm font-medium mb-1.5' + ' ' + 'text-white/65';
 
 // ── Confirmation code: deterministic 6-char from name + timestamp ──────────
 function generateCode(name: string): string {
@@ -156,7 +155,7 @@ export default function RegisterForm() {
   if (status === 'success') {
     const cat = CATEGORIES.find(c => c.id === selected)!;
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#030712] px-4 py-16">
+      <div className="flex min-h-screen items-center justify-center px-4 py-16" style={{ background: 'var(--bg-base)' }}>
         <ConferenceBadge
           name={fields.fullName}
           categoryId={selected}
@@ -176,14 +175,14 @@ export default function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#030712] px-4 pb-20 pt-32" dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen px-4 pb-20 pt-32" style={{ background: 'var(--bg-base)' }} dir={isRtl ? 'rtl' : 'ltr'}>
       {/* Stars background */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0" style={{
           backgroundImage: 'radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.15) 0%, transparent 100%), radial-gradient(1px 1px at 80% 70%, rgba(255,255,255,0.1) 0%, transparent 100%), radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.08) 0%, transparent 100%)',
           backgroundSize: '400px 400px, 300px 300px, 500px 500px',
         }} />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#030712]" />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent, transparent, var(--bg-base))' }} />
       </div>
 
       <form onSubmit={handleSubmit} className="mx-auto max-w-6xl">
@@ -300,9 +299,9 @@ export default function RegisterForm() {
                     className={cn(inputClass, 'appearance-none cursor-pointer')}
                     style={{ direction: isRtl ? 'rtl' : 'ltr' }}
                   >
-                    <option value="" disabled style={{ background: '#030712' }}>—</option>
+                    <option value="" disabled style={{ background: '#000' }}>—</option>
                     {trackOptions.map((opt, i) => (
-                      <option key={i} value={opt} style={{ background: '#030712' }}>{opt}</option>
+                      <option key={i} value={opt} style={{ background: '#000' }}>{opt}</option>
                     ))}
                   </select>
                   <div className={cn('pointer-events-none absolute top-1/2 -translate-y-1/2 text-white/40', isRtl ? 'left-3' : 'right-3')}>

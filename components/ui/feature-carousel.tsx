@@ -84,7 +84,7 @@ export function FeatureCarousel({ currentP = 1 }: { currentP?: number }) {
 
   return (
     <div className="w-full max-w-7xl mx-auto md:px-8 md:pb-8">
-      <div className="relative overflow-visible flex flex-col lg:flex-row-reverse lg:items-center lg:justify-center lg:gap-6 lg:min-h-[560px] bg-transparent">
+      <div className="relative overflow-visible flex flex-col lg:flex-row-reverse lg:items-center lg:justify-center lg:gap-6 lg:min-h-[560px] bg-transparent gap-3">
         <div className="w-full lg:w-[34%] relative z-30 flex flex-col items-center lg:items-start justify-center px-4 lg:px-0 bg-transparent mt-6 lg:mt-0">
           <div className="relative w-full grid grid-cols-2 lg:flex lg:flex-col gap-3 lg:gap-4 items-center justify-center lg:items-start z-20">
             {FEATURES.map((feature, index) => {
@@ -135,12 +135,12 @@ export function FeatureCarousel({ currentP = 1 }: { currentP?: number }) {
         </div>
 
         <motion.div
-          className="w-full lg:w-[44%] relative bg-transparent flex items-center justify-center py-8 lg:py-10 px-6 md:px-12 lg:px-4 border-transparent"
+          className="w-full lg:w-[44%] relative bg-transparent flex items-center justify-center py-3 lg:py-10 px-6 md:px-12 lg:px-4 border-transparent"
           initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: currentP >= 0.22 ? 1 : 0, y: currentP >= 0.22 ? 0 : 28 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="relative w-full max-w-[380px] aspect-[4/5] flex items-center justify-center">
+          <div className="relative w-full max-w-[380px] h-[42vw] max-h-[260px] lg:aspect-[4/5] lg:h-auto flex items-center justify-center">
             {FEATURES.map((feature, index) => {
               const status = getCardStatus(index);
               const isActive = status === "active";

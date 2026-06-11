@@ -138,14 +138,14 @@ export default function HistoryTimeline() {
   useMotionValueEvent(scrollYProgress, 'change', (v) => setProgress(v));
 
   return (
-    <section id="history" className="bg-[#030712] min-h-screen">
+    <section id="history" className="min-h-screen" style={{ background: 'var(--bg-base)' }}>
 
       {/* ── Hero header ── */}
       <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
         {/* Starfield background */}
         <Starfield
           starColor="rgba(255,255,255,0.8)"
-          bgColor="rgba(3,7,18,1)"
+          bgColor="#000000"
           speed={0.5}
           quantity={300}
           opacity={1}
@@ -164,7 +164,7 @@ export default function HistoryTimeline() {
             {t('history.titleA')}
           </motion.span>
           <motion.span
-            className="block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
+            className="block gradient-text py-[0.2em] leading-[1.1]"
             initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.8, ease: EASE }}>
             {t('history.titleB')}

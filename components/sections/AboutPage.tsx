@@ -488,14 +488,14 @@ function ValuesSection() {
         />
         <div className="relative z-10 max-w-7xl mx-auto px-6 w-full" dir={dir}>
 
-          <div className="text-center mb-14">
+          <div className="text-center mb-5 lg:mb-14">
             <h2 className="font-outfit font-bold leading-[0.9] tracking-tight"
-              style={{ fontSize: 'clamp(2.4rem, 5vw, 4.5rem)' }}>
+              style={{ fontSize: 'clamp(1.5rem, 5vw, 4.5rem)' }}>
               <motion.span className="block text-white" {...revealWord(0.10)}>
                 {t('about.valsTitleA')}
               </motion.span>
               <motion.span
-                className="block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
+                className="block py-[0.15em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
                 {...revealWord(0.17)}
               >
                 {t('about.valsTitleB')}
@@ -503,22 +503,22 @@ function ValuesSection() {
             </h2>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-5">
+          <div className="grid lg:grid-cols-3 gap-3 lg:gap-5">
             {pillars.map((pillar, i) => (
               <motion.div
                 key={pillar.title}
                 initial={{ opacity: 0, y: 36 }}
                 animate={{ opacity: p >= 0.26 + i * 0.08 ? 1 : 0, y: p >= 0.26 + i * 0.08 ? 0 : 36 }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="rounded-2xl p-7 flex flex-col"
+                className="rounded-2xl p-4 lg:p-7 flex flex-col"
                 style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
               >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-6"
+                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center mb-3 lg:mb-6"
                   style={{ background: `${pillar.color}18` }}>
-                  <pillar.icon size={20} style={{ color: pillar.color }} />
+                  <pillar.icon size={16} style={{ color: pillar.color }} />
                 </div>
-                <h3 className="font-outfit font-bold text-white text-2xl mb-3">{pillar.title}</h3>
-                <p className="text-[15px] text-white/50 leading-relaxed flex-1">{pillar.body}</p>
+                <h3 className="font-outfit font-bold text-white text-lg lg:text-2xl mb-1.5 lg:mb-3">{pillar.title}</h3>
+                <p className="text-[13px] lg:text-[15px] text-white/50 leading-relaxed flex-1">{pillar.body}</p>
               </motion.div>
             ))}
           </div>

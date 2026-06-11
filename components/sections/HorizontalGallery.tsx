@@ -45,7 +45,7 @@ export default function HorizontalGallery() {
   const headerX = useTransform(scrollYProgress, [0, 1], isRtl ? ['0%', '-50%'] : ['0%', '50%']);
 
   return (
-    <section ref={sectionRef} className="relative h-[250vh] md:h-[320vh] bg-[#0a0d15]">
+    <section ref={sectionRef} className="relative h-[250vh] md:h-[320vh]" style={{ background: 'var(--bg-base)' }}>
       <div className="sticky top-0 h-screen flex flex-col overflow-hidden">
 
         {/* ── Header ── */}
@@ -59,7 +59,7 @@ export default function HorizontalGallery() {
             className={`font-outfit font-bold tracking-tight leading-[0.92] text-white ${isRtl ? 'text-right' : ''}`}
             style={{ fontSize: 'clamp(2.4rem, 5.5vw, 5rem)' }}
           >
-            {t('experience.titleA')} <span className="inline-block py-[0.15em] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent">{t('experience.titleB')}</span>
+            {t('experience.titleA')} <span className="inline-block gradient-text py-[0.15em]">{t('experience.titleB')}</span>
           </h2>
         </motion.div>
 
@@ -115,7 +115,10 @@ export default function HorizontalGallery() {
                   >
                     {p.title}
                   </h3>
-                  <div className={`mt-3 h-[2px] w-10 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 ${isRtl ? 'origin-right ml-auto' : 'origin-left'}`} />
+                  <div
+                    className={`mt-3 h-[2px] w-10 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ${isRtl ? 'origin-right ml-auto' : 'origin-left'}`}
+                    style={{ background: 'var(--gradient-brand)' }}
+                  />
                 </div>
               </motion.div>
             ))}

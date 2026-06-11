@@ -18,12 +18,6 @@ export default function BoldStatement() {
   const [currentP, setCurrentP] = useState(0);
   useMotionValueEvent(scrollYProgress, 'change', (v) => setCurrentP(v));
 
-  const reveal = (threshold: number) => ({
-    initial: { opacity: 0, y: 28 },
-    animate: { opacity: currentP >= threshold ? 1 : 0, y: currentP >= threshold ? 0 : 28 },
-    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
-  });
-
   const revealWord = (threshold: number) => ({
     initial: { opacity: 0, y: 48 },
     animate: { opacity: currentP >= threshold ? 1 : 0, y: currentP >= threshold ? 0 : 48 },
@@ -31,7 +25,7 @@ export default function BoldStatement() {
   });
 
   return (
-    <section className="relative" style={{ background: '#030712' }}>
+    <section className="relative" style={{ background: 'var(--bg-base)' }}>
 
       {/* ── Fullscreen hero area ── */}
       <FinancialHero
@@ -54,16 +48,16 @@ export default function BoldStatement() {
 
 
             {/* Headline */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-4 md:mb-8">
               <h3
                 className="font-outfit font-bold tracking-tight"
-                style={{ fontSize: 'clamp(2.4rem, 5vw, 4.5rem)', lineHeight: 1.05 }}
+                style={{ fontSize: 'clamp(1.55rem, 5vw, 4.5rem)', lineHeight: 1.05 }}
               >
                 <motion.span className="inline-block text-white" {...revealWord(0.12)}>
                   {t('bold.whoTitleA')}
                 </motion.span>
                 {' '}
-                <motion.span className="inline-block py-[0.15em] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent" {...revealWord(0.19)}>
+                <motion.span className="inline-block gradient-text py-[0.15em]" {...revealWord(0.19)}>
                   {t('bold.whoTitleB')}
                 </motion.span>
               </h3>

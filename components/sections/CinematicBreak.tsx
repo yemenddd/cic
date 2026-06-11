@@ -85,11 +85,12 @@ export default function CinematicBreak() {
                   style={{
                     fontSize: 'clamp(2.5rem, 8vw, 8rem)',
                     ...(i === words.length - 1 ? {
-                      background: 'linear-gradient(to right, #67e8f9, #60a5fa, #8b5cf6)',
+                      background: 'var(--gradient-text)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
-                      paddingBottom: '0.25em', lineHeight: '1.1',
+                      paddingBottom: '0.25em',
+                      lineHeight: '1.1',
                       display: 'inline-block',
                     } : { color: '#ffffff' }),
                   }}

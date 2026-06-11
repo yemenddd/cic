@@ -55,7 +55,7 @@ export default function RootLayout({
       dir="rtl"
       className={`${inter.variable} ${outfit.variable} ${thmanyah.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-black text-white selection:bg-blue-500/30 font-inter">
+      <body className="min-h-full flex flex-col bg-[#000000] text-white font-inter">
         <StyletronWrapper>
           <LanguageProvider>
             <Header />

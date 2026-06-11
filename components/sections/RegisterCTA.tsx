@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
-import { ArrowRight, Calendar, MapPin, Users } from 'lucide-react';
+import { Calendar, MapPin, Users } from 'lucide-react';
+import { ShinyButton } from '@/components/ui/shiny-button';
 import { useLang } from '@/lib/i18n';
 
 function CountCard({ value, label }: { value: number; label: string }) {
@@ -101,9 +102,9 @@ export default function RegisterCTA() {
       ref={sectionRef}
       id="register"
       className="relative h-[150vh] md:h-[200vh]"
-      style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+      style={{ borderTop: '1px solid var(--border-subtle)' }}
     >
-      <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden bg-gradient-to-b from-black to-[#030712]">
+      <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden" style={{ background: 'var(--bg-base)' }}>
 
         {/* Ambient spotlight */}
         <div
@@ -133,7 +134,7 @@ export default function RegisterCTA() {
               {t('register.titleA')}
             </motion.span>
             <motion.span
-              className="inline-block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
+              className="inline-block gradient-text py-[0.2em] leading-[1.1]"
               {...revealWord(0.15)}
             >
               {t('register.titleB')}
@@ -163,17 +164,10 @@ export default function RegisterCTA() {
           </motion.div>
 
           {/* Primary CTA */}
-          <motion.div {...reveal(0.34)}>
-            <motion.a
-              href="/register"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="group inline-flex items-center gap-2.5 px-9 py-4 rounded-full text-[15px] font-semibold text-white mb-6"
-              style={{ background: 'linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6)', boxShadow: '0 0 40px rgba(139,92,246,0.35)' }}
-            >
-              {t('register.register')}
-              <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
-            </motion.a>
+          <motion.div {...reveal(0.34)} className="mb-6">
+            <ShinyButton href="/register" size="lg">
+              {t('register.register')} →
+            </ShinyButton>
           </motion.div>
 
           {/* Email capture */}
@@ -186,7 +180,7 @@ export default function RegisterCTA() {
                     key="confirmed"
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-sm bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent opacity-80 w-full text-center py-3"
+                    className="text-sm gradient-text opacity-80 w-full text-center py-3"
                   >
                     {t('register.confirmed')}
                   </motion.p>
@@ -245,7 +239,7 @@ export default function RegisterCTA() {
         </div>
 
         {/* Bottom fade to blend seamlessly with the next section */}
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#030712] to-transparent z-20" />
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-40 z-20" style={{ background: 'linear-gradient(to top, var(--bg-base), transparent)' }} />
       </div>
     </div>
   );

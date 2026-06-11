@@ -95,7 +95,7 @@ export const FinancialHero = ({
                   {...revealWord(0.22)}
                 >
                   <span className="text-white">{titleLine2White}</span>
-                  <span className="inline-block py-[0.15em] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent">{titleLine2Blue}</span>
+                  <span className="inline-block gradient-text py-[0.15em]">{titleLine2Blue}</span>
                 </motion.p>
               </div>
             </div>
@@ -105,9 +105,9 @@ export const FinancialHero = ({
               className={cn('space-y-4 md:space-y-6 mb-8', isRtl ? 'w-full max-w-lg text-right ml-auto' : 'max-w-lg')}
               {...reveal(0.30)}
             >
-              <p className="text-base md:text-lg leading-relaxed font-medium text-white/80">{description}</p>
+              <p className="text-base md:text-lg leading-relaxed font-medium" style={{ color: 'var(--text-secondary)' }}>{description}</p>
               {description2 && (
-                <p className="text-[13px] md:text-[15px] leading-relaxed text-white/50">{description2}</p>
+                <p className="text-[13px] md:text-[15px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>{description2}</p>
               )}
             </motion.div>
 
@@ -115,7 +115,7 @@ export const FinancialHero = ({
               <Link
                 href={buttonLink}
                 dir={isRtl ? 'rtl' : 'ltr'}
-                className="inline-flex items-center gap-2 text-sm font-semibold group bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
+                className="inline-flex items-center gap-2 text-sm font-semibold group gradient-text"
               >
                 {isRtl ? (
                   <>
@@ -154,13 +154,13 @@ export const FinancialHero = ({
             <motion.img
               src={imageUrl2}
               alt=""
-              className="absolute h-40 sm:h-56 md:h-[320px] w-auto rounded-2xl md:rounded-3xl border border-white/20 shadow-[0_12px_48px_rgba(0,0,0,0.4)] object-cover transform rotate-[-4deg] translate-x-6 md:translate-x-12 translate-y-4 md:translate-y-6"
+              className="absolute h-40 sm:h-56 md:h-[320px] w-auto rounded-2xl md:rounded-3xl object-cover transform rotate-[-4deg] translate-x-6 md:translate-x-12 translate-y-4 md:translate-y-6" style={{ border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-lg)' }}
               whileHover={{ y: -10, rotate: -3, transition: { duration: 0.3 } }}
             />
             <motion.img
               src={imageUrl1}
               alt=""
-              className="relative z-10 h-40 sm:h-56 md:h-[320px] w-auto rounded-2xl md:rounded-3xl border border-white/20 shadow-[0_12px_48px_rgba(0,0,0,0.45)] object-cover transform rotate-[3deg] -translate-x-4 md:-translate-x-8"
+              className="relative z-10 h-40 sm:h-56 md:h-[320px] w-auto rounded-2xl md:rounded-3xl object-cover transform rotate-[3deg] -translate-x-4 md:-translate-x-8" style={{ border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xl)' }}
               whileHover={{ y: -10, rotate: 3, transition: { duration: 0.3 } }}
             />
           </motion.div>

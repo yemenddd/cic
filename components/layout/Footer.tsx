@@ -48,7 +48,7 @@ const C4Logo = (
 export default function Footer() {
   const { t } = useLang();
   return (
-    <div className="bg-[#030712] text-white">
+    <div className="text-white" style={{ background: 'var(--bg-elevated)', borderTop: '1px solid var(--border-subtle)' }}>
     <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
     <FooterBase
       logo={C4Logo}

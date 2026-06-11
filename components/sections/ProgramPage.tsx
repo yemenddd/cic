@@ -192,12 +192,6 @@ export default function ProgramPage() {
             {t('program.lead')}
           </motion.p>
 
-          {/* Tap hint */}
-          <motion.p
-            className="mt-6 text-[11px] text-white/25 uppercase tracking-[0.22em]"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9, duration: 0.6 }}>
-            {t('program.expandHint')}
-          </motion.p>
       </div>
 
       {/* ── Program cards ── */}

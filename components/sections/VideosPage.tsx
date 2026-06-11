@@ -177,7 +177,7 @@ export default function VideosPage() {
   };
 
   return (
-    <section className="relative min-h-screen bg-[#030712] overflow-x-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
+    <section className="relative min-h-screen overflow-x-hidden" style={{ background: 'var(--bg-base)' }} dir={isRtl ? 'rtl' : 'ltr'}>
 
       {/* Background grid */}
       <div className="absolute inset-0 pointer-events-none" style={{
@@ -199,7 +199,7 @@ export default function VideosPage() {
               {t('videos.titleA')}
             </motion.span>
             <motion.span
-              className="block py-[0.15em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
+              className="block gradient-text py-[0.15em] leading-[1.1]"
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25, duration: 0.7, ease: EASE }}>
               {t('videos.titleB')}

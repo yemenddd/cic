@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 // Lazy-load the heavy 3D WebGL gallery — only fetched when this page is visited
 const InfiniteGallery = dynamic(() => import('@/components/ui/infinite-gallery'), {
   ssr: false,
-  loading: () => <div className="w-full h-screen bg-[#030712]" />,
+  loading: () => <div className="w-full h-screen" style={{ background: 'var(--bg-base)' }} />,
 });
 
 const GALLERY_IMAGES = [
@@ -78,7 +78,7 @@ export default function Gallery() {
   };
 
   return (
-    <section id="gallery" className="relative bg-[#030712] min-h-screen overflow-hidden">
+    <section id="gallery" className="relative min-h-screen overflow-hidden" style={{ background: 'var(--bg-base)' }}>
       
       <audio ref={audioRef} src="/music/gallery.m4a" loop />
 
@@ -133,7 +133,7 @@ export default function Gallery() {
           transition={{ delay: 0.2, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
           {t('gallery.titleA')}{' '}
-          <span className="inline-block py-[0.15em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent">
+          <span className="inline-block gradient-text py-[0.15em] leading-[1.1]">
             {t('gallery.titleB')}
           </span>
         </motion.h1>
@@ -152,7 +152,7 @@ export default function Gallery() {
       {/* Bottom fade */}
       <div
         className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 z-10"
-        style={{ background: 'linear-gradient(to top, #030712, transparent)' }}
+        style={{ background: 'linear-gradient(to top, var(--bg-base), transparent)' }}
       />
     </section>
   );

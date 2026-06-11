@@ -1,143 +1,579 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════
+   CICT 2026 — Design System
+   Apple WWDC26 / Liquid Glass Design Language
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Color Tokens ─────────────────────────────────────────── */
 :root {
-  --background: #030712;
-  --foreground: #ededed;
+  /* Canvas */
+  --bg-base:        #000000;
+  --bg-elevated:    #0a0a0f;
+  --bg-overlay:     #0f0f18;
 
-  /* shadcn/ui tokens — dark palette */
-  --primary: #ffffff;
-  --primary-foreground: #0a0a0a;
-  --secondary: #1c1c20;
-  --secondary-foreground: #fafafa;
-  --muted: #1c1c20;
-  --muted-foreground: #9ca3af;
-  --accent: #26262b;
-  --accent-foreground: #fafafa;
-  --destructive: #ef4444;
-  --destructive-foreground: #fafafa;
-  --border: rgba(255, 255, 255, 0.12);
-  --input: rgba(255, 255, 255, 0.18);
-  --ring: #3ca2fa;
+  /* Text */
+  --text-primary:   #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --text-tertiary:  rgba(255, 255, 255, 0.30);
+  --text-disabled:  rgba(255, 255, 255, 0.18);
 
-  /* Fluent 2 design tokens */
-  --fluent-brand:         #0078D4;
-  --fluent-brand-hover:   #106EBE;
-  --fluent-brand-pressed: #005A9E;
-  --fluent-fg1:           #242424;
-  --fluent-fg2:           #616161;
-  --fluent-fg3:           #707070;
-  --fluent-bg1:           #FFFFFF;
-  --fluent-bg2:           #F9F9F9;
-  --fluent-bg3:           #F5F5F5;
-  --fluent-stroke:        rgba(0, 0, 0, 0.06);
-  --fluent-stroke-strong: rgba(0, 0, 0, 0.12);
-  --fluent-shadow4:       0 2px 4px rgba(0,0,0,0.10), 0 0 2px rgba(0,0,0,0.06);
-  --fluent-shadow8:       0 4px 8px rgba(0,0,0,0.12), 0 0 2px rgba(0,0,0,0.06);
-  --fluent-shadow16:      0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.08);
-  --fluent-shadow28:      0 14px 28px rgba(0,0,0,0.16), 0 0 4px rgba(0,0,0,0.08);
+  /* Accent — Cyan → Blue → Violet */
+  --accent-cyan:    #06b6d4;
+  --accent-blue:    #3b82f6;
+  --accent-violet:  #8b5cf6;
+  --accent-start:   #06b6d4;
+  --accent-end:     #8b5cf6;
 
-  --gradient-color: #3b82f6;
-  --sparkles-color: #3b82f6;
+  /* Gradient string (reusable) */
+  --gradient-brand: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue), var(--accent-violet));
+  --gradient-text:  linear-gradient(90deg, var(--accent-cyan), var(--accent-blue) 50%, var(--accent-violet));
+
+  /* Liquid Glass — the core material */
+  --glass-bg:          rgba(255, 255, 255, 0.055);
+  --glass-bg-hover:    rgba(255, 255, 255, 0.085);
+  --glass-bg-active:   rgba(255, 255, 255, 0.12);
+  --glass-border:      rgba(255, 255, 255, 0.09);
+  --glass-border-hover:rgba(255, 255, 255, 0.16);
+  --glass-shine:       rgba(255, 255, 255, 0.07);   /* top-edge inner highlight */
+  --glass-blur:        32px;
+  --glass-saturate:    180%;
+
+  /* Shadows */
+  --shadow-sm:   0 2px 8px  rgba(0, 0, 0, 0.35);
+  --shadow-md:   0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg:   0 16px 48px rgba(0, 0, 0, 0.55);
+  --shadow-xl:   0 32px 80px rgba(0, 0, 0, 0.65);
+  --shadow-glow: 0 0 40px rgba(6, 182, 212, 0.18);
+
+  /* Borders */
+  --border-subtle:  rgba(255, 255, 255, 0.07);
+  --border-default: rgba(255, 255, 255, 0.10);
+  --border-strong:  rgba(255, 255, 255, 0.18);
+
+  /* Radii */
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
+  --radius-pill:9999px;
+
+  /* Spacing scale (multiples of 4px) */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* Transitions */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --duration-fast:   120ms;
+  --duration-base:   220ms;
+  --duration-slow:   380ms;
+  --duration-xslow:  600ms;
+
+  /* shadcn/ui compatibility tokens */
+  --background:           var(--bg-base);
+  --foreground:           var(--text-primary);
+  --primary:              #ffffff;
+  --primary-foreground:   #000000;
+  --secondary:            rgba(255, 255, 255, 0.06);
+  --secondary-foreground: #ffffff;
+  --muted:                rgba(255, 255, 255, 0.05);
+  --muted-foreground:     var(--text-secondary);
+  --accent:               rgba(255, 255, 255, 0.08);
+  --accent-foreground:    #ffffff;
+  --destructive:          #ef4444;
+  --destructive-foreground: #ffffff;
+  --border:               var(--border-default);
+  --input:                rgba(255, 255, 255, 0.08);
+  --ring:                 var(--accent-cyan);
+  --gradient-color:       var(--accent-blue);
+  --sparkles-color:       var(--accent-cyan);
 }
 
+/* ── 2. Tailwind @theme mapping ──────────────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background:           var(--bg-base);
+  --color-foreground:           var(--text-primary);
+  --color-primary:              var(--primary);
+  --color-primary-foreground:   var(--primary-foreground);
+  --color-secondary:            var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:                var(--muted);
+  --color-muted-foreground:     var(--muted-foreground);
+  --color-accent:               var(--accent);
+  --color-accent-foreground:    var(--accent-foreground);
+  --color-destructive:          var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border:               var(--border);
+  --color-input:                var(--input);
+  --color-ring:                 var(--ring);
+
   --font-sans: var(--font-inter);
   --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
-
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
 }
 
+/* ── 3. Base Reset & Global Styles ───────────────────────────── */
 @layer base {
-  * {
+  *, *::before, *::after {
     border-color: var(--border);
     outline-color: var(--ring);
   }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                 var(--font-inter), "Helvetica Neue", Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  /* Selection */
+  ::selection {
+    background: rgba(6, 182, 212, 0.25);
+    color: #ffffff;
+  }
+
+  /* Focus ring — accessible + beautiful */
+  :focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* Scrollbar — minimal dark */
+  ::-webkit-scrollbar       { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-pill);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+/* ── 4. Arabic Typography ────────────────────────────────────── */
+html[lang="ar"] body {
+  font-family: var(--font-thmanyah), -apple-system, "Helvetica Neue", sans-serif;
+  font-feature-settings: "kern" 1;
 }
 
-/* ── Arabic typography ── */
-html[lang="ar"] body,
-html[lang="ar"] .font-inter,
+html[lang="ar"] [class*="font-outfit"],
 html[lang="ar"] .font-outfit {
-  font-family: var(--font-thmanyah), "Segoe UI", system-ui, serif;
-}
-
-html[lang="ar"] [class*="font-outfit"] {
   font-family: var(--font-thmanyah), system-ui, serif;
 }
 
-/* ── Fluent surfaces ── */
-.fluent-acrylic {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+html[lang="ar"] [class*="font-inter"],
+html[lang="ar"] .font-inter {
+  font-family: var(--font-thmanyah), system-ui, serif;
 }
 
-.fluent-card {
-  background: var(--fluent-bg1);
-  border: 1px solid var(--fluent-stroke);
-  box-shadow: var(--fluent-shadow4);
-  border-radius: 8px;
+/* ── 5. Liquid Glass Utility Classes ─────────────────────────── */
+
+/* The core material */
+.glass {
+  background:           var(--glass-bg);
+  backdrop-filter:      blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border:               1px solid var(--glass-border);
+  /* Inner top-edge highlight — the "liquid" feel */
+  box-shadow:
+    inset 0 1px 0 var(--glass-shine),
+    var(--shadow-md);
 }
 
-.fluent-card:hover {
-  box-shadow: var(--fluent-shadow16);
+.glass:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
 }
 
-/* ── Animations ── */
-@keyframes hero-blob {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%       { transform: translate(6%, -8%) scale(1.08); }
-  66%       { transform: translate(-5%, 6%) scale(0.94); }
+/* Heavier glass for modals / drawers */
+.glass-heavy {
+  background:           rgba(8, 8, 16, 0.85);
+  backdrop-filter:      blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border:               1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 0 var(--glass-shine),
+    var(--shadow-xl);
 }
 
-@keyframes glowPulse {
-  0%, 100% { opacity: 0.5; }
-  50%       { opacity: 1; }
+/* Card variant */
+.glass-card {
+  background:           var(--glass-bg);
+  backdrop-filter:      blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border:               1px solid var(--glass-border);
+  border-radius:        var(--radius-xl);
+  box-shadow:
+    inset 0 1px 0 var(--glass-shine),
+    var(--shadow-lg);
+  transition: background var(--duration-base) var(--ease-out),
+              border-color var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out);
 }
 
-.animate-glow-pulse {
-  animation: glowPulse 3s ease-in-out infinite;
+.glass-card:hover {
+  background:   var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  transform:    translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    var(--shadow-xl);
 }
 
-/* ── Spline loader spinner (used in SplineScene Suspense fallback) ── */
+/* ── 6. Gradient Utilities ───────────────────────────────────── */
+
+.gradient-text {
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.gradient-border {
+  position: relative;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--gradient-brand);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.gradient-bg {
+  background: var(--gradient-brand);
+}
+
+/* ── 7. Section Label (Pill above headings) ──────────────────── */
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.20);
+  color: var(--accent-cyan);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ── 8. Button Base Styles ───────────────────────────────────── */
+
+/* Primary CTA — Apple Liquid Glass style */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 26px;
+  border-radius: var(--radius-pill);
+  background:           rgba(255, 255, 255, 0.13);
+  backdrop-filter:      blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border:               1px solid rgba(255, 255, 255, 0.30);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14),
+    0 4px 16px rgba(0, 0, 0, 0.30);
+  color: #ffffff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+.btn-primary:hover {
+  background:    rgba(255, 255, 255, 0.20);
+  border-color:  rgba(255, 255, 255, 0.45);
+  transform:     translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.10),
+    0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.btn-primary:active { transform: translateY(0); opacity: 0.88; }
+
+/* Ghost / secondary */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 22px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid var(--border-default);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              background var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+}
+.btn-ghost:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+  background: var(--glass-bg);
+  transform: translateY(-1px);
+}
+
+/* ── 9. Form Input Base ──────────────────────────────────────── */
+.input-glass {
+  width: 100%;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              background var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+  outline: none;
+}
+.input-glass::placeholder { color: var(--text-tertiary); }
+.input-glass:hover  { border-color: var(--border-strong); }
+.input-glass:focus  {
+  border-color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.04);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.12);
+}
+
+/* ── 10. Typography Helpers ──────────────────────────────────── */
+
+.text-display {
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.text-h1 {
+  font-size: clamp(2rem, 4.5vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.text-h2 {
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.text-h3 {
+  font-size: clamp(1.1rem, 1.8vw, 1.375rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.text-body {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.text-caption {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* ── 11. Section Spacing ─────────────────────────────────────── */
+.section {
+  padding-top:    clamp(64px, 10vw, 128px);
+  padding-bottom: clamp(64px, 10vw, 128px);
+}
+
+.section-sm {
+  padding-top:    clamp(40px, 6vw, 80px);
+  padding-bottom: clamp(40px, 6vw, 80px);
+}
+
+.container-main {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(20px, 5vw, 48px);
+}
+
+/* ── 12. Divider ─────────────────────────────────────────────── */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border-default) 20%,
+    var(--border-default) 80%,
+    transparent
+  );
+}
+
+/* ── 13. Glow Orbs (ambient background light) ────────────────── */
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.glow-cyan   { background: radial-gradient(circle, rgba(6,  182, 212, 0.18) 0%, transparent 70%); }
+.glow-blue   { background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%); }
+.glow-violet { background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%); }
+
+/* ── 14. Keyframe Animations ─────────────────────────────────── */
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1);    }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 0.85; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-.loader {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.08);
-  border-top-color: rgba(96, 165, 250, 0.7);
-  animation: spin 0.9s linear infinite;
+@keyframes scroll-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
-/* ── Force default cursor on Spline canvas ── */
+/* Animation utility classes */
+.animate-fade-up    { animation: fade-up   var(--duration-slow) var(--ease-out) both; }
+.animate-fade-in    { animation: fade-in   var(--duration-slow) var(--ease-out) both; }
+.animate-scale-in   { animation: scale-in  var(--duration-slow) var(--ease-out) both; }
+.animate-slide-down { animation: slide-down var(--duration-base) var(--ease-out) both; }
+.animate-glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
+.animate-float      { animation: float 4s ease-in-out infinite; }
+.animate-scroll-x   { animation: scroll-x 30s linear infinite; }
+
+/* Shimmer loading state */
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.03) 0%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* Stagger delay helpers */
+.delay-75  { animation-delay: 75ms;  }
+.delay-150 { animation-delay: 150ms; }
+.delay-225 { animation-delay: 225ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-450 { animation-delay: 450ms; }
+.delay-600 { animation-delay: 600ms; }
+
+/* ── 15. Loader Spinner ───────────────────────────────────────── */
+.loader {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-top-color: var(--accent-cyan);
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── 16. Spline Canvas Cursor Fix ────────────────────────────── */
 canvas,
 canvas:hover,
 canvas:active,
-[class*="spline"] canvas,
-.spline-watermark + canvas {
+[class*="spline"] canvas {
   cursor: default !important;
+}
+
+/* ── 17. Reduced Motion ───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration:   0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration:  0.01ms !important;
+    scroll-behavior:      auto !important;
+  }
+}
+
+/* ── 18. Scrollbar RTL fix ───────────────────────────────────── */
+html[dir="rtl"] ::-webkit-scrollbar {
+  direction: ltr;
 }

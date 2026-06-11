@@ -94,7 +94,7 @@ export function Sparkles({
     detectRetina: true,
   }
 
-  return isReady && <Particles id={id} options={{ ...defaultOptions, ...options }} className={className} />
+  return isReady ? <Particles id={id} options={{ ...defaultOptions, ...options }} className={className} /> : null
 }
 
 /* ── SparklesCore — alias with alternate prop names ── */
@@ -109,7 +109,15 @@ type SparklesCoreProps = {
   particleDensity?: number
 }
 
-export function SparklesCore({ className, background = 'transparent', minSize = 0.6, maxSize = 1.4, speed = 3, particleColor = '#ffffff', particleDensity = 100 }: SparklesCoreProps) {
+export function SparklesCore({
+  className,
+  background = "transparent",
+  minSize = 0.6,
+  maxSize = 1.4,
+  speed = 3,
+  particleColor = "#ffffff",
+  particleDensity = 100,
+}: SparklesCoreProps) {
   return (
     <Sparkles
       className={className}
