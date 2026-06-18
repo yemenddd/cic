@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, Check, ChevronDown } from 'lucide-react';
+import { Globe, Check, ChevronDown, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useLang } from '@/lib/i18n';
 import type { Lang } from '@/lib/dictionary';
+import { useTheme } from '@/lib/theme-context';
 import { ShinyButton } from '@/components/ui/shiny-button';
 
 const LANG_OPTIONS: { code: Lang; label: string; dir: 'ltr' | 'rtl' }[] = [
@@ -31,6 +32,8 @@ const EASE   = [0.22, 1, 0.36, 1] as const;
 
 export default function Header() {
   const { t, lang, setLang } = useLang();
+  const { theme, toggle: toggleTheme } = useTheme();
+  const isLight = theme === 'light';
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [hovered, setHovered]   = useState<string | null>(null);
@@ -84,11 +87,11 @@ export default function Header() {
         transition={{ duration: 0.6, ease: EASE }}
         className="fixed top-0 inset-x-0 z-50 transition-all duration-300"
         style={showBg ? {
-          background:           'rgba(15, 15, 18, 0.75)',
+          background:           'var(--header-glass-bg)',
           backdropFilter:       'blur(20px) saturate(180%)',
           WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-          borderBottom:         '1px solid rgba(255, 255, 255, 0.08)',
-          boxShadow:            '0 4px 30px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.05)',
+          borderBottom:         '1px solid var(--header-glass-border)',
+          boxShadow:            'var(--header-glass-shadow)',
         } : {}}
       >
         <div className="max-w-7xl mx-auto px-5 md:px-8 h-14 md:h-[60px] flex items-center justify-between gap-4">
@@ -96,14 +99,14 @@ export default function Header() {
           {/* ── Logo ── */}
           <Link href="/" className="flex items-center gap-3 shrink-0 group" aria-label="CICT Home">
             <Image
-              src="/images/logos/logo_white.png"
+              src={isLight ? "/images/logos/logo_colored.png" : "/images/logos/logo_white.png"}
               alt="CICT"
               width={32}
               height={32}
               priority
               className="w-[32px] h-[32px] object-contain opacity-90 group-hover:opacity-100 transition-opacity duration-200"
             />
-            <span className="font-outfit font-bold text-[13px] text-white tracking-tight">
+            <span className="font-outfit font-bold text-[13px] tracking-tight" style={{ color: 'var(--text-primary)' }}>
               {t('footer.copyright')}
             </span>
           </Link>
@@ -123,10 +126,10 @@ export default function Header() {
                   className="relative px-3.5 py-2 rounded-lg text-[13px] font-medium select-none"
                   style={{
                     color: active
-                      ? '#ffffff'
+                      ? 'var(--text-primary)'
                       : hovered === link.key
-                        ? 'rgba(255,255,255,0.90)'
-                        : 'rgba(255,255,255,0.40)',
+                        ? 'var(--text-secondary)'
+                        : 'var(--text-tertiary)',
                     transition: 'color 0.15s ease',
                   }}
                 >
@@ -136,8 +139,8 @@ export default function Header() {
                       layoutId="nav-hover"
                       className="absolute inset-0 rounded-lg"
                       style={{
-                        background: 'rgba(255,255,255,0.06)',
-                        boxShadow:  'inset 0 1px 0 rgba(255,255,255,0.06)',
+                        background: 'var(--nav-hover-bg)',
+                        boxShadow:  'inset 0 1px 0 var(--mat-liquid-inset)',
                       }}
                       transition={SPRING}
                     />
@@ -149,8 +152,8 @@ export default function Header() {
                       layoutId="nav-active-bg"
                       className="absolute inset-0 rounded-lg"
                       style={{
-                        background: 'rgba(255,255,255,0.07)',
-                        boxShadow:  'inset 0 1px 0 rgba(255,255,255,0.08)',
+                        background: 'var(--nav-active-bg)',
+                        boxShadow:  'inset 0 1px 0 var(--mat-liquid-inset)',
                       }}
                       transition={SPRING}
                     />
@@ -166,6 +169,22 @@ export default function Header() {
           {/* ── Right controls ── */}
           <div className="flex items-center gap-2 shrink-0">
 
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
+              className="hidden md:flex w-8 h-8 items-center justify-center rounded-full transition-all duration-200"
+              style={{
+                background:           'var(--mat-liquid-bg)',
+                backdropFilter:       'blur(20px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                border:               '1px solid var(--mat-liquid-border)',
+                color:                'var(--text-secondary)',
+              }}
+            >
+              {isLight ? <Moon size={13} /> : <Sun size={13} />}
+            </button>
+
             {/* Language switcher */}
             <div ref={langRef} className="relative hidden md:block">
               <button
@@ -174,12 +193,12 @@ export default function Header() {
                 aria-expanded={langOpen}
                 className="flex items-center gap-1.5 px-3 py-[6px] rounded-full text-[11px] font-semibold select-none"
                 style={{
-                  color:                langOpen ? '#ffffff' : 'rgba(255,255,255,0.52)',
-                  background:           langOpen ? 'rgba(20,20,26,0.85)' : 'rgba(15,15,18,0.55)',
+                  color:                langOpen ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                  background:           'var(--mat-liquid-bg)',
                   backdropFilter:       'blur(20px) saturate(180%)',
                   WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                  border:               `1px solid ${langOpen ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.08)'}`,
-                  boxShadow:            'inset 0 1px 0 rgba(255,255,255,0.06)',
+                  border:               '1px solid var(--mat-liquid-border)',
+                  boxShadow:            'inset 0 1px 0 var(--mat-liquid-inset)',
                   transition:           'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
                 }}
               >
@@ -203,12 +222,11 @@ export default function Header() {
                     transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                     className={`absolute top-full mt-2 z-50 w-44 rounded-2xl overflow-hidden ${lang === 'ar' ? 'left-0' : 'right-0'}`}
                     style={{
-                      background:           'rgba(8, 8, 12, 0.96)',
+                      background:           'var(--mat-black-bg)',
                       backdropFilter:       'blur(40px) saturate(160%)',
                       WebkitBackdropFilter: 'blur(40px) saturate(160%)',
-                      border:               '1px solid rgba(255,255,255,0.08)',
-                      boxShadow:
-                        '0 8px 40px rgba(0,0,0,0.60), 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.07)',
+                      border:               '1px solid var(--mat-black-border)',
+                      boxShadow:            'var(--mat-black-shadow)',
                     }}
                   >
                     {LANG_OPTIONS.map((opt, i) => {
@@ -223,15 +241,15 @@ export default function Header() {
                             background:   isActive
                               ? 'linear-gradient(90deg,rgba(6,182,212,0.10),rgba(139,92,246,0.10))'
                               : 'transparent',
-                            color:        isActive ? '#fff' : 'rgba(255,255,255,0.40)',
+                            color:        isActive ? 'var(--text-primary)' : 'var(--text-tertiary)',
                             borderBottom: i < LANG_OPTIONS.length - 1
-                              ? '1px solid rgba(255,255,255,0.05)'
+                              ? '1px solid var(--mat-black-border)'
                               : 'none',
                             transition:   'background 0.15s ease, color 0.15s ease',
                           }}
                           onMouseEnter={e => {
                             if (!isActive)
-                              (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)';
+                              (e.currentTarget as HTMLElement).style.background = 'var(--nav-hover-bg)';
                           }}
                           onMouseLeave={e => {
                             if (!isActive)
@@ -242,8 +260,8 @@ export default function Header() {
                             <span
                               className="text-[8px] font-black tracking-widest px-1.5 py-0.5 rounded-md shrink-0"
                               style={{
-                                background: isActive ? 'rgba(6,182,212,0.18)' : 'rgba(255,255,255,0.06)',
-                                color:      isActive ? '#67e8f9' : 'rgba(255,255,255,0.24)',
+                                background: isActive ? 'rgba(6,182,212,0.18)' : 'var(--nav-hover-bg)',
+                                color:      isActive ? '#67e8f9' : 'var(--text-tertiary)',
                               }}
                             >
                               {opt.code.toUpperCase()}
@@ -303,7 +321,7 @@ export default function Header() {
             transition={{ duration: 0.25 }}
             className="fixed inset-0 z-40 md:hidden flex flex-col"
             style={{
-              background:           'rgba(4, 4, 8, 0.97)',
+              background:           'var(--mat-black-bg)',
               backdropFilter:       'blur(40px) saturate(160%)',
               WebkitBackdropFilter: 'blur(40px) saturate(160%)',
             }}
@@ -327,7 +345,7 @@ export default function Header() {
             {/* Top bar */}
             <div
               className="relative flex items-center justify-between px-6 h-14 shrink-0"
-              style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+              style={{ borderBottom: '1px solid var(--mat-black-border)' }}
             >
               <Link
                 href="/"
@@ -336,26 +354,26 @@ export default function Header() {
               >
                 <div
                   className="w-[28px] h-[28px] flex items-center justify-center rounded-lg"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)' }}
+                  style={{ background: 'var(--nav-hover-bg)', border: '1px solid var(--mat-liquid-border)' }}
                 >
                   <Image
-                    src="/images/logos/logo_white.png"
+                    src={isLight ? "/images/logos/logo_colored.png" : "/images/logos/logo_white.png"}
                     alt="CICT"
                     width={18}
                     height={18}
                     className="w-[18px] h-[18px] object-contain"
                   />
                 </div>
-                <span className="font-outfit font-bold text-[13px] text-white">{t('footer.copyright')}</span>
+                <span className="font-outfit font-bold text-[13px]" style={{ color: 'var(--text-primary)' }}>{t('footer.copyright')}</span>
               </Link>
               <button
                 onClick={() => setMenuOpen(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-lg"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                style={{ background: 'var(--nav-hover-bg)', border: '1px solid var(--mat-liquid-border)' }}
                 aria-label="Close menu"
               >
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M1 1L13 13M13 1L1 13" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M1 1L13 13M13 1L1 13" stroke="var(--text-secondary)" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </button>
             </div>
@@ -379,13 +397,13 @@ export default function Header() {
                       href={link.href}
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center justify-between py-4 group"
-                      style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+                      style={{ borderBottom: '1px solid var(--border-subtle)' }}
                     >
                       <span
                         className="font-outfit font-bold tracking-tight"
                         style={{
                           fontSize: 'clamp(1.55rem, 5.5vw, 2rem)',
-                          color:    active ? '#ffffff' : 'rgba(255,255,255,0.28)',
+                          color:    active ? 'var(--text-primary)' : 'var(--text-tertiary)',
                           transition: 'color 0.2s ease',
                         }}
                       >
@@ -402,7 +420,7 @@ export default function Header() {
                       ) : (
                         <span
                           className="w-2 h-2 rounded-full shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                          style={{ background: 'rgba(255,255,255,0.12)' }}
+                          style={{ background: 'var(--border-subtle)' }}
                         />
                       )}
                     </Link>
@@ -414,7 +432,7 @@ export default function Header() {
             {/* Language + CTA bottom strip */}
             <motion.div
               className="relative px-6 pt-5 pb-8 flex flex-col gap-4"
-              style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+              style={{ borderTop: '1px solid var(--border-subtle)' }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.30, duration: 0.3 }}
@@ -422,7 +440,7 @@ export default function Header() {
               {/* Language label */}
               <p
                 className="text-[9px] font-bold uppercase tracking-[0.22em]"
-                style={{ color: 'rgba(255,255,255,0.22)' }}
+                style={{ color: 'var(--text-tertiary)' }}
               >
                 Language
               </p>
@@ -440,17 +458,17 @@ export default function Header() {
                       style={{
                         background:  isActive
                           ? 'linear-gradient(135deg, rgba(6,182,212,0.16), rgba(139,92,246,0.16))'
-                          : 'rgba(15,15,18,0.70)',
-                        border:      `1px solid ${isActive ? 'rgba(103,232,249,0.25)' : 'rgba(255,255,255,0.07)'}`,
-                        color:       isActive ? '#ffffff' : 'rgba(255,255,255,0.35)',
+                          : 'var(--mat-liquid-bg)',
+                        border:      `1px solid ${isActive ? 'rgba(103,232,249,0.25)' : 'var(--mat-liquid-border)'}`,
+                        color:       isActive ? 'var(--text-primary)' : 'var(--text-tertiary)',
                         backdropFilter: 'blur(20px)',
-                        boxShadow:   isActive ? 'inset 0 1px 0 rgba(255,255,255,0.10)' : 'none',
+                        boxShadow:   isActive ? 'inset 0 1px 0 var(--mat-liquid-inset)' : 'none',
                         transition:  'all 0.2s ease',
                       }}
                     >
                       <span
                         className="text-[8.5px] font-black tracking-widest"
-                        style={{ color: isActive ? '#67e8f9' : 'rgba(255,255,255,0.22)' }}
+                        style={{ color: isActive ? '#67e8f9' : 'var(--text-tertiary)' }}
                       >
                         {opt.code.toUpperCase()}
                       </span>
@@ -463,19 +481,20 @@ export default function Header() {
 
               {/* Register button */}
               <div className="flex items-center justify-between pt-1 gap-4">
-                <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.22)' }}>
+                <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
                   {t('nav.date')}
                 </span>
                 <a
                   href="/register"
                   onClick={() => setMenuOpen(false)}
-                  className="px-6 py-2.5 rounded-full text-[13.5px] font-semibold text-white shrink-0"
+                  className="px-6 py-2.5 rounded-full text-[13.5px] font-semibold shrink-0"
                   style={{
-                    background:           'rgba(255,255,255,0.11)',
+                    background:           'var(--mat-liquid-bg)',
                     backdropFilter:       'blur(20px)',
                     WebkitBackdropFilter: 'blur(20px)',
-                    border:               '1px solid rgba(255,255,255,0.22)',
-                    boxShadow:            'inset 0 1px 0 rgba(255,255,255,0.20), inset 0 -1px 0 rgba(0,0,0,0.12)',
+                    border:               '1px solid var(--mat-liquid-border)',
+                    color:                'var(--text-primary)',
+                    boxShadow:            'inset 0 1px 0 var(--mat-liquid-inset)',
                   }}
                 >
                   {t('nav.register')}

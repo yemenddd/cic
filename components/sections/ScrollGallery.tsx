@@ -41,7 +41,7 @@ export default function ScrollGallery() {
 
   return (
     // Tall section gives the pinned content room to animate
-    <section ref={sectionRef} className="relative h-[200vh] md:h-[260vh] bg-black">
+    <section ref={sectionRef} className="relative h-[200vh] md:h-[260vh]" style={{ background: '#000000' }}>
       <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
 
         {/* ── Background photo (blurs + fades as you scroll) ── */}
@@ -66,7 +66,7 @@ export default function ScrollGallery() {
             borderRadius: radius,
             boxShadow:
               '0 30px 80px rgba(0,0,0,0.50), 0 4px 16px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.07)',
+            border: '1px solid var(--border-subtle)',
           }}
         >
           <img
@@ -85,16 +85,16 @@ export default function ScrollGallery() {
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3"
               style={{
-                background:           'rgba(15,15,18,0.72)',
+                background:           'var(--mat-liquid-bg)',
                 backdropFilter:       'blur(20px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                border:               '1px solid rgba(255,255,255,0.09)',
-                boxShadow:            'inset 0 1px 0 rgba(255,255,255,0.07)',
+                border:               '1px solid var(--mat-liquid-border)',
+                boxShadow:            'inset 0 1px 0 var(--mat-liquid-inset)',
                 fontSize:             '9.5px',
                 fontWeight:           700,
                 letterSpacing:        '0.22em',
                 textTransform:        'uppercase',
-                color:                'rgba(255,255,255,0.55)',
+                color:                'var(--text-secondary)',
               }}
             >
               {t('gallery.caption')}
@@ -103,11 +103,8 @@ export default function ScrollGallery() {
             <h3
               className="font-outfit font-bold leading-tight"
               style={{
-                fontSize:             'clamp(1.6rem, 3vw, 2.6rem)',
-                background:           'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor:  'transparent',
-                backgroundClip:       'text',
+                fontSize: 'clamp(1.6rem, 3vw, 2.6rem)',
+                color:    '#ffffff',
               }}
             >
               {t('gallery.captionTitle')}
@@ -125,10 +122,7 @@ export default function ScrollGallery() {
             style={{
               fontSize:             'clamp(2.6rem, 6vw, 5.5rem)',
               x:                    leftX,
-              background:           'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor:  'transparent',
-              backgroundClip:       'text',
+              color: '#ffffff',
             }}
           >
             {t('gallery.titleA')}
@@ -156,7 +150,7 @@ export default function ScrollGallery() {
           className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none"
           style={{ opacity: hintOpacity }}
         >
-          <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.28)' }}>
+          <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--text-tertiary)' }}>
             {t('gallery.scroll')}
           </span>
           <div

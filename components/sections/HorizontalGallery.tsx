@@ -45,7 +45,7 @@ export default function HorizontalGallery() {
   const headerX = useTransform(scrollYProgress, [0, 1], isRtl ? ['0%', '-50%'] : ['0%', '50%']);
 
   return (
-    <section ref={sectionRef} className="relative h-[250vh] md:h-[320vh]" style={{ background: 'var(--bg-base)' }}>
+    <section ref={sectionRef} className="relative h-[250vh] md:h-[320vh]" style={{ background: 'var(--bg-elevated)' }}>
       <div className="sticky top-0 h-screen flex flex-col overflow-hidden">
 
         {/* ── Header ── */}
@@ -61,7 +61,7 @@ export default function HorizontalGallery() {
           >
             <span
               style={{
-                background:           'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
+                background:           'var(--metallic-grad)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor:  'transparent',
                 backgroundClip:       'text',
@@ -91,8 +91,8 @@ export default function HorizontalGallery() {
                 style={{
                   width:      'clamp(280px, 78vw, 540px)',
                   height:     'min(62vh, 600px)',
-                  border:     '1px solid rgba(255,255,255,0.08)',
-                  boxShadow:  '0 8px 40px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.06)',
+                  border:     '1px solid var(--mat-liquid-border)',
+                  boxShadow:  'var(--shadow-md)',
                   transition: 'transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s cubic-bezier(0.16,1,0.3,1)',
                 }}
               >
@@ -119,12 +119,12 @@ export default function HorizontalGallery() {
                 <div
                   className="absolute top-5 left-5 px-3 py-1.5 rounded-full text-[10.5px] font-semibold"
                   style={{
-                    background:           'rgba(15,15,18,0.72)',
+                    background:           'var(--mat-liquid-bg)',
                     backdropFilter:       'blur(20px) saturate(180%)',
                     WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                    border:               '1px solid rgba(255,255,255,0.10)',
-                    boxShadow:            'inset 0 1px 0 rgba(255,255,255,0.08)',
-                    color:                'rgba(255,255,255,0.80)',
+                    border:               '1px solid var(--mat-liquid-border)',
+                    boxShadow:            'inset 0 1px 0 var(--mat-liquid-border)',
+                    color:                'var(--text-primary)',
                     letterSpacing:        '0.04em',
                   }}
                 >
@@ -136,12 +136,7 @@ export default function HorizontalGallery() {
                   <h3
                     dir={isRtl ? 'rtl' : 'ltr'}
                     className="font-outfit font-bold text-2xl leading-tight"
-                    style={{
-                      background:           'linear-gradient(180deg, #FFFFFF 0%, #C0C0C4 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor:  'transparent',
-                      backgroundClip:       'text',
-                    }}
+                    style={{ color: '#ffffff' }}
                   >
                     {p.title}
                   </h3>

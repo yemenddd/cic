@@ -18,6 +18,31 @@
   --text-tertiary:  rgba(255, 255, 255, 0.30);
   --text-disabled:  rgba(255, 255, 255, 0.18);
 
+  /* ── Material system (theme-sensitive inline style tokens) ── */
+  --mat-liquid-bg:      rgba(15, 15, 18, 0.75);
+  --mat-liquid-border:  rgba(255, 255, 255, 0.08);
+  --mat-liquid-inset:   rgba(255, 255, 255, 0.10);
+  --mat-liquid-shadow:  0 4px 30px rgba(0,0,0,0.40), inset 0 1px 1px rgba(255,255,255,0.10);
+
+  --mat-black-bg:       rgba(8, 8, 12, 0.92);
+  --mat-black-border:   rgba(255, 255, 255, 0.06);
+  --mat-black-shadow:   0 8px 40px rgba(0,0,0,0.60), 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.08);
+
+  --mat-card-bg:        rgba(255, 255, 255, 0.025);
+  --mat-card-border:    rgba(255, 255, 255, 0.07);
+
+  --header-glass-bg:    rgba(15, 15, 18, 0.75);
+  --header-glass-border:rgba(255, 255, 255, 0.08);
+  --header-glass-shadow:0 4px 30px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.05);
+
+  --nav-hover-bg:       rgba(255, 255, 255, 0.06);
+  --nav-active-bg:      rgba(255, 255, 255, 0.10);
+
+  --hero-bg:            #000000;
+
+  --metallic-grad:      linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%);
+  --metallic-grad-muted:linear-gradient(180deg, #A2A2A6 0%, rgba(162,162,166,0.40) 100%);
+
   /* Accent — Cyan → Blue → Violet */
   --accent-cyan:    #06b6d4;
   --accent-blue:    #3b82f6;
@@ -97,6 +122,79 @@
   --ring:                 var(--accent-cyan);
   --gradient-color:       var(--accent-blue);
   --sparkles-color:       var(--accent-cyan);
+}
+
+/* ── 1b. Light Mode Overrides ────────────────────────────────── */
+[data-theme="light"] {
+  /* Canvas */
+  --bg-base:        #F5F5F7;
+  --bg-elevated:    #FFFFFF;
+  --bg-overlay:     #FAFAFA;
+
+  /* Text */
+  --text-primary:   #1D1D1F;
+  --text-secondary: rgba(29, 29, 31, 0.55);
+  --text-tertiary:  rgba(29, 29, 31, 0.38);
+  --text-disabled:  rgba(29, 29, 31, 0.18);
+
+  /* Material system — light overrides */
+  --mat-liquid-bg:      rgba(255, 255, 255, 0.72);
+  --mat-liquid-border:  rgba(0, 0, 0, 0.09);
+  --mat-liquid-inset:   rgba(255, 255, 255, 0.90);
+  --mat-liquid-shadow:  0 4px 30px rgba(0,0,0,0.07), inset 0 1px 1px rgba(255,255,255,0.90);
+
+  --mat-black-bg:       rgba(255, 255, 255, 0.90);
+  --mat-black-border:   rgba(0, 0, 0, 0.08);
+  --mat-black-shadow:   0 8px 40px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.95);
+
+  --mat-card-bg:        rgba(0, 0, 0, 0.025);
+  --mat-card-border:    rgba(0, 0, 0, 0.07);
+
+  --header-glass-bg:    rgba(245, 245, 247, 0.82);
+  --header-glass-border:rgba(0, 0, 0, 0.09);
+  --header-glass-shadow:0 4px 30px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.95);
+
+  --nav-hover-bg:       rgba(0, 0, 0, 0.05);
+  --nav-active-bg:      rgba(0, 0, 0, 0.08);
+
+  --hero-bg:            #F5F5F7;
+
+  --metallic-grad:      linear-gradient(180deg, #1D1D1F 0%, #6e6e73 100%);
+  --metallic-grad-muted:linear-gradient(180deg, #6e6e73 0%, rgba(110,110,115,0.40) 100%);
+
+  /* Glass */
+  --glass-bg:           rgba(255, 255, 255, 0.60);
+  --glass-bg-hover:     rgba(255, 255, 255, 0.80);
+  --glass-bg-active:    rgba(255, 255, 255, 0.95);
+  --glass-border:       rgba(0, 0, 0, 0.08);
+  --glass-border-hover: rgba(0, 0, 0, 0.14);
+  --glass-shine:        rgba(255, 255, 255, 0.90);
+
+  /* Shadows */
+  --shadow-sm:   0 2px 8px  rgba(0, 0, 0, 0.06);
+  --shadow-md:   0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-lg:   0 16px 48px rgba(0, 0, 0, 0.10);
+  --shadow-xl:   0 32px 80px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 40px rgba(6, 182, 212, 0.10);
+
+  /* Borders */
+  --border-subtle:  rgba(0, 0, 0, 0.06);
+  --border-default: rgba(0, 0, 0, 0.10);
+  --border-strong:  rgba(0, 0, 0, 0.18);
+
+  /* shadcn compat */
+  --background:           var(--bg-base);
+  --foreground:           var(--text-primary);
+  --primary:              #1D1D1F;
+  --primary-foreground:   #FFFFFF;
+  --secondary:            rgba(0, 0, 0, 0.04);
+  --secondary-foreground: #1D1D1F;
+  --muted:                rgba(0, 0, 0, 0.03);
+  --muted-foreground:     var(--text-secondary);
+  --accent:               rgba(0, 0, 0, 0.05);
+  --accent-foreground:    #1D1D1F;
+  --border:               var(--border-default);
+  --input:                rgba(0, 0, 0, 0.05);
 }
 
 /* ── 2. Tailwind @theme mapping ──────────────────────────────── */
@@ -244,45 +342,35 @@ html[lang="ar"] .font-inter {
 
 /* ── Apple WWDC26 Liquid Glass — exact specification ── */
 .liquid-glass {
-  background:           rgba(15, 15, 18, 0.75);
+  background:           var(--mat-liquid-bg);
   backdrop-filter:      blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border:               1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 4px 30px rgba(0, 0, 0, 0.40),
-    inset 0 1px 1px rgba(255, 255, 255, 0.10);
+  border:               1px solid var(--mat-liquid-border);
+  box-shadow:           var(--mat-liquid-shadow);
 }
 
 .liquid-glass:hover {
-  border-color:   rgba(255, 255, 255, 0.13);
-  box-shadow:
-    0 8px 40px rgba(0, 0, 0, 0.50),
-    inset 0 1px 1px rgba(255, 255, 255, 0.14);
+  border-color:   var(--mat-liquid-border);
+  box-shadow:     var(--mat-liquid-shadow);
 }
 
 /* Black Glass — deep opaque panel for overlays and sticky navs */
 .black-glass {
-  background:           rgba(8, 8, 12, 0.92);
+  background:           var(--mat-black-bg);
   backdrop-filter:      blur(40px) saturate(160%);
   -webkit-backdrop-filter: blur(40px) saturate(160%);
-  border:               1px solid rgba(255, 255, 255, 0.06);
-  box-shadow:
-    0 8px 40px rgba(0, 0, 0, 0.60),
-    0 2px 8px  rgba(0, 0, 0, 0.30),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border:               1px solid var(--mat-black-border);
+  box-shadow:           var(--mat-black-shadow);
 }
 
 /* Spatial Card — elevated glass card with multi-layered depth */
 .spatial-card {
-  background:           rgba(15, 15, 18, 0.75);
+  background:           var(--mat-liquid-bg);
   backdrop-filter:      blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border:               1px solid rgba(255, 255, 255, 0.08);
+  border:               1px solid var(--mat-liquid-border);
   border-radius:        16px;
-  box-shadow:
-    0 4px 30px rgba(0, 0, 0, 0.40),
-    0 1px 4px  rgba(0, 0, 0, 0.20),
-    inset 0 1px 1px rgba(255, 255, 255, 0.10);
+  box-shadow:           var(--mat-liquid-shadow);
   transition:
     transform    0.4s cubic-bezier(0.16, 1, 0.3, 1),
     box-shadow   0.4s cubic-bezier(0.16, 1, 0.3, 1),
@@ -291,11 +379,8 @@ html[lang="ar"] .font-inter {
 
 .spatial-card:hover {
   transform:    translateY(-3px) scale(1.01);
-  border-color: rgba(255, 255, 255, 0.13);
-  box-shadow:
-    0 12px 50px rgba(0, 0, 0, 0.55),
-    0 4px  12px rgba(0, 0, 0, 0.30),
-    inset 0 1px 1px rgba(255, 255, 255, 0.14);
+  border-color: var(--mat-liquid-border);
+  box-shadow:   var(--mat-liquid-shadow);
 }
 
 /* Glass surface with reflective gradient overlay */
@@ -339,7 +424,7 @@ html[lang="ar"] .font-inter {
 
 /* Metallic text — Apple Liquid Glass heading treatment */
 .metallic-text {
-  background: linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%);
+  background: var(--metallic-grad);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -348,7 +433,7 @@ html[lang="ar"] .font-inter {
 
 /* Metallic muted — for secondary headings */
 .metallic-text-muted {
-  background: linear-gradient(180deg, #A2A2A6 0%, rgba(162, 162, 166, 0.40) 100%);
+  background: var(--metallic-grad-muted);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -697,4 +782,22 @@ canvas:active,
 /* ── 18. Scrollbar RTL fix ───────────────────────────────────── */
 html[dir="rtl"] ::-webkit-scrollbar {
   direction: ltr;
+}
+
+/* ── 19. Light mode overrides ────────────────────────────────── */
+[data-theme="light"] ::selection {
+  background: rgba(6, 182, 212, 0.18);
+  color: #1D1D1F;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.22);
+}
+
+/* Theme transition — applied only to structural layout elements */
+body, header, footer, nav, main, aside, section > .theme-bg {
+  transition: background-color 180ms ease, border-color 180ms ease;
 }

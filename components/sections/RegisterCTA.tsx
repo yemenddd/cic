@@ -1,10 +1,25 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
-import { Calendar, MapPin, Users } from 'lucide-react';
-import { ShinyButton } from '@/components/ui/shiny-button';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CtaCard } from '@/components/ui/cta-card';
 import { useLang } from '@/lib/i18n';
+
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+const inView = (delay = 0) => ({
+  initial:     { opacity: 0, y: 28 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport:    { once: true, amount: 0.2 },
+  transition:  { duration: 0.5, delay, ease: EASE },
+});
+
+const inViewWord = (delay = 0) => ({
+  initial:     { opacity: 0, y: 48 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport:    { once: true, amount: 0.2 },
+  transition:  { duration: 0.6, delay, ease: EASE },
+});
 
 function CountCard({ value, label }: { value: number; label: string }) {
   const str = value.toString().padStart(2, '0');
@@ -15,20 +30,13 @@ function CountCard({ value, label }: { value: number; label: string }) {
         style={{
           width:                'clamp(62px, 10vw, 88px)',
           height:               'clamp(70px, 12vw, 96px)',
-          background:           'rgba(15, 15, 18, 0.75)',
+          background:           'var(--mat-liquid-bg)',
           backdropFilter:       'blur(20px) saturate(180%)',
           WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-          border:               '1px solid rgba(255, 255, 255, 0.08)',
+          border:               '1px solid var(--mat-liquid-border)',
           borderRadius:         '16px',
-          boxShadow:
-            '0 4px 30px rgba(0, 0, 0, 0.40), inset 0 1px 1px rgba(255, 255, 255, 0.10)',
         }}
       >
-        {/* Flip line separator */}
-        <div
-          className="absolute inset-x-0 top-1/2 h-px pointer-events-none z-10"
-          style={{ background: 'rgba(0,0,0,0.35)' }}
-        />
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.span
             key={str}
@@ -36,7 +44,7 @@ function CountCard({ value, label }: { value: number; label: string }) {
             style={{
               lineHeight: 1,
               fontSize: 'clamp(1.7rem, 4vw, 2.4rem)',
-              background: 'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
+              background: 'var(--metallic-grad)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -52,7 +60,7 @@ function CountCard({ value, label }: { value: number; label: string }) {
       </div>
       <span
         className="font-semibold uppercase"
-        style={{ fontSize: 'clamp(9px, 1.5vw, 10px)', letterSpacing: '0.22em', color: 'rgba(255,255,255,0.28)' }}
+        style={{ fontSize: 'clamp(9px, 1.5vw, 10px)', letterSpacing: '0.22em', color: 'var(--text-tertiary)' }}
       >
         {label}
       </span>
@@ -63,8 +71,8 @@ function CountCard({ value, label }: { value: number; label: string }) {
 function Colon() {
   return (
     <div className="flex flex-col gap-1 sm:gap-1.5 pb-6 sm:pb-7 self-center">
-      <span className="w-[3px] h-[3px] sm:w-1 sm:h-1 rounded-full bg-white/15" />
-      <span className="w-[3px] h-[3px] sm:w-1 sm:h-1 rounded-full bg-white/15" />
+      <span className="w-[3px] h-[3px] sm:w-1 sm:h-1 rounded-full" style={{ background: 'var(--border-subtle)' }} />
+      <span className="w-[3px] h-[3px] sm:w-1 sm:h-1 rounded-full" style={{ background: 'var(--border-subtle)' }} />
     </div>
   );
 }
@@ -72,8 +80,6 @@ function Colon() {
 export default function RegisterCTA() {
   const { t } = useLang();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  const [email, setEmail] = useState('');
-  const [notified, setNotified] = useState(false);
 
   useEffect(() => {
     const target = new Date('2026-08-15T09:00:00').getTime();
@@ -92,193 +98,66 @@ export default function RegisterCTA() {
     return () => clearInterval(id);
   }, []);
 
-  const handleNotify = () => {
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) setNotified(true);
-  };
-
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start start', 'end end'],
-  });
-
-  const [currentP, setCurrentP] = useState(0);
-  useMotionValueEvent(scrollYProgress, 'change', (v) => setCurrentP(v));
-
-  const reveal = (threshold: number) => ({
-    initial: { opacity: 0, y: 28 },
-    animate: { opacity: currentP >= threshold ? 1 : 0, y: currentP >= threshold ? 0 : 28 },
-    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
-  });
-
-  const revealWord = (threshold: number) => ({
-    initial: { opacity: 0, y: 48 },
-    animate: { opacity: currentP >= threshold ? 1 : 0, y: currentP >= threshold ? 0 : 48 },
-    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
-  });
-
   return (
-    <div
-      ref={sectionRef}
+    <section
       id="register"
-      className="relative h-[150vh] md:h-[200vh]"
-      style={{ borderTop: '1px solid var(--border-subtle)' }}
+      className="relative py-32 flex items-center"
+      style={{ background: 'var(--bg-base)' }}
     >
-      <div className="sticky top-0 h-screen w-full flex items-center" style={{ background: 'var(--bg-base)' }}>
+      <div className="max-w-5xl mx-auto px-6 w-full text-center">
 
-        {/* Background decorations — overflow clipped here so content stays unclipped */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div
-            className="absolute left-1/2 top-1/3 -translate-x-1/2 w-[700px] h-[700px] rounded-full"
-            style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.14) 0%, rgba(99,102,241,0.08) 40%, transparent 70%)', filter: 'blur(20px)' }}
+        {/* Headline */}
+        <h2
+          className="font-outfit font-bold tracking-tight leading-[0.9] mb-6"
+          style={{ fontSize: 'clamp(2.8rem, 7vw, 6rem)' }}
+        >
+          <motion.span className="block" style={{ color: 'var(--text-primary)' }} {...inViewWord(0)}>
+            {t('register.titleA')}
+          </motion.span>
+          <motion.span
+            className="inline-block gradient-text py-[0.2em] leading-[1.1]"
+            {...inViewWord(0.08)}
+          >
+            {t('register.titleB')}
+          </motion.span>
+        </h2>
+
+        {/* Subtext */}
+        <motion.p
+          className="text-base md:text-lg max-w-md mx-auto mb-14 leading-relaxed"
+          style={{ color: 'var(--text-secondary)' }}
+          {...inView(0.14)}
+        >
+          {t('register.subtext')}
+        </motion.p>
+
+        {/* Countdown */}
+        <motion.div
+          className="flex items-start justify-center gap-2 sm:gap-4 mb-14"
+          {...inView(0.20)}
+        >
+          <CountCard value={timeLeft.days} label={t('countdown.days')} />
+          <Colon />
+          <CountCard value={timeLeft.hours} label={t('countdown.hours')} />
+          <Colon />
+          <CountCard value={timeLeft.minutes} label={t('countdown.minutes')} />
+          <Colon />
+          <CountCard value={timeLeft.seconds} label={t('countdown.seconds')} />
+        </motion.div>
+
+        {/* CTA Card */}
+        <motion.div {...inView(0.26)}>
+          <CtaCard
+            imageSrc="/images/CTA/CTA1.png"
+            titleA={t('register.titleA')}
+            titleB={t('register.titleB')}
+            description={t('register.subtext')}
+            buttonText={t('register.register')}
+            href="/register"
           />
-          <div
-            className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[500px] h-[300px] rounded-full"
-            style={{ background: 'radial-gradient(ellipse, rgba(139,92,246,0.10) 0%, transparent 70%)', filter: 'blur(40px)' }}
-          />
-          {/* Faint grid */}
-          <div
-            className="absolute inset-0 opacity-[0.035]"
-            style={{
-              backgroundImage:
-                'linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)',
-              backgroundSize: '64px 64px',
-              maskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, black, transparent)',
-              WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, black, transparent)',
-            }}
-          />
-        </div>
+        </motion.div>
 
-        <div className="relative z-10 max-w-3xl mx-auto px-6 w-full text-center">
-
-          {/* Headline */}
-          <h2
-            className="font-outfit font-bold tracking-tight leading-[0.9] mb-6"
-            style={{ fontSize: 'clamp(2.8rem, 7vw, 6rem)' }}
-          >
-            <motion.span className="block text-white" {...revealWord(0.08)}>
-              {t('register.titleA')}
-            </motion.span>
-            <motion.span
-              className="inline-block gradient-text py-[0.2em] leading-[1.1]"
-              {...revealWord(0.15)}
-            >
-              {t('register.titleB')}
-            </motion.span>
-          </h2>
-
-          {/* Subtext */}
-          <motion.p
-            className="text-base md:text-lg text-white/45 max-w-md mx-auto mb-14 leading-relaxed"
-            {...reveal(0.22)}
-          >
-            {t('register.subtext')}
-          </motion.p>
-
-          {/* Countdown */}
-          <motion.div
-            className="flex items-start justify-center gap-2 sm:gap-4 mb-14"
-            {...reveal(0.28)}
-          >
-            <CountCard value={timeLeft.days} label={t('countdown.days')} />
-            <Colon />
-            <CountCard value={timeLeft.hours} label={t('countdown.hours')} />
-            <Colon />
-            <CountCard value={timeLeft.minutes} label={t('countdown.minutes')} />
-            <Colon />
-            <CountCard value={timeLeft.seconds} label={t('countdown.seconds')} />
-          </motion.div>
-
-          {/* Primary CTA */}
-          <motion.div {...reveal(0.34)} className="mb-6">
-            <ShinyButton href="/register" size="lg">
-              {t('register.register')} →
-            </ShinyButton>
-          </motion.div>
-
-          {/* Email capture */}
-          <motion.div className="mb-14" {...reveal(0.40)}>
-            <p className="text-[12px] text-white/30 mb-3">{t('register.notify')}</p>
-            <div className="max-w-sm mx-auto">
-              <AnimatePresence mode="wait">
-                {notified ? (
-                  <motion.p
-                    key="confirmed"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-sm gradient-text opacity-80 w-full text-center py-3"
-                  >
-                    {t('register.confirmed')}
-                  </motion.p>
-                ) : (
-                  <motion.div
-                    key="form"
-                    className="flex items-center gap-2 p-1.5 rounded-full"
-                    style={{
-                      background:           'rgba(15, 15, 18, 0.75)',
-                      border:               '1px solid rgba(255, 255, 255, 0.08)',
-                      backdropFilter:       'blur(20px) saturate(180%)',
-                      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                      boxShadow:
-                        '0 4px 30px rgba(0, 0, 0, 0.30), inset 0 1px 1px rgba(255, 255, 255, 0.08)',
-                    }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleNotify()}
-                      placeholder={t('register.emailPlaceholder')}
-                      className="flex-1 min-w-0 bg-transparent px-4 py-2 text-sm text-white placeholder:text-white/20 outline-none"
-                    />
-                    <motion.button
-                      onClick={handleNotify}
-                      whileHover={{ scale: 1.04, y: -1 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="shrink-0 px-5 py-2 rounded-full text-sm font-semibold text-white"
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.12)',
-                        border:     '1px solid rgba(255, 255, 255, 0.16)',
-                        boxShadow:  'inset 0 1px 0 rgba(255,255,255,0.16)',
-                        transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-                      }}
-                    >
-                      {t('register.notifyBtn')}
-                    </motion.button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-
-          {/* Info chips */}
-          <motion.div
-            className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[12px] text-white/35"
-            {...reveal(0.47)}
-          >
-            <span className="flex items-center gap-1.5">
-              <Calendar size={12} className="text-blue-400/60" />
-              {t('register.chipDate')}
-            </span>
-            <span className="w-[3px] h-[3px] rounded-full bg-white/15" />
-            <span className="flex items-center gap-1.5">
-              <MapPin size={12} className="text-blue-400/60" />
-              {t('register.chipLocation')}
-            </span>
-            <span className="w-[3px] h-[3px] rounded-full bg-white/15" />
-            <span className="flex items-center gap-1.5">
-              <Users size={12} className="text-blue-400/60" />
-              {t('register.chipAttendees')}
-            </span>
-          </motion.div>
-
-        </div>
-
-        {/* Bottom fade to blend seamlessly with the next section */}
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-40 z-20" style={{ background: 'linear-gradient(to top, var(--bg-base), transparent)' }} />
       </div>
-    </div>
+    </section>
   );
 }

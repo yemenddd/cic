@@ -7,6 +7,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { LanguageProvider } from "@/lib/i18n";
 import ScrollToTop from "@/components/layout/ScrollToTop";
+import { ThemeProvider } from "@/lib/theme-context";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -54,16 +55,19 @@ export default function RootLayout({
       lang="ar"
       dir="rtl"
       className={`${inter.variable} ${outfit.variable} ${thmanyah.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-[#000000] text-white font-inter">
-        <StyletronWrapper>
-          <LanguageProvider>
-            <Header />
-            <main className="flex-grow">{children}</main>
-            <Footer />
-            <ScrollToTop />
-          </LanguageProvider>
-        </StyletronWrapper>
+      <body className="min-h-full flex flex-col font-inter" style={{ background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
+        <ThemeProvider>
+          <StyletronWrapper>
+            <LanguageProvider>
+              <Header />
+              <main className="flex-grow">{children}</main>
+              <Footer />
+              <ScrollToTop />
+            </LanguageProvider>
+          </StyletronWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );
