@@ -56,13 +56,17 @@ export default function Program() {
                 className="sticky top-0 h-[85vh] lg:h-screen flex items-end lg:items-center lg:grid lg:place-content-center pb-8 lg:pb-0"
               >
                 <motion.article
-                  className={`w-full max-w-[30rem] mx-auto lg:w-[30rem] rounded-2xl overflow-hidden ${stream.rotation}`}
+                  className={`w-full max-w-[30rem] mx-auto lg:w-[30rem] overflow-hidden ${stream.rotation}`}
                   style={{
-                    background:  'var(--glass-bg)',
-                    backdropFilter: 'blur(32px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(32px) saturate(180%)',
-                    border:      `1px solid ${stream.color}22`,
-                    boxShadow:   `inset 0 1px 0 var(--glass-shine), 0 24px 64px rgba(0,0,0,0.55), 0 0 60px ${stream.glowColor}`,
+                    background:           'rgba(15, 15, 18, 0.75)',
+                    backdropFilter:       'blur(20px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                    border:               `1px solid ${stream.color}28`,
+                    borderRadius:         '16px',
+                    boxShadow:
+                      `0 4px 30px rgba(0,0,0,0.40), 0 0 60px ${stream.glowColor}, inset 0 1px 1px rgba(255,255,255,0.10)`,
+                    transition:
+                      'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: currentP >= cardThreshold ? 1 : 0, y: currentP >= cardThreshold ? 0 : 40 }}
@@ -104,14 +108,15 @@ export default function Program() {
           })}
         </div>
 
-        {/* ── Sticky heading ── */}
+        {/* ── Sticky heading — Black Glass ── */}
         <div
           className="order-first lg:order-none sticky top-0 z-20 pt-32 pb-6 lg:py-0 lg:h-screen flex flex-col justify-start lg:justify-center items-center lg:items-start text-center lg:text-right lg:pl-10 border-b lg:border-none overflow-hidden"
           style={{
-            background:    'rgba(0,0,0,0.88)',
-            backdropFilter: 'blur(32px)',
-            WebkitBackdropFilter: 'blur(32px)',
-            borderColor:   'var(--border-subtle)',
+            background:           'rgba(8, 8, 12, 0.92)',
+            backdropFilter:       'blur(40px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(160%)',
+            borderColor:          'rgba(255,255,255,0.05)',
+            boxShadow:            'inset -1px 0 0 rgba(255,255,255,0.04)',
           }}
         >
           <div>
