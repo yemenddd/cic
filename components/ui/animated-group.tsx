@@ -25,7 +25,7 @@ const defaultItem: Variants = {
     opacity: 1,
     y: 0,
     filter: 'blur(0px)',
-    transition: { type: 'spring', bounce: 0.3, duration: 1.5 },
+    transition: { type: 'spring' as const, bounce: 0.3, duration: 1.5 },
   },
 };
 
