@@ -60,20 +60,37 @@ export const FinancialHero = ({
   });
 
   return (
-    <div ref={sectionRef} className={cn('relative h-[200vh]', className)}>
-      <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden">
+    <div ref={sectionRef} className={cn('relative h-[200vh]', className)} style={{ overflowX: 'clip' }}>
+      <div className="sticky top-0 h-screen w-full flex items-center">
 
-        {/* Grid background */}
-        <div
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage:
-              'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px)',
-            backgroundSize: '3rem 3rem',
-            maskImage: 'radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent)',
-            WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent)',
-          }}
-        />
+        {/* Background decorations — overflow clipped here so content stays unclipped */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div
+            className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(59,130,246,0.09) 0%, transparent 65%)',
+              filter: 'blur(60px)',
+            }}
+          />
+          <div
+            className="absolute -bottom-32 right-0 w-[500px] h-[500px] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 65%)',
+              filter: 'blur(70px)',
+            }}
+          />
+          {/* Refined dot grid */}
+          <div
+            className="absolute inset-0 z-0"
+            style={{
+              backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px)',
+              backgroundSize: '40px 40px',
+              maskImage: 'radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent)',
+              WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent)',
+              opacity: 0.25,
+            }}
+          />
+        </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 w-full flex items-center justify-between lg:flex-row flex-col gap-12">
 
@@ -83,19 +100,32 @@ export const FinancialHero = ({
             <div className="mb-8" dir={isRtl ? 'rtl' : 'ltr'}>
               <div className={cn(isRtl && 'text-right w-full')}>
                 <motion.p
-                  className="font-outfit font-bold tracking-[-0.03em] leading-[0.92] text-white"
-                  style={{ fontSize: 'clamp(2.8rem, 5.5vw, 5.5rem)' }}
+                  className="font-outfit font-bold tracking-[-0.03em]"
+                  style={{
+                    fontSize: 'clamp(2.8rem, 5.5vw, 5.5rem)',
+                    lineHeight: 1,
+                    paddingTop: '0.2em',
+                    paddingBottom: '0.2em',
+                    background: 'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
                   {...revealWord(0.15)}
                 >
                   {titleLine1}
                 </motion.p>
                 <motion.p
-                  className="font-outfit font-bold tracking-[-0.03em] leading-[1.1]"
-                  style={{ fontSize: 'clamp(2.8rem, 5.5vw, 5.5rem)' }}
+                  className="font-outfit font-bold tracking-[-0.03em] gradient-text"
+                  style={{
+                    fontSize: 'clamp(2.8rem, 5.5vw, 5.5rem)',
+                    lineHeight: 1.1,
+                    paddingTop: '0.1em',
+                    paddingBottom: '0.35em',
+                  }}
                   {...revealWord(0.22)}
                 >
-                  <span className="text-white">{titleLine2White}</span>
-                  <span className="inline-block gradient-text py-[0.15em]">{titleLine2Blue}</span>
+                  {titleLine2White} {titleLine2Blue}
                 </motion.p>
               </div>
             </div>
@@ -154,14 +184,22 @@ export const FinancialHero = ({
             <motion.img
               src={imageUrl2}
               alt=""
-              className="absolute h-40 sm:h-56 md:h-[320px] w-auto rounded-2xl md:rounded-3xl object-cover transform rotate-[-4deg] translate-x-6 md:translate-x-12 translate-y-4 md:translate-y-6" style={{ border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-lg)' }}
-              whileHover={{ y: -10, rotate: -3, transition: { duration: 0.3 } }}
+              className="absolute h-40 sm:h-56 md:h-[320px] w-auto rounded-2xl md:rounded-3xl object-cover transform rotate-[-4deg] translate-x-6 md:translate-x-12 translate-y-4 md:translate-y-6"
+              style={{
+                border:     '1px solid rgba(255,255,255,0.08)',
+                boxShadow:  '0 24px 60px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.06)',
+              }}
+              whileHover={{ y: -12, rotate: -3, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }}
             />
             <motion.img
               src={imageUrl1}
               alt=""
-              className="relative z-10 h-40 sm:h-56 md:h-[320px] w-auto rounded-2xl md:rounded-3xl object-cover transform rotate-[3deg] -translate-x-4 md:-translate-x-8" style={{ border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xl)' }}
-              whileHover={{ y: -10, rotate: 3, transition: { duration: 0.3 } }}
+              className="relative z-10 h-40 sm:h-56 md:h-[320px] w-auto rounded-2xl md:rounded-3xl object-cover transform rotate-[3deg] -translate-x-4 md:-translate-x-8"
+              style={{
+                border:     '1px solid rgba(255,255,255,0.10)',
+                boxShadow:  '0 32px 80px rgba(0,0,0,0.65), 0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08)',
+              }}
+              whileHover={{ y: -12, rotate: 3, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }}
             />
           </motion.div>
         </div>

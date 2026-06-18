@@ -32,14 +32,15 @@ export default function Partners() {
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="font-outfit font-bold tracking-tight"
           style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)' }}
         >
+          {/* Metallic gradient — Apple WWDC26 heading spec */}
           <span
             className="block"
             style={{
-              background: 'linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.55) 100%)',
+              background: 'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -50,7 +51,7 @@ export default function Partners() {
           <span
             className="block"
             style={{
-              background: 'linear-gradient(180deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.30) 100%)',
+              background: 'linear-gradient(180deg, #A2A2A6 0%, rgba(162, 162, 166, 0.38) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -63,7 +64,7 @@ export default function Partners() {
 
       {/* Infinite logo slider */}
       <div className="relative mt-12 h-16 z-10">
-        <InfiniteSlider className="flex h-full w-full items-center" duration={35} gap={72}>
+<InfiniteSlider className="flex h-full w-full items-center" duration={35} gap={72}>
           {partners.map(p => (
             <img
               key={p.src}
@@ -89,11 +90,11 @@ export default function Partners() {
 
       {/* Sparkle horizon */}
       <div className="relative -mt-6 h-36 w-full overflow-hidden [mask-image:radial-gradient(50%_50%,white,transparent)]">
-        <div className="absolute inset-0 before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_bottom_center,rgba(6,182,212,0.25),transparent_70%)]" />
+        <div className="absolute inset-0 before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_bottom_center,rgba(96,165,250,0.40),transparent_70%)]" />
         <div className="absolute -left-1/2 top-1/2 aspect-[1/0.7] z-10 w-[200%] rounded-[100%]" style={{ background: 'var(--bg-base)' }} />
         <Sparkles
           density={900}
-          color="#06b6d4"
+          color="#93c5fd"
           size={1.1}
           opacity={0.7}
           className="absolute inset-x-0 bottom-0 h-full w-full [mask-image:radial-gradient(50%_50%,white,transparent_85%)]"

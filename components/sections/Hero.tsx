@@ -93,7 +93,7 @@ export default function Hero() {
 
   return (
     <section ref={sectionRef} className="relative h-[250vh] md:h-[300vh]" style={{ background: '#000' }}>
-      <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden">
+      <div className="sticky top-0 h-screen w-full flex items-center">
 
         {/* ── Apple-style background ── */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -134,7 +134,7 @@ export default function Hero() {
             }}
           />
 
-          {/* Ultra-faint blue center shimmer — like Apple product hero */}
+          {/* Faint blue center shimmer */}
           <div
             className="absolute rounded-full"
             style={{
@@ -143,6 +143,19 @@ export default function Hero() {
               transform: 'translateX(-50%)',
               background: 'radial-gradient(circle, rgba(29,78,216,0.13) 0%, transparent 65%)',
               filter: 'blur(100px)',
+            }}
+          />
+
+          {/* Cyan accent near the text — echoes the badge glow */}
+          <div
+            className="absolute rounded-full"
+            style={{
+              width: '30vw', height: '30vw',
+              top: '30%',
+              left: isRtl ? 'auto' : '2%',
+              right: isRtl ? '2%' : 'auto',
+              background: 'radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%)',
+              filter: 'blur(60px)',
             }}
           />
 
@@ -279,60 +292,85 @@ export default function Hero() {
 
               {/* Buttons */}
               <motion.div
-                className="flex flex-col sm:flex-row gap-3 mb-12 pointer-events-auto"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-12 pointer-events-auto"
                 {...reveal(T.btns)}
               >
                 <Link
                   href="/register"
                   className="btn-primary text-center"
+                  style={{
+                    background:           'rgba(255,255,255,0.14)',
+                    backdropFilter:       'blur(24px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                    border:               '1px solid rgba(255,255,255,0.28)',
+                    boxShadow:
+                      'inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(0,0,0,0.14), 0 4px 20px rgba(0,0,0,0.30)',
+                  }}
                 >
                   {t('hero.cta1')}
                 </Link>
+
+                {/* Vertical divider — desktop only */}
+                <span
+                  className="hidden sm:block w-px h-5 shrink-0"
+                  style={{ background: 'rgba(255,255,255,0.10)' }}
+                />
+
                 <Link
                   href="/program"
-                  className="btn-ghost flex items-center justify-center gap-2 text-center"
+                  className="inline-flex items-center gap-2 text-[14px] font-medium transition-colors duration-200"
+                  style={{ color: 'rgba(255,255,255,0.45)' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.45)')}
                 >
                   {t('hero.cta2')}
-                  <ArrowIcon size={15} className="shrink-0" />
+                  <ArrowIcon size={14} className="shrink-0 opacity-60" />
                 </Link>
               </motion.div>
 
               {/* Countdown */}
               <motion.div {...reveal(T.cd)}>
-                <p className="text-caption mb-4" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                <p className="text-caption mb-4" style={{ color: 'rgba(255,255,255,0.50)', letterSpacing: '0.14em' }}>
                   {t('hero.countdownLabel')}
                 </p>
                 <div className="flex items-center gap-2 sm:gap-3">
                   {countdownItems.map((item, i) => (
                     <div key={item.label} className="flex items-center gap-2 sm:gap-3">
-                      {/* Glass countdown card */}
+                      {/* Liquid Glass countdown card */}
                       <div
-                        className="flex flex-col items-center justify-center"
+                        className="flex flex-col items-center justify-center transition-spatial glass-surface"
                         style={{
-                          minWidth:    '64px',
-                          padding:     '10px 8px',
-                          background:  'var(--glass-bg)',
-                          backdropFilter: 'blur(24px)',
-                          WebkitBackdropFilter: 'blur(24px)',
-                          border:      '1px solid var(--glass-border)',
-                          borderRadius: 'var(--radius-md)',
-                          boxShadow:   'inset 0 1px 0 var(--glass-shine)',
+                          minWidth:             '64px',
+                          padding:              '10px 8px',
+                          background:           'rgba(15, 15, 18, 0.75)',
+                          backdropFilter:       'blur(20px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                          border:               '1px solid rgba(255, 255, 255, 0.08)',
+                          borderRadius:         '12px',
+                          boxShadow:
+                            '0 4px 30px rgba(0, 0, 0, 0.40), inset 0 1px 1px rgba(255, 255, 255, 0.10)',
                         }}
                       >
                         <span
                           className="font-outfit font-bold tabular-nums leading-none"
-                          style={{ fontSize: 'clamp(1.6rem, 4vw, 2.25rem)', color: '#fff' }}
+                          style={{
+                            fontSize: 'clamp(1.6rem, 4vw, 2.25rem)',
+                            background: 'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text',
+                          }}
                         >
                           {item.value.toString().padStart(2, '0')}
                         </span>
-                        <span className="mt-1.5 text-caption" style={{ letterSpacing: '0.1em', color: 'var(--text-tertiary)' }}>
+                        <span className="mt-1.5 text-caption" style={{ letterSpacing: '0.12em', color: 'rgba(255,255,255,0.28)' }}>
                           {item.label}
                         </span>
                       </div>
                       {i < countdownItems.length - 1 && (
                         <span
-                          className="text-2xl font-light -mt-4 select-none"
-                          style={{ color: 'var(--text-disabled)' }}
+                          className="text-xl font-light -mt-4 select-none"
+                          style={{ color: 'rgba(255,255,255,0.15)' }}
                         >
                           :
                         </span>
@@ -352,16 +390,22 @@ export default function Hero() {
           animate={{ opacity: maxP > 0.04 ? 0 : 1 }}
           transition={{ duration: 0.3 }}
         >
-          <span className="text-caption" style={{ color: 'var(--text-disabled)' }}>
+          <span className="text-caption" style={{ color: 'rgba(255,255,255,0.22)', letterSpacing: '0.16em' }}>
             {t('hero.scroll')}
           </span>
           <div
             className="w-5 h-8 rounded-full flex justify-center pt-1.5"
-            style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+            style={{
+              background:           'rgba(15, 15, 18, 0.60)',
+              border:               '1px solid rgba(255,255,255,0.09)',
+              backdropFilter:       'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              boxShadow:            'inset 0 1px 0 rgba(255,255,255,0.07)',
+            }}
           >
             <motion.span
               className="w-1 h-1.5 rounded-full"
-              style={{ background: 'rgba(255,255,255,0.45)' }}
+              style={{ background: 'rgba(255,255,255,0.40)' }}
               animate={{ y: [0, 8, 0], opacity: [1, 0.2, 1] }}
               transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
             />

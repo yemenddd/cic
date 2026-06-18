@@ -42,16 +42,35 @@ export default function BoldStatement() {
 
       {/* ── Who it's for — scroll-reveal ── */}
       <div ref={whoRef} className="relative h-[200vh]">
-        <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden">
+        <div className="sticky top-0 h-screen w-full flex items-center">
+
+          {/* Background decorations — overflow clipped here so content stays unclipped */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div
+              className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full"
+              style={{
+                background: 'radial-gradient(ellipse, rgba(99,102,241,0.07) 0%, transparent 70%)',
+                filter:     'blur(60px)',
+              }}
+            />
+            <div
+              className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full"
+              style={{
+                background: 'radial-gradient(circle, rgba(6,182,212,0.05) 0%, transparent 70%)',
+                filter:     'blur(80px)',
+              }}
+            />
+          </div>
+
           <div className="relative max-w-7xl mx-auto px-6 w-full py-8">
 
 
 
             {/* Headline */}
-            <div className="text-center mb-4 md:mb-8">
+            <div className="text-center mb-8">
               <h3
                 className="font-outfit font-bold tracking-tight"
-                style={{ fontSize: 'clamp(1.55rem, 5vw, 4.5rem)', lineHeight: 1.05 }}
+                style={{ fontSize: 'clamp(2.4rem, 5vw, 4.5rem)', lineHeight: 1.05 }}
               >
                 <motion.span className="inline-block text-white" {...revealWord(0.12)}>
                   {t('bold.whoTitleA')}

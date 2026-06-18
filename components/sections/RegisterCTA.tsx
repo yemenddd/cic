@@ -11,19 +11,36 @@ function CountCard({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col items-center gap-2 sm:gap-3">
       <div
-        className="relative overflow-hidden flex items-center justify-center rounded-xl sm:rounded-2xl w-[62px] h-[70px] sm:w-[88px] sm:h-24"
+        className="relative overflow-hidden flex items-center justify-center glass-surface"
         style={{
-          background: 'rgba(255,255,255,0.035)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07)',
+          width:                'clamp(62px, 10vw, 88px)',
+          height:               'clamp(70px, 12vw, 96px)',
+          background:           'rgba(15, 15, 18, 0.75)',
+          backdropFilter:       'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          border:               '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius:         '16px',
+          boxShadow:
+            '0 4px 30px rgba(0, 0, 0, 0.40), inset 0 1px 1px rgba(255, 255, 255, 0.10)',
         }}
       >
-        <div className="absolute inset-x-0 top-1/2 h-px" style={{ background: 'rgba(0,0,0,0.4)' }} />
+        {/* Flip line separator */}
+        <div
+          className="absolute inset-x-0 top-1/2 h-px pointer-events-none z-10"
+          style={{ background: 'rgba(0,0,0,0.35)' }}
+        />
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.span
             key={str}
-            className="font-outfit font-bold text-white tabular-nums text-[1.7rem] sm:text-[2.4rem]"
-            style={{ lineHeight: 1 }}
+            className="font-outfit font-bold tabular-nums"
+            style={{
+              lineHeight: 1,
+              fontSize: 'clamp(1.7rem, 4vw, 2.4rem)',
+              background: 'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
             initial={{ y: '70%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '-70%', opacity: 0 }}
@@ -33,7 +50,10 @@ function CountCard({ value, label }: { value: number; label: string }) {
           </motion.span>
         </AnimatePresence>
       </div>
-      <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.22em] text-white/35">
+      <span
+        className="font-semibold uppercase"
+        style={{ fontSize: 'clamp(9px, 1.5vw, 10px)', letterSpacing: '0.22em', color: 'rgba(255,255,255,0.28)' }}
+      >
         {label}
       </span>
     </div>
@@ -104,24 +124,30 @@ export default function RegisterCTA() {
       className="relative h-[150vh] md:h-[200vh]"
       style={{ borderTop: '1px solid var(--border-subtle)' }}
     >
-      <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden" style={{ background: 'var(--bg-base)' }}>
+      <div className="sticky top-0 h-screen w-full flex items-center" style={{ background: 'var(--bg-base)' }}>
 
-        {/* Ambient spotlight */}
-        <div
-          className="pointer-events-none absolute left-1/2 top-1/3 -translate-x-1/2 w-[700px] h-[700px] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 65%)' }}
-        />
-        {/* Faint grid */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage:
-              'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
-            backgroundSize: '64px 64px',
-            maskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, black, transparent)',
-            WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, black, transparent)',
-          }}
-        />
+        {/* Background decorations — overflow clipped here so content stays unclipped */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div
+            className="absolute left-1/2 top-1/3 -translate-x-1/2 w-[700px] h-[700px] rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.14) 0%, rgba(99,102,241,0.08) 40%, transparent 70%)', filter: 'blur(20px)' }}
+          />
+          <div
+            className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[500px] h-[300px] rounded-full"
+            style={{ background: 'radial-gradient(ellipse, rgba(139,92,246,0.10) 0%, transparent 70%)', filter: 'blur(40px)' }}
+          />
+          {/* Faint grid */}
+          <div
+            className="absolute inset-0 opacity-[0.035]"
+            style={{
+              backgroundImage:
+                'linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)',
+              backgroundSize: '64px 64px',
+              maskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, black, transparent)',
+              WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, black, transparent)',
+            }}
+          />
+        </div>
 
         <div className="relative z-10 max-w-3xl mx-auto px-6 w-full text-center">
 
@@ -188,7 +214,14 @@ export default function RegisterCTA() {
                   <motion.div
                     key="form"
                     className="flex items-center gap-2 p-1.5 rounded-full"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)' }}
+                    style={{
+                      background:           'rgba(15, 15, 18, 0.75)',
+                      border:               '1px solid rgba(255, 255, 255, 0.08)',
+                      backdropFilter:       'blur(20px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                      boxShadow:
+                        '0 4px 30px rgba(0, 0, 0, 0.30), inset 0 1px 1px rgba(255, 255, 255, 0.08)',
+                    }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                   >
@@ -198,14 +231,19 @@ export default function RegisterCTA() {
                       onChange={(e) => setEmail(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleNotify()}
                       placeholder={t('register.emailPlaceholder')}
-                      className="flex-1 min-w-0 bg-transparent px-4 py-2 text-sm text-white placeholder:text-white/25 outline-none"
+                      className="flex-1 min-w-0 bg-transparent px-4 py-2 text-sm text-white placeholder:text-white/20 outline-none"
                     />
                     <motion.button
                       onClick={handleNotify}
-                      whileHover={{ scale: 1.04 }}
+                      whileHover={{ scale: 1.04, y: -1 }}
                       whileTap={{ scale: 0.95 }}
                       className="shrink-0 px-5 py-2 rounded-full text-sm font-semibold text-white"
-                      style={{ background: 'rgba(255,255,255,0.10)' }}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.12)',
+                        border:     '1px solid rgba(255, 255, 255, 0.16)',
+                        boxShadow:  'inset 0 1px 0 rgba(255,255,255,0.16)',
+                        transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                      }}
                     >
                       {t('register.notifyBtn')}
                     </motion.button>

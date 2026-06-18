@@ -59,12 +59,14 @@ export default function ScrollGallery() {
         <motion.div
           className="relative z-10 overflow-hidden"
           style={{
-            width: mediaWidth,
-            height: mediaHeight,
-            maxWidth: '94vw',
-            maxHeight: '82vh',
+            width:      mediaWidth,
+            height:     mediaHeight,
+            maxWidth:   '94vw',
+            maxHeight:  '82vh',
             borderRadius: radius,
-            boxShadow: '0 30px 80px rgba(0,0,0,0.35)',
+            boxShadow:
+              '0 30px 80px rgba(0,0,0,0.50), 0 4px 16px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.07)',
           }}
         >
           <img
@@ -79,11 +81,35 @@ export default function ScrollGallery() {
             className="absolute inset-x-0 bottom-0 p-8 md:p-12 flex flex-col items-start"
             style={{ opacity: captionOpacity, y: captionY }}
           >
-            <span className="text-xs font-semibold uppercase tracking-[0.24em] text-white/70 mb-2">
+            {/* Liquid glass section label */}
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3"
+              style={{
+                background:           'rgba(15,15,18,0.72)',
+                backdropFilter:       'blur(20px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                border:               '1px solid rgba(255,255,255,0.09)',
+                boxShadow:            'inset 0 1px 0 rgba(255,255,255,0.07)',
+                fontSize:             '9.5px',
+                fontWeight:           700,
+                letterSpacing:        '0.22em',
+                textTransform:        'uppercase',
+                color:                'rgba(255,255,255,0.55)',
+              }}
+            >
               {t('gallery.caption')}
             </span>
-            <h3 className="font-outfit font-bold text-white leading-tight"
-              style={{ fontSize: 'clamp(1.6rem, 3vw, 2.6rem)' }}>
+            {/* Metallic caption heading */}
+            <h3
+              className="font-outfit font-bold leading-tight"
+              style={{
+                fontSize:             'clamp(1.6rem, 3vw, 2.6rem)',
+                background:           'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor:  'transparent',
+                backgroundClip:       'text',
+              }}
+            >
               {t('gallery.captionTitle')}
             </h3>
           </motion.div>
@@ -95,28 +121,57 @@ export default function ScrollGallery() {
           style={{ opacity: titleOpacity }}
         >
           <motion.span
-            className="font-outfit font-bold text-white leading-[0.95] tracking-tight drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)]"
-            style={{ fontSize: 'clamp(2.6rem, 6vw, 5.5rem)', x: leftX }}
+            className="font-outfit font-bold leading-[0.95] tracking-tight drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)]"
+            style={{
+              fontSize:             'clamp(2.6rem, 6vw, 5.5rem)',
+              x:                    leftX,
+              background:           'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor:  'transparent',
+              backgroundClip:       'text',
+            }}
           >
             {t('gallery.titleA')}
           </motion.span>
           <motion.span
-            className="font-outfit font-bold leading-[0.95] tracking-tight drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)]"
-            style={{ fontSize: 'clamp(2.6rem, 6vw, 5.5rem)', x: rightX, background: 'linear-gradient(to right, #67e8f9, #60a5fa, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', paddingTop: '0.2em', paddingBottom: '0.2em', lineHeight: '1.1' }}
+            className="font-outfit font-bold leading-[0.95] tracking-tight drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)]"
+            style={{
+              fontSize:             'clamp(2.6rem, 6vw, 5.5rem)',
+              x:                    rightX,
+              background:           'linear-gradient(90deg, #67e8f9, #60a5fa, #8b5cf6)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor:  'transparent',
+              backgroundClip:       'text',
+              paddingTop:           '0.2em',
+              paddingBottom:        '0.2em',
+              lineHeight:           '1.1',
+            }}
           >
             {t('gallery.titleB')}
           </motion.span>
         </motion.div>
 
-        {/* ── Scroll hint ── */}
+        {/* ── Scroll hint — liquid glass pill ── */}
         <motion.div
           className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none"
           style={{ opacity: hintOpacity }}
         >
-          <span className="text-[10px] uppercase tracking-[0.2em] text-white/60">{t('gallery.scroll')}</span>
-          <div className="w-5 h-8 rounded-full border border-white/30 flex justify-center pt-1.5">
+          <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.28)' }}>
+            {t('gallery.scroll')}
+          </span>
+          <div
+            className="w-5 h-8 rounded-full flex justify-center pt-1.5"
+            style={{
+              background:           'rgba(15, 15, 18, 0.60)',
+              border:               '1px solid rgba(255,255,255,0.09)',
+              backdropFilter:       'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              boxShadow:            'inset 0 1px 0 rgba(255,255,255,0.07)',
+            }}
+          >
             <motion.span
-              className="w-1 h-1.5 rounded-full bg-white/60"
+              className="w-1 h-1.5 rounded-full"
+              style={{ background: 'rgba(255,255,255,0.40)' }}
               animate={{ y: [0, 8, 0], opacity: [1, 0.2, 1] }}
               transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
             />

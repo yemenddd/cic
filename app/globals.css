@@ -242,10 +242,113 @@ html[lang="ar"] .font-inter {
     var(--shadow-xl);
 }
 
+/* ── Apple WWDC26 Liquid Glass — exact specification ── */
+.liquid-glass {
+  background:           rgba(15, 15, 18, 0.75);
+  backdrop-filter:      blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border:               1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 4px 30px rgba(0, 0, 0, 0.40),
+    inset 0 1px 1px rgba(255, 255, 255, 0.10);
+}
+
+.liquid-glass:hover {
+  border-color:   rgba(255, 255, 255, 0.13);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.50),
+    inset 0 1px 1px rgba(255, 255, 255, 0.14);
+}
+
+/* Black Glass — deep opaque panel for overlays and sticky navs */
+.black-glass {
+  background:           rgba(8, 8, 12, 0.92);
+  backdrop-filter:      blur(40px) saturate(160%);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
+  border:               1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.60),
+    0 2px 8px  rgba(0, 0, 0, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Spatial Card — elevated glass card with multi-layered depth */
+.spatial-card {
+  background:           rgba(15, 15, 18, 0.75);
+  backdrop-filter:      blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border:               1px solid rgba(255, 255, 255, 0.08);
+  border-radius:        16px;
+  box-shadow:
+    0 4px 30px rgba(0, 0, 0, 0.40),
+    0 1px 4px  rgba(0, 0, 0, 0.20),
+    inset 0 1px 1px rgba(255, 255, 255, 0.10);
+  transition:
+    transform    0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow   0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.spatial-card:hover {
+  transform:    translateY(-3px) scale(1.01);
+  border-color: rgba(255, 255, 255, 0.13);
+  box-shadow:
+    0 12px 50px rgba(0, 0, 0, 0.55),
+    0 4px  12px rgba(0, 0, 0, 0.30),
+    inset 0 1px 1px rgba(255, 255, 255, 0.14);
+}
+
+/* Glass surface with reflective gradient overlay */
+.glass-surface {
+  position: relative;
+}
+.glass-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.01) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Spatial transition — smooth, deliberate Apple-style */
+.transition-spatial {
+  transition:
+    transform    0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow   0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity      0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    background   0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* ── 6. Gradient Utilities ───────────────────────────────────── */
 
 .gradient-text {
   background: var(--gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Metallic text — Apple Liquid Glass heading treatment */
+.metallic-text {
+  background: linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Metallic muted — for secondary headings */
+.metallic-text-muted {
+  background: linear-gradient(180deg, #A2A2A6 0%, rgba(162, 162, 166, 0.40) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -512,6 +615,24 @@ html[lang="ar"] .font-inter {
 @keyframes scroll-x {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
+}
+
+@keyframes liquid-shimmer {
+  0%   { background-position: -100% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes glass-pulse {
+  0%, 100% {
+    box-shadow:
+      0 4px 30px rgba(0, 0, 0, 0.40),
+      inset 0 1px 1px rgba(255, 255, 255, 0.10);
+  }
+  50% {
+    box-shadow:
+      0 8px 40px rgba(0, 0, 0, 0.50),
+      inset 0 1px 1px rgba(255, 255, 255, 0.14);
+  }
 }
 
 /* Animation utility classes */

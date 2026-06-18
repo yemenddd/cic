@@ -56,10 +56,21 @@ export default function HorizontalGallery() {
 
           <h2
             dir={isRtl ? 'rtl' : 'ltr'}
-            className={`font-outfit font-bold tracking-tight leading-[0.92] text-white ${isRtl ? 'text-right' : ''}`}
+            className={`font-outfit font-bold tracking-tight leading-[0.92] ${isRtl ? 'text-right' : ''}`}
             style={{ fontSize: 'clamp(2.4rem, 5.5vw, 5rem)' }}
           >
-            {t('experience.titleA')} <span className="inline-block gradient-text py-[0.15em]">{t('experience.titleB')}</span>
+            <span
+              style={{
+                background:           'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor:  'transparent',
+                backgroundClip:       'text',
+              }}
+            >
+              {t('experience.titleA')}
+            </span>
+            {' '}
+            <span className="inline-block gradient-text py-[0.15em]">{t('experience.titleB')}</span>
           </h2>
         </motion.div>
 
@@ -78,9 +89,11 @@ export default function HorizontalGallery() {
                 transition={{ duration: 0.6, delay: (i % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
                 className="group relative shrink-0 overflow-hidden rounded-3xl"
                 style={{
-                  width: 'clamp(280px, 78vw, 540px)',
-                  height: 'min(62vh, 600px)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  width:      'clamp(280px, 78vw, 540px)',
+                  height:     'min(62vh, 600px)',
+                  border:     '1px solid rgba(255,255,255,0.08)',
+                  boxShadow:  '0 8px 40px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.06)',
+                  transition: 'transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s cubic-bezier(0.16,1,0.3,1)',
                 }}
               >
                 <Image
@@ -91,18 +104,29 @@ export default function HorizontalGallery() {
                   sizes="(max-width: 768px) 78vw, 540px"
                 />
 
-                {/* Legibility overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
+                {/* Cinematic gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
 
                 {/* Number — top right */}
-                <span className="absolute top-5 right-6 font-outfit font-bold text-white/30 text-2xl tabular-nums">
+                <span
+                  className="absolute top-5 right-6 font-outfit font-bold text-2xl tabular-nums"
+                  style={{ color: 'rgba(255,255,255,0.18)' }}
+                >
                   {p.n}
                 </span>
 
-                {/* Tag chip — top left (LTR) / top left stays (RTL keeps same position) */}
+                {/* Liquid glass tag chip */}
                 <div
-                  className="absolute top-5 left-5 px-2.5 py-1 rounded text-[11px] font-semibold text-white"
-                  style={{ background: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.22)', backdropFilter: 'blur(10px)' }}
+                  className="absolute top-5 left-5 px-3 py-1.5 rounded-full text-[10.5px] font-semibold"
+                  style={{
+                    background:           'rgba(15,15,18,0.72)',
+                    backdropFilter:       'blur(20px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                    border:               '1px solid rgba(255,255,255,0.10)',
+                    boxShadow:            'inset 0 1px 0 rgba(255,255,255,0.08)',
+                    color:                'rgba(255,255,255,0.80)',
+                    letterSpacing:        '0.04em',
+                  }}
                 >
                   {p.tag}
                 </div>
@@ -111,13 +135,19 @@ export default function HorizontalGallery() {
                 <div className={`absolute inset-x-0 bottom-0 p-7 ${isRtl ? 'text-right' : ''}`}>
                   <h3
                     dir={isRtl ? 'rtl' : 'ltr'}
-                    className="font-outfit font-bold text-2xl text-white leading-tight"
+                    className="font-outfit font-bold text-2xl leading-tight"
+                    style={{
+                      background:           'linear-gradient(180deg, #FFFFFF 0%, #C0C0C4 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor:  'transparent',
+                      backgroundClip:       'text',
+                    }}
                   >
                     {p.title}
                   </h3>
                   <div
-                    className={`mt-3 h-[2px] w-10 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ${isRtl ? 'origin-right ml-auto' : 'origin-left'}`}
-                    style={{ background: 'var(--gradient-brand)' }}
+                    className={`mt-3 h-[2px] w-10 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ${isRtl ? 'origin-right ml-auto' : 'origin-left'}`}
+                    style={{ background: 'linear-gradient(90deg, var(--accent-cyan), var(--accent-violet))' }}
                   />
                 </div>
               </motion.div>
