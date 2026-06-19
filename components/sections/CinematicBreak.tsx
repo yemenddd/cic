@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, X } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
+import { useTheme } from '@/lib/theme-context';
 
 const BG_VIDEO_ID  = 'REGcpGlNvC8';
 const FILM_VIDEO_ID = 'XMZ4htBi20s';
@@ -27,6 +28,7 @@ const inViewWord = (delay = 0) => ({
 
 export default function CinematicBreak() {
   const { t } = useLang();
+  const { theme } = useTheme();
   const [videoOpen, setVideoOpen] = useState(false);
   const words = [t('cinematic.word1'), t('cinematic.word2'), t('cinematic.word3'), t('cinematic.word4')];
 
@@ -117,11 +119,11 @@ export default function CinematicBreak() {
             whileTap={{ scale: 0.97 }}
             className="group inline-flex items-center gap-3 pl-2 pr-6 rtl:pr-2 rtl:pl-6 py-2 rounded-full"
             style={{
-              background:           'rgba(15, 15, 18, 0.75)',
-              border:               '1px solid rgba(255, 255, 255, 0.10)',
+              background:           theme === 'light' ? 'rgba(255,255,255,0.88)' : 'rgba(15, 15, 18, 0.75)',
+              border:               theme === 'light' ? '1px solid rgba(0,0,0,0.10)' : '1px solid rgba(255,255,255,0.10)',
               backdropFilter:       'blur(20px) saturate(180%)',
               WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-              boxShadow:            '0 4px 30px rgba(0,0,0,0.40), inset 0 1px 1px rgba(255,255,255,0.10)',
+              boxShadow:            theme === 'light' ? '0 4px 30px rgba(0,0,0,0.12)' : '0 4px 30px rgba(0,0,0,0.40), inset 0 1px 1px rgba(255,255,255,0.10)',
               transition:           'transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s cubic-bezier(0.16,1,0.3,1)',
             }}
           >
@@ -134,7 +136,7 @@ export default function CinematicBreak() {
             >
               <Play size={16} fill="white" className="text-white ml-[2px]" />
             </span>
-            <span className="font-outfit font-semibold text-[15px] text-white">
+            <span className="font-outfit font-semibold text-[15px]" style={{ color: theme === 'light' ? '#111' : '#fff' }}>
               {t('cinematic.watch')}
             </span>
           </motion.button>

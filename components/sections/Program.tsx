@@ -47,9 +47,20 @@ export default function Program() {
         {/* ── Two-column: title left, cards right ── */}
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16" dir="ltr">
 
-          {/* LEFT — title */}
-          <div className="w-full lg:shrink-0 lg:w-auto flex flex-col items-end text-right" dir="rtl">
-            <h2 className="font-outfit font-bold tracking-tight leading-[1] text-right">
+          {/* LEFT — image + title */}
+          <div className="w-full lg:shrink-0 lg:w-auto flex flex-col items-center text-center" dir="rtl">
+            {/* Floating main image */}
+            <motion.div className="mb-4 shrink-0" {...inView(0)}>
+              <motion.img
+                src="/images/programm/main.png"
+                alt="Program"
+                className="w-56 h-56 md:w-72 md:h-72 object-contain"
+                animate={{ y: [0, -18, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            </motion.div>
+
+            <h2 className="font-outfit font-bold tracking-tight leading-[1] text-center">
               <motion.span
                 className="block"
                 style={{
@@ -57,22 +68,22 @@ export default function Program() {
                   color:         'var(--text-primary)',
                   paddingBottom: '0.05em',
                 }}
-                {...inViewWord(0)}
+                {...inViewWord(0.08)}
               >
                 {t('program.titleA')}
               </motion.span>
               <motion.span
                 className="block gradient-text py-[0.15em] leading-[1.1]"
                 style={{ fontSize: 'clamp(2.2rem, 4.5vw, 4.2rem)' }}
-                {...inViewWord(0.09)}
+                {...inViewWord(0.16)}
               >
                 {t('program.titleB')}
               </motion.span>
             </h2>
             <motion.p
-              className="mt-5 text-[15px] leading-relaxed text-right"
+              className="mt-5 text-[15px] leading-relaxed text-center max-w-xs"
               style={{ color: 'var(--text-secondary)' }}
-              {...inView(0.16)}
+              {...inView(0.22)}
             >
               {t('program.lead')}
             </motion.p>

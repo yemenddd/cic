@@ -8,35 +8,35 @@
 /* ── 1. Color Tokens ─────────────────────────────────────────── */
 :root {
   /* Canvas */
-  --bg-base:        #000000;
-  --bg-elevated:    #0a0a0f;
-  --bg-overlay:     #0f0f18;
+  --bg-base:        #0d0d0f;
+  --bg-elevated:    #161618;
+  --bg-overlay:     #1c1c1e;
 
   /* Text */
-  --text-primary:   #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.55);
-  --text-tertiary:  rgba(255, 255, 255, 0.30);
-  --text-disabled:  rgba(255, 255, 255, 0.18);
+  --text-primary:   #f5f5f7;
+  --text-secondary: rgba(245, 245, 247, 0.55);
+  --text-tertiary:  rgba(245, 245, 247, 0.32);
+  --text-disabled:  rgba(245, 245, 247, 0.18);
 
   /* ── Material system (theme-sensitive inline style tokens) ── */
-  --mat-liquid-bg:      rgba(15, 15, 18, 0.75);
-  --mat-liquid-border:  rgba(255, 255, 255, 0.08);
+  --mat-liquid-bg:      rgba(255, 255, 255, 0.06);
+  --mat-liquid-border:  rgba(255, 255, 255, 0.10);
   --mat-liquid-inset:   rgba(255, 255, 255, 0.10);
-  --mat-liquid-shadow:  0 4px 30px rgba(0,0,0,0.40), inset 0 1px 1px rgba(255,255,255,0.10);
+  --mat-liquid-shadow:  0 4px 32px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.10);
 
-  --mat-black-bg:       rgba(8, 8, 12, 0.92);
-  --mat-black-border:   rgba(255, 255, 255, 0.06);
-  --mat-black-shadow:   0 8px 40px rgba(0,0,0,0.60), 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.08);
+  --mat-black-bg:       rgba(255, 255, 255, 0.05);
+  --mat-black-border:   rgba(255, 255, 255, 0.09);
+  --mat-black-shadow:   0 8px 48px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.08);
 
-  --mat-card-bg:        rgba(255, 255, 255, 0.025);
-  --mat-card-border:    rgba(255, 255, 255, 0.07);
+  --mat-card-bg:        rgba(255, 255, 255, 0.04);
+  --mat-card-border:    rgba(255, 255, 255, 0.08);
 
-  --header-glass-bg:    rgba(15, 15, 18, 0.75);
+  --header-glass-bg:    rgba(13, 13, 15, 0.45);
   --header-glass-border:rgba(255, 255, 255, 0.08);
-  --header-glass-shadow:0 4px 30px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.05);
+  --header-glass-shadow:0 1px 0 rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.15);
 
-  --nav-hover-bg:       rgba(255, 255, 255, 0.06);
-  --nav-active-bg:      rgba(255, 255, 255, 0.10);
+  --nav-hover-bg:       rgba(255, 255, 255, 0.07);
+  --nav-active-bg:      rgba(255, 255, 255, 0.12);
 
   --hero-bg:            #000000;
 
@@ -55,26 +55,26 @@
   --gradient-text:  linear-gradient(90deg, var(--accent-cyan), var(--accent-blue) 50%, var(--accent-violet));
 
   /* Liquid Glass — the core material */
-  --glass-bg:          rgba(255, 255, 255, 0.055);
-  --glass-bg-hover:    rgba(255, 255, 255, 0.085);
-  --glass-bg-active:   rgba(255, 255, 255, 0.12);
-  --glass-border:      rgba(255, 255, 255, 0.09);
-  --glass-border-hover:rgba(255, 255, 255, 0.16);
-  --glass-shine:       rgba(255, 255, 255, 0.07);   /* top-edge inner highlight */
-  --glass-blur:        32px;
-  --glass-saturate:    180%;
+  --glass-bg:          rgba(255, 255, 255, 0.04);
+  --glass-bg-hover:    rgba(255, 255, 255, 0.07);
+  --glass-bg-active:   rgba(255, 255, 255, 0.10);
+  --glass-border:      rgba(255, 255, 255, 0.08);
+  --glass-border-hover:rgba(255, 255, 255, 0.14);
+  --glass-shine:       rgba(255, 255, 255, 0.07);
+  --glass-blur:        72px;
+  --glass-saturate:    220%;
 
   /* Shadows */
-  --shadow-sm:   0 2px 8px  rgba(0, 0, 0, 0.35);
-  --shadow-md:   0 8px 24px rgba(0, 0, 0, 0.45);
-  --shadow-lg:   0 16px 48px rgba(0, 0, 0, 0.55);
-  --shadow-xl:   0 32px 80px rgba(0, 0, 0, 0.65);
-  --shadow-glow: 0 0 40px rgba(6, 182, 212, 0.18);
+  --shadow-sm:   0 2px 8px  rgba(0, 0, 0, 0.40);
+  --shadow-md:   0 8px 24px rgba(0, 0, 0, 0.50);
+  --shadow-lg:   0 16px 48px rgba(0, 0, 0, 0.60);
+  --shadow-xl:   0 32px 80px rgba(0, 0, 0, 0.70);
+  --shadow-glow: 0 0 40px rgba(6, 182, 212, 0.20);
 
   /* Borders */
-  --border-subtle:  rgba(255, 255, 255, 0.07);
-  --border-default: rgba(255, 255, 255, 0.10);
-  --border-strong:  rgba(255, 255, 255, 0.18);
+  --border-subtle:  rgba(255, 255, 255, 0.08);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-strong:  rgba(255, 255, 255, 0.20);
 
   /* Radii */
   --radius-sm:  8px;
@@ -126,73 +126,75 @@
 
 /* ── 1b. Light Mode Overrides ────────────────────────────────── */
 [data-theme="light"] {
-  /* Canvas */
-  --bg-base:        #F5F5F7;
-  --bg-elevated:    #FFFFFF;
-  --bg-overlay:     #FAFAFA;
+  /* Canvas — Apple's exact light palette */
+  --bg-base:        #f2f2f7;
+  --bg-elevated:    #ffffff;
+  --bg-overlay:     #f9f9fb;
 
   /* Text */
-  --text-primary:   #1D1D1F;
-  --text-secondary: rgba(29, 29, 31, 0.55);
-  --text-tertiary:  rgba(29, 29, 31, 0.38);
-  --text-disabled:  rgba(29, 29, 31, 0.18);
+  --text-primary:   #1c1c1e;
+  --text-secondary: rgba(28, 28, 30, 0.54);
+  --text-tertiary:  rgba(28, 28, 30, 0.36);
+  --text-disabled:  rgba(28, 28, 30, 0.18);
 
-  /* Material system — light overrides */
-  --mat-liquid-bg:      rgba(255, 255, 255, 0.72);
-  --mat-liquid-border:  rgba(0, 0, 0, 0.09);
-  --mat-liquid-inset:   rgba(255, 255, 255, 0.90);
-  --mat-liquid-shadow:  0 4px 30px rgba(0,0,0,0.07), inset 0 1px 1px rgba(255,255,255,0.90);
+  /* Material system — frosted glass light */
+  --mat-liquid-bg:      rgba(255, 255, 255, 0.45);
+  --mat-liquid-border:  rgba(0, 0, 0, 0.07);
+  --mat-liquid-inset:   rgba(255, 255, 255, 0.80);
+  --mat-liquid-shadow:  0 2px 16px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.80);
 
-  --mat-black-bg:       rgba(255, 255, 255, 0.90);
-  --mat-black-border:   rgba(0, 0, 0, 0.08);
-  --mat-black-shadow:   0 8px 40px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.95);
+  --mat-black-bg:       rgba(255, 255, 255, 0.50);
+  --mat-black-border:   rgba(0, 0, 0, 0.07);
+  --mat-black-shadow:   0 4px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.80);
 
-  --mat-card-bg:        rgba(0, 0, 0, 0.025);
-  --mat-card-border:    rgba(0, 0, 0, 0.07);
+  --mat-card-bg:        rgba(255, 255, 255, 0.40);
+  --mat-card-border:    rgba(0, 0, 0, 0.05);
 
-  --header-glass-bg:    rgba(245, 245, 247, 0.82);
-  --header-glass-border:rgba(0, 0, 0, 0.09);
-  --header-glass-shadow:0 4px 30px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.95);
+  --header-glass-bg:    rgba(242, 242, 247, 0.55);
+  --header-glass-border:rgba(0, 0, 0, 0.07);
+  --header-glass-shadow:0 1px 0 rgba(0,0,0,0.05), 0 4px 24px rgba(0,0,0,0.04);
 
   --nav-hover-bg:       rgba(0, 0, 0, 0.05);
-  --nav-active-bg:      rgba(0, 0, 0, 0.08);
+  --nav-active-bg:      rgba(0, 0, 0, 0.09);
 
-  --hero-bg:            #F5F5F7;
+  --hero-bg:            #f2f2f7;
 
-  --metallic-grad:      linear-gradient(180deg, #1D1D1F 0%, #6e6e73 100%);
-  --metallic-grad-muted:linear-gradient(180deg, #6e6e73 0%, rgba(110,110,115,0.40) 100%);
+  --metallic-grad:      linear-gradient(180deg, #1c1c1e 0%, #636366 100%);
+  --metallic-grad-muted:linear-gradient(180deg, #636366 0%, rgba(99,99,102,0.40) 100%);
 
-  /* Glass */
-  --glass-bg:           rgba(255, 255, 255, 0.60);
-  --glass-bg-hover:     rgba(255, 255, 255, 0.80);
-  --glass-bg-active:    rgba(255, 255, 255, 0.95);
-  --glass-border:       rgba(0, 0, 0, 0.08);
-  --glass-border-hover: rgba(0, 0, 0, 0.14);
-  --glass-shine:        rgba(255, 255, 255, 0.90);
+  /* Glass — frosted Apple style */
+  --glass-bg:           rgba(255, 255, 255, 0.38);
+  --glass-bg-hover:     rgba(255, 255, 255, 0.55);
+  --glass-bg-active:    rgba(255, 255, 255, 0.72);
+  --glass-border:       rgba(0, 0, 0, 0.06);
+  --glass-border-hover: rgba(0, 0, 0, 0.11);
+  --glass-shine:        rgba(255, 255, 255, 0.80);
+  --glass-blur:         72px;
+  --glass-saturate:     220%;
 
-  /* Shadows */
-  --shadow-sm:   0 2px 8px  rgba(0, 0, 0, 0.06);
-  --shadow-md:   0 8px 24px rgba(0, 0, 0, 0.08);
-  --shadow-lg:   0 16px 48px rgba(0, 0, 0, 0.10);
-  --shadow-xl:   0 32px 80px rgba(0, 0, 0, 0.12);
-  --shadow-glow: 0 0 40px rgba(6, 182, 212, 0.10);
+  /* Shadows — subtle, Apple-like */
+  --shadow-sm:   0 1px 4px  rgba(0, 0, 0, 0.07), 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-md:   0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg:   0 8px 32px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0,0,0,0.05);
+  --shadow-xl:   0 16px 64px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-glow: 0 0 40px rgba(6, 182, 212, 0.12);
 
   /* Borders */
   --border-subtle:  rgba(0, 0, 0, 0.06);
-  --border-default: rgba(0, 0, 0, 0.10);
-  --border-strong:  rgba(0, 0, 0, 0.18);
+  --border-default: rgba(0, 0, 0, 0.09);
+  --border-strong:  rgba(0, 0, 0, 0.16);
 
   /* shadcn compat */
   --background:           var(--bg-base);
   --foreground:           var(--text-primary);
-  --primary:              #1D1D1F;
-  --primary-foreground:   #FFFFFF;
+  --primary:              #1c1c1e;
+  --primary-foreground:   #ffffff;
   --secondary:            rgba(0, 0, 0, 0.04);
-  --secondary-foreground: #1D1D1F;
+  --secondary-foreground: #1c1c1e;
   --muted:                rgba(0, 0, 0, 0.03);
   --muted-foreground:     var(--text-secondary);
   --accent:               rgba(0, 0, 0, 0.05);
-  --accent-foreground:    #1D1D1F;
+  --accent-foreground:    #1c1c1e;
   --border:               var(--border-default);
   --input:                rgba(0, 0, 0, 0.05);
 }
@@ -306,10 +308,10 @@ html[lang="ar"] .font-inter {
 
 /* Heavier glass for modals / drawers */
 .glass-heavy {
-  background:           rgba(8, 8, 16, 0.85);
-  backdrop-filter:      blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
-  border:               1px solid var(--glass-border);
+  background:           var(--mat-black-bg);
+  backdrop-filter:      blur(80px) saturate(240%);
+  -webkit-backdrop-filter: blur(80px) saturate(240%);
+  border:               1px solid var(--mat-black-border);
   box-shadow:
     inset 0 1px 0 var(--glass-shine),
     var(--shadow-xl);
@@ -343,8 +345,8 @@ html[lang="ar"] .font-inter {
 /* ── Apple WWDC26 Liquid Glass — exact specification ── */
 .liquid-glass {
   background:           var(--mat-liquid-bg);
-  backdrop-filter:      blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter:      blur(60px) saturate(220%);
+  -webkit-backdrop-filter: blur(60px) saturate(220%);
   border:               1px solid var(--mat-liquid-border);
   box-shadow:           var(--mat-liquid-shadow);
 }
@@ -357,8 +359,8 @@ html[lang="ar"] .font-inter {
 /* Black Glass — deep opaque panel for overlays and sticky navs */
 .black-glass {
   background:           var(--mat-black-bg);
-  backdrop-filter:      blur(40px) saturate(160%);
-  -webkit-backdrop-filter: blur(40px) saturate(160%);
+  backdrop-filter:      blur(72px) saturate(220%);
+  -webkit-backdrop-filter: blur(72px) saturate(220%);
   border:               1px solid var(--mat-black-border);
   box-shadow:           var(--mat-black-shadow);
 }
@@ -366,8 +368,8 @@ html[lang="ar"] .font-inter {
 /* Spatial Card — elevated glass card with multi-layered depth */
 .spatial-card {
   background:           var(--mat-liquid-bg);
-  backdrop-filter:      blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter:      blur(60px) saturate(220%);
+  -webkit-backdrop-filter: blur(60px) saturate(220%);
   border:               1px solid var(--mat-liquid-border);
   border-radius:        16px;
   box-shadow:           var(--mat-liquid-shadow);
@@ -797,7 +799,9 @@ html[dir="rtl"] ::-webkit-scrollbar {
   background: rgba(0, 0, 0, 0.22);
 }
 
-/* Theme transition — applied only to structural layout elements */
-body, header, footer, nav, main, aside, section > .theme-bg {
-  transition: background-color 180ms ease, border-color 180ms ease;
+/* Theme transition — smooth Apple-style */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
