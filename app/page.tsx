@@ -32,11 +32,11 @@ export default function Home() {
       {/* 06 · Scroll gallery — Fluent light */}
       <ScrollGallery />
 
-      {/* 07 · Partners & sponsors — dark */}
-      <Partners />
-
-      {/* 08 · Final register CTA — dark, countdown + email */}
+      {/* 07 · Final register CTA — dark, countdown + email */}
       <RegisterCTA />
+
+      {/* 08 · Partners & sponsors */}
+      <Partners />
     </div>
   );
 }

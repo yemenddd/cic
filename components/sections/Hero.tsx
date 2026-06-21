@@ -24,6 +24,7 @@ const fadeWord = (delay: number) => ({
 export default function Hero() {
   const { t, dir, lang } = useLang();
   const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
@@ -55,22 +56,17 @@ export default function Hero() {
 
   return (
     <section
-      className="relative min-h-screen w-full flex items-center"
-      style={{ background: 'var(--hero-bg)' }}
+      className="relative min-h-screen w-full flex items-center overflow-hidden"
+      style={{ background: 'var(--bg-base)' }}
     >
-      {/* Subtle gray gradient orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-32 -right-32 w-[700px] h-[700px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(0,0,0,0.055) 0%, transparent 70%)' }} />
-        <div className="absolute bottom-0 -left-24 w-[500px] h-[500px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(0,0,0,0.04) 0%, transparent 70%)' }} />
-      </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full flex flex-col gap-10 py-28" dir="ltr">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full flex flex-col gap-10 pt-16 pb-20 lg:py-28" dir={dir}>
 
         {/* ── Two-column grid ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-16 items-center" dir={dir}>
 
           {/* ── Text column ── */}
-          <div className={`flex flex-col ${isRtl ? 'items-end text-right' : 'items-start text-left'}`}>
+          <div dir={dir} className={`flex flex-col items-start order-2 lg:order-1 ${isRtl ? 'text-right' : 'text-left'}`} style={isRtl ? { paddingRight: '8%' } : {}}>
 
             <h1 className={`mb-6 flex flex-col gap-0 ${lang === 'en' ? 'text-left' : 'text-right'}`}>
               {lang === 'ar' ? (
@@ -81,7 +77,7 @@ export default function Hero() {
                         src="/images/logos/من_العقل.svg"
                         alt="من العقل"
                         className="object-right translate-x-[4%] md:translate-x-[6%] w-[280px] sm:w-[400px] md:w-[500px] max-w-full h-auto"
-                        style={{ filter: theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)' }}
+                        style={{ filter: isLight ? 'brightness(0)' : 'brightness(0) invert(1)' }}
                       />
                     </motion.span>
                   </span>
@@ -154,7 +150,7 @@ export default function Hero() {
             </h1>
 
             <motion.p
-              className="text-base md:text-[1.0625rem] mb-8 max-w-md leading-relaxed"
+              className="text-base md:text-[1.0625rem] mb-8 max-w-md leading-relaxed font-bold"
               style={{ color: 'var(--text-secondary)' }}
               {...fade(0.3)}
             >
@@ -162,7 +158,7 @@ export default function Hero() {
             </motion.p>
 
             <motion.div
-              className="flex flex-col sm:flex-row items-start sm:items-center gap-3"
+              className={`flex flex-row flex-wrap gap-3 ${isRtl ? 'items-center justify-end' : 'items-center justify-start'}`}
               {...fade(0.38)}
             >
               <Link
@@ -184,7 +180,7 @@ export default function Hero() {
 
               <Link
                 href="/program"
-                className="inline-flex items-center gap-2 text-[14px] font-medium transition-colors duration-200"
+                className="inline-flex items-center gap-2 text-[14px] font-bold transition-colors duration-200"
                 style={{ color: 'var(--text-secondary)' }}
                 onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
                 onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
@@ -198,15 +194,15 @@ export default function Hero() {
 
           {/* ── Video column ── */}
           <motion.div
-            className="w-full flex items-center justify-center"
+            className="w-full flex items-center justify-center order-1 lg:order-2"
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.75, delay: 0.15, ease: EASE }}
           >
             <motion.img
-              src="/images/hero/1.png"
+              src={isRtl ? "/images/hero/1-RTL.png" : "/images/hero/1-LTR.png"}
               alt="CICT 2026"
-              className="w-full h-auto block"
+              className="w-[75%] lg:w-full h-auto block mx-auto"
               animate={{ y: [0, -18, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
             />
@@ -219,17 +215,17 @@ export default function Hero() {
           className="flex flex-col items-center gap-4"
           {...fade(0.46)}
         >
-          <p className="text-caption text-center" style={{ color: 'var(--text-secondary)', letterSpacing: '0.14em' }}>
+          <p className="text-center font-bold text-base" style={{ color: 'var(--text-primary)', letterSpacing: '0.08em' }}>
             {t('hero.countdownLabel')}
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {countdownItems.map((item, i) => (
-              <div key={item.label} className="flex items-center gap-3">
+              <div key={item.label} className="flex items-center gap-2 sm:gap-3">
                 <div
                   className="flex flex-col items-center justify-center"
                   style={{
-                    minWidth:             '72px',
-                    padding:              '12px 10px',
+                    minWidth:             'clamp(54px, 16vw, 72px)',
+                    padding:              'clamp(8px, 2vw, 12px) clamp(6px, 1.5vw, 10px)',
                     background:           'var(--mat-liquid-bg)',
                     backdropFilter:       'blur(20px) saturate(180%)',
                     WebkitBackdropFilter: 'blur(20px) saturate(180%)',
@@ -241,22 +237,18 @@ export default function Hero() {
                   <span
                     className="font-outfit font-bold tabular-nums leading-none"
                     style={{
-                      fontSize:             'clamp(1.6rem, 3vw, 2.25rem)',
-                      background:           'var(--metallic-grad)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor:  'transparent',
-                      backgroundClip:       'text',
+                      fontSize: 'clamp(1.1rem, 4.5vw, 2.25rem)',
+                      color:    'var(--text-primary)',
                     }}
                   >
                     {item.value.toString().padStart(2, '0')}
                   </span>
-                  <span className="mt-1.5 text-caption" style={{ letterSpacing: '0.12em', color: 'var(--text-tertiary)' }}>
+                  <span className="mt-1 text-caption" style={{ fontSize: 'clamp(8px, 2.2vw, 11px)', letterSpacing: '0.10em', color: 'var(--text-tertiary)' }}>
                     {item.label}
                   </span>
                 </div>
                 {i < countdownItems.length - 1 && (
-                  <span className="text-2xl font-light -mt-5 select-none" style={{ color: 'var(--text-tertiary)' }}>:
-                  </span>
+                  <span className="text-lg sm:text-2xl font-light -mt-4 sm:-mt-5 select-none" style={{ color: 'var(--text-tertiary)' }}>:</span>
                 )}
               </div>
             ))}

@@ -39,7 +39,7 @@ export default function Program() {
   return (
     <section
       id="program"
-      className="relative h-screen flex items-center justify-center overflow-hidden"
+      className="relative md:h-screen flex items-center justify-center overflow-hidden py-14 md:py-0"
       style={{ background: 'var(--bg-elevated)' }}
     >
       <div className="max-w-7xl mx-auto px-6 w-full">
@@ -54,7 +54,7 @@ export default function Program() {
               <motion.img
                 src="/images/programm/main.png"
                 alt="Program"
-                className="w-56 h-56 md:w-72 md:h-72 object-contain"
+                className="w-36 h-36 sm:w-56 sm:h-56 md:w-72 md:h-72 object-contain"
                 animate={{ y: [0, -18, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
               />
@@ -101,7 +101,7 @@ export default function Program() {
             {streams.map((stream, i) => (
               <motion.article
                 key={stream.key}
-                className="flex flex-col items-center text-center p-7 h-full"
+                className="flex flex-col items-center text-center p-3 sm:p-5 md:p-7 h-full"
                 dir="rtl"
                 style={{
                   background:   'var(--bg-base)',
@@ -113,15 +113,15 @@ export default function Program() {
                 <img
                   src={stream.icon}
                   alt={stream.title}
-                  className="w-24 h-24 object-contain mb-5 shrink-0"
+                  className="w-12 h-12 sm:w-16 sm:h-16 md:w-24 md:h-24 object-contain mb-2 sm:mb-4 md:mb-5 shrink-0"
                 />
                 <h3
-                  className="font-outfit font-bold text-xl md:text-2xl tracking-tight mb-2"
+                  className="font-outfit font-bold text-sm sm:text-lg md:text-2xl tracking-tight mb-1 md:mb-2"
                   style={{ color: 'var(--text-primary)' }}
                 >
                   {stream.title}
                 </h3>
-                <p className="text-[14px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                <p className="text-[11px] sm:text-[13px] md:text-[14px] leading-relaxed hidden sm:block" style={{ color: 'var(--text-secondary)' }}>
                   {stream.description}
                 </p>
               </motion.article>

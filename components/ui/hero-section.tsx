@@ -51,8 +51,8 @@ export const FinancialHero = ({
   const isRtl = dir === 'rtl';
 
   return (
-    <div className={cn('relative py-24 px-6', className)}>
-      <div className="max-w-7xl mx-auto w-full flex items-center justify-between lg:flex-row flex-col gap-12">
+    <div className={cn('relative py-12 lg:py-24 px-6', className)}>
+      <div className="max-w-7xl mx-auto w-full flex items-center justify-between lg:flex-row flex-col gap-0 lg:gap-12">
 
         {/* ── Text ── */}
         <div className={cn('flex flex-col lg:w-[55%]', isRtl ? 'items-start text-right' : 'items-start text-left')}>
@@ -136,7 +136,7 @@ export const FinancialHero = ({
 
         {/* ── Images ── */}
         <motion.div
-          className="relative lg:w-[45%] h-56 sm:h-72 lg:h-[420px] w-full flex items-center justify-center mt-4 lg:mt-0 overflow-visible px-4 lg:px-10"
+          className="relative lg:w-[45%] h-72 sm:h-80 lg:h-[420px] w-full flex items-center justify-center mt-4 lg:mt-0 overflow-visible px-4 lg:px-10"
           initial={{ opacity: 0, x: isRtl ? -60 : 60 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, amount: 0.2 }}
@@ -145,7 +145,7 @@ export const FinancialHero = ({
           <motion.img
             src={imageUrl2}
             alt=""
-            className="absolute h-40 sm:h-56 md:h-[320px] w-auto rounded-2xl md:rounded-3xl object-cover transform rotate-[-4deg] translate-x-6 md:translate-x-12 translate-y-4 md:translate-y-6"
+            className="absolute h-52 sm:h-64 md:h-[320px] w-auto rounded-2xl md:rounded-3xl object-cover transform rotate-[-4deg] translate-x-6 md:translate-x-12 translate-y-4 md:translate-y-6"
             style={{
               border:    '1px solid var(--mat-liquid-border)',
               boxShadow: 'var(--shadow-md)',
@@ -155,7 +155,7 @@ export const FinancialHero = ({
           <motion.img
             src={imageUrl1}
             alt=""
-            className="relative z-10 h-40 sm:h-56 md:h-[320px] w-auto rounded-2xl md:rounded-3xl object-cover transform rotate-[3deg] -translate-x-4 md:-translate-x-8"
+            className="relative z-10 h-52 sm:h-64 md:h-[320px] w-auto rounded-2xl md:rounded-3xl object-cover transform rotate-[3deg] -translate-x-4 md:-translate-x-8"
             style={{
               border:    '1px solid var(--mat-liquid-border)',
               boxShadow: 'var(--shadow-lg)',

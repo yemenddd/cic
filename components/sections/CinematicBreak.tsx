@@ -71,7 +71,7 @@ export default function CinematicBreak() {
         </div>
 
         {/* ── Content ── */}
-        <div className="relative z-10 text-center px-6 max-w-5xl mx-auto w-full py-24">
+        <div className="relative z-10 text-center px-6 max-w-5xl mx-auto w-full py-16 md:py-24">
 
           {/* Brand logo */}
           <motion.div className="flex justify-center mb-8" {...inView(0)}>
@@ -119,11 +119,13 @@ export default function CinematicBreak() {
             whileTap={{ scale: 0.97 }}
             className="group inline-flex items-center gap-3 pl-2 pr-6 rtl:pr-2 rtl:pl-6 py-2 rounded-full"
             style={{
-              background:           theme === 'light' ? 'rgba(255,255,255,0.88)' : 'rgba(15, 15, 18, 0.75)',
-              border:               theme === 'light' ? '1px solid rgba(0,0,0,0.10)' : '1px solid rgba(255,255,255,0.10)',
-              backdropFilter:       'blur(20px) saturate(180%)',
-              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-              boxShadow:            theme === 'light' ? '0 4px 30px rgba(0,0,0,0.12)' : '0 4px 30px rgba(0,0,0,0.40), inset 0 1px 1px rgba(255,255,255,0.10)',
+              background:           theme === 'light' ? 'rgba(255,255,255,0.18)' : 'rgba(15, 15, 18, 0.25)',
+              border:               'none',
+              backdropFilter:       'blur(60px) saturate(220%)',
+              WebkitBackdropFilter: 'blur(60px) saturate(220%)',
+              boxShadow:            theme === 'light'
+                ? '0 8px 32px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.80)'
+                : '0 8px 32px rgba(0,0,0,0.40), inset 0 1px 1px rgba(255,255,255,0.10)',
               transition:           'transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s cubic-bezier(0.16,1,0.3,1)',
             }}
           >
@@ -136,7 +138,7 @@ export default function CinematicBreak() {
             >
               <Play size={16} fill="white" className="text-white ml-[2px]" />
             </span>
-            <span className="font-outfit font-semibold text-[15px]" style={{ color: theme === 'light' ? '#111' : '#fff' }}>
+            <span className="font-outfit font-semibold text-[15px]" style={{ color: '#fff' }}>
               {t('cinematic.watch')}
             </span>
           </motion.button>

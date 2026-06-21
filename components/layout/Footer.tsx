@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Footer as FooterBase } from "@/components/ui/footer";
 import { useLang } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme-context";
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -35,20 +36,22 @@ function YoutubeIcon({ className }: { className?: string }) {
   );
 }
 
-const C4Logo = (
-  <Image
-    src="/images/logos/logo_white.png"
-    alt="CICT 2026 logo"
-    width={40}
-    height={40}
-    className="h-10 w-10 object-contain"
-  />
-);
-
 export default function Footer() {
   const { t } = useLang();
+  const { theme } = useTheme();
+
+  const C4Logo = (
+    <Image
+      src={theme === 'light' ? '/images/logos/logo_colored.png' : '/images/logos/logo_white.png'}
+      alt="CICT 2026 logo"
+      width={40}
+      height={40}
+      className="h-10 w-10 object-contain"
+    />
+  );
+
   return (
-    <div className="text-white" style={{ background: 'var(--bg-elevated)', borderTop: '1px solid var(--border-subtle)' }}>
+    <div style={{ color: 'var(--text-primary)', background: 'var(--bg-elevated)', borderTop: '1px solid var(--border-subtle)' }}>
     <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
     <FooterBase
       logo={C4Logo}

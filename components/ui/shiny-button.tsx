@@ -131,6 +131,14 @@ export function ShinyButton({ children, onClick, className = "", href, size = 's
           opacity: 0.6;
         }
 
+        [data-theme="light"] .shiny-cta {
+          --shiny-cta-bg: #ffffff;
+          --shiny-cta-bg-subtle: #e8e8ed;
+          --shiny-cta-fg: #1c1c1e;
+          --shiny-cta-highlight: #3b82f6;
+          --shiny-cta-highlight-subtle: #6366f1;
+        }
+
         .shiny-cta span {
           z-index: 1;
         }

@@ -72,7 +72,7 @@ const CtaCard = React.forwardRef<HTMLDivElement, CtaCardProps>(
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
         >
-          <div className="flex flex-col items-start text-left text-white">
+          <div className="flex flex-col items-center text-center md:items-start md:text-left text-white">
             <motion.h2
               className="text-3xl font-extrabold tracking-tight md:text-4xl lg:text-5xl"
               variants={itemVariants}
@@ -94,7 +94,14 @@ const CtaCard = React.forwardRef<HTMLDivElement, CtaCardProps>(
           >
             <Link
               href={href}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-base font-bold text-black transition-colors hover:bg-neutral-200"
+              className="inline-flex items-center gap-2 rounded-full px-8 py-4 text-base font-bold text-black"
+              style={{
+                background:           'rgba(255,255,255,0.90)',
+                backdropFilter:       'blur(60px) saturate(200%)',
+                WebkitBackdropFilter: 'blur(60px) saturate(200%)',
+                border:               'none',
+                boxShadow:            'none',
+              }}
             >
               <ArrowLeft className="h-4 w-4" />
               {buttonText}

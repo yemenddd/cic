@@ -94,7 +94,7 @@ export default function ScrollGallery() {
                 fontWeight:           700,
                 letterSpacing:        '0.22em',
                 textTransform:        'uppercase',
-                color:                'var(--text-secondary)',
+                color:                '#ffffff',
               }}
             >
               {t('gallery.caption')}

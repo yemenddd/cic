@@ -40,21 +40,25 @@ export function Footer({
             aria-label={brandName}
           >
             {logo}
-            <span className="font-bold text-xl">{brandName}</span>
+            <span className="font-bold text-xl" style={{ color: 'var(--text-primary)' }}>{brandName}</span>
           </a>
           <ul className="flex list-none mt-6 md:mt-0 space-x-3">
             {socialLinks.map((link, i) => (
               <li key={i}>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="h-10 w-10 rounded-full"
-                  asChild
+                <a
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={link.label}
+                  className="h-10 w-10 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
+                  style={{
+                    color:      'var(--text-primary)',
+                    background: 'var(--mat-liquid-bg)',
+                    border:     '1px solid var(--border-subtle)',
+                  }}
                 >
-                  <a href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.label}>
-                    {link.icon}
-                  </a>
-                </Button>
+                  {link.icon}
+                </a>
               </li>
             ))}
           </ul>
@@ -66,7 +70,7 @@ export function Footer({
                 <li key={i} className="my-1 mx-2 shrink-0">
                   <a
                     href={link.href}
-                    className="text-sm text-primary underline-offset-4 hover:underline"
+                    className="text-sm underline-offset-4 hover:underline" style={{ color: 'var(--text-primary)' }}
                   >
                     {link.label}
                   </a>
@@ -90,7 +94,7 @@ export function Footer({
               </ul>
             </div>
           )}
-          <div className="mt-5 text-sm leading-6 text-muted-foreground whitespace-normal lg:mt-0 lg:row-[1/3] lg:col-[1/4]">
+          <div className="mt-5 text-sm leading-6 whitespace-normal lg:mt-0 lg:row-[1/3] lg:col-[1/4]" style={{ color: 'var(--text-secondary)' }}>
             <div>{copyright.text}</div>
             {copyright.license && <div>{copyright.license}</div>}
           </div>

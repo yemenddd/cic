@@ -48,7 +48,7 @@ function SpeakerCard({ speaker, index }: { speaker: Speaker; index: number }) {
   return (
     <motion.div {...inView(index * 0.07)}>
       <div
-        className="relative cursor-pointer select-none h-[160px] md:h-[260px]"
+        className="relative cursor-pointer select-none h-[200px] md:h-[260px]"
         style={{ perspective: '1200px' }}
         onMouseEnter={() => setFlipped(true)}
         onMouseLeave={() => setFlipped(false)}
@@ -78,14 +78,10 @@ function SpeakerCard({ speaker, index }: { speaker: Speaker; index: number }) {
               className="w-full h-full object-cover object-top"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/10" />
-            <div
-              className="absolute top-0 inset-x-0 h-[2px]"
-              style={{ background: `linear-gradient(90deg, ${speaker.color}, transparent 80%)` }}
-            />
             <div className="absolute bottom-0 inset-x-0 p-3">
-              <h3 className="font-outfit font-bold text-[13px] leading-snug" style={{ color: 'var(--text-primary)' }}>{speaker.name}</h3>
-              <p className="text-[11px] leading-snug mt-0.5 line-clamp-1" style={{ color: 'var(--text-secondary)' }}>{speaker.role}</p>
-              <p className="text-[10px] mt-0.5 truncate" style={{ color: 'var(--text-tertiary)' }}>{speaker.org}</p>
+              <h3 className="font-outfit font-bold text-[13px] leading-snug" style={{ color: '#ffffff' }}>{speaker.name}</h3>
+              <p className="text-[11px] leading-snug mt-0.5 line-clamp-1" style={{ color: 'rgba(255,255,255,0.70)' }}>{speaker.role}</p>
+              <p className="text-[10px] mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.45)' }}>{speaker.org}</p>
             </div>
           </div>
 
@@ -96,31 +92,31 @@ function SpeakerCard({ speaker, index }: { speaker: Speaker; index: number }) {
               backfaceVisibility:       'hidden',
               WebkitBackfaceVisibility: 'hidden',
               transform:                'rotateY(180deg)',
-              background:               'var(--mat-black-bg)',
+              background:               'rgba(12,12,16,0.92)',
               backdropFilter:           'blur(40px) saturate(160%)',
               WebkitBackdropFilter:     'blur(40px) saturate(160%)',
               border:                   `1px solid ${speaker.color.replace('0.85', '0.22')}`,
-              boxShadow:                `0 8px 40px rgba(0,0,0,0.60), 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 var(--mat-liquid-inset)`,
+              boxShadow:                'none',
             }}
           >
             <div
               className="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl pointer-events-none"
               style={{ background: speaker.color.replace('0.85', '0.25') }}
             />
-            <p className="text-[8.5px] font-semibold uppercase tracking-[0.2em] mb-2 relative z-10" style={{ color: 'var(--text-tertiary)' }}>
+            <p className="text-[8.5px] font-semibold uppercase tracking-[0.2em] mb-2 relative z-10" style={{ color: 'rgba(255,255,255,0.40)' }}>
               {t('speakers.talkLabel')}
             </p>
-            <h4 className="font-outfit font-bold text-[13.5px] leading-snug mb-2 relative z-10" style={{ color: 'var(--text-primary)' }}>{speaker.topic}</h4>
-            <p className="text-[11.5px] leading-relaxed flex-1 line-clamp-3 relative z-10" style={{ color: 'var(--text-secondary)' }}>{speaker.bio}</p>
+            <h4 className="font-outfit font-bold text-[13.5px] leading-snug mb-2 relative z-10" style={{ color: '#ffffff' }}>{speaker.topic}</h4>
+            <p className="text-[11.5px] leading-relaxed flex-1 line-clamp-3 relative z-10" style={{ color: 'rgba(255,255,255,0.65)' }}>{speaker.bio}</p>
             <div
               className="mt-4 pt-3 flex items-center justify-between relative z-10"
-              style={{ borderTop: '1px solid var(--border-subtle)' }}
+              style={{ borderTop: '1px solid rgba(255,255,255,0.10)' }}
             >
               <div>
-                <p className="text-[12.5px] font-semibold" style={{ color: 'var(--text-primary)' }}>{speaker.name}</p>
-                <p className="text-[10.5px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>{speaker.org}</p>
+                <p className="text-[12.5px] font-semibold" style={{ color: '#ffffff' }}>{speaker.name}</p>
+                <p className="text-[10.5px] mt-0.5" style={{ color: 'rgba(255,255,255,0.40)' }}>{speaker.org}</p>
               </div>
-              <ArrowUpRight size={16} style={{ color: 'var(--text-tertiary)' }} />
+              <ArrowUpRight size={16} style={{ color: 'rgba(255,255,255,0.40)' }} />
             </div>
           </div>
 
@@ -131,7 +127,7 @@ function SpeakerCard({ speaker, index }: { speaker: Speaker; index: number }) {
 }
 
 export default function Speakers() {
-  const { t, tx } = useLang();
+  const { t, tx, dir } = useLang();
 
   const rawSpeakers = tx<Omit<Speaker, 'color' | 'initials' | 'image'>[]>('speakers.list') || [];
   const speakers: Speaker[] = rawSpeakers.map((s, i) => ({
@@ -162,8 +158,8 @@ export default function Speakers() {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 w-full py-24 relative z-10">
-        <div className="flex flex-col-reverse lg:flex-row items-center gap-6 lg:gap-10 w-full" dir="ltr">
+      <div className="max-w-7xl mx-auto px-6 w-full py-14 md:py-24 relative z-10">
+        <div className={`flex flex-col-reverse items-center gap-6 lg:gap-10 w-full ${dir === 'rtl' ? 'lg:flex-row-reverse' : 'lg:flex-row'}`}>
 
           {/* Cards grid */}
           <div className="w-full lg:w-[58%] shrink-0">
@@ -175,8 +171,8 @@ export default function Speakers() {
           </div>
 
           {/* Title */}
-          <div className="w-full lg:flex-1 flex flex-col items-center justify-center lg:items-end mb-4 lg:mb-0" dir="rtl">
-            <h2 className="font-outfit font-bold tracking-tight leading-[1] text-center lg:text-right">
+          <div className={`w-full lg:flex-1 flex flex-col items-center justify-center mb-4 lg:mb-0 ${dir === 'rtl' ? 'lg:items-start' : 'lg:items-end'}`} dir={dir}>
+            <h2 className={`font-outfit font-bold tracking-tight leading-[1] text-center ${dir === 'rtl' ? 'lg:text-right' : 'lg:text-left'}`}>
               <motion.span
                 className="block"
                 style={{

@@ -72,8 +72,8 @@ export default function Header() {
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
-  const isHome  = pathname === '/';
-  const showBg  = !isHome || scrolled;
+  const isHome = pathname === '/';
+  const showBg = !isHome || scrolled;
 
   /* ─────────────────────────────────────── */
   return (
@@ -85,7 +85,7 @@ export default function Header() {
         initial={{ y: -16, opacity: 0 }}
         animate={{ y: 0,   opacity: 1 }}
         transition={{ duration: 0.6, ease: EASE }}
-        className="fixed top-0 inset-x-0 z-50 transition-all duration-300"
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${menuOpen ? 'opacity-0 pointer-events-none' : ''}`}
         style={showBg ? {
           background:           'var(--header-glass-bg)',
           backdropFilter:       'blur(20px) saturate(180%)',
@@ -125,11 +125,7 @@ export default function Header() {
                   onMouseEnter={() => setHovered(link.key)}
                   className="relative px-3.5 py-2 rounded-lg text-[13px] font-medium select-none"
                   style={{
-                    color: active
-                      ? 'var(--text-primary)'
-                      : hovered === link.key
-                        ? 'var(--text-secondary)'
-                        : 'var(--text-tertiary)',
+                    color: active ? 'var(--text-primary)' : hovered === link.key ? 'var(--text-secondary)' : 'var(--text-tertiary)',
                     transition: 'color 0.15s ease',
                   }}
                 >
@@ -222,11 +218,11 @@ export default function Header() {
                     transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                     className={`absolute top-full mt-2 z-50 w-44 rounded-2xl overflow-hidden ${lang === 'ar' ? 'left-0' : 'right-0'}`}
                     style={{
-                      background:           'var(--mat-black-bg)',
-                      backdropFilter:       'blur(40px) saturate(160%)',
-                      WebkitBackdropFilter: 'blur(40px) saturate(160%)',
-                      border:               '1px solid var(--mat-black-border)',
-                      boxShadow:            'var(--mat-black-shadow)',
+                      background:           isLight ? 'rgba(242,242,247,0.98)' : 'rgba(18,18,22,0.97)',
+                      backdropFilter:       'blur(80px) saturate(200%)',
+                      WebkitBackdropFilter: 'blur(80px) saturate(200%)',
+                      border:               '1px solid var(--header-glass-border)',
+                      boxShadow:            '0 8px 40px rgba(0,0,0,0.35)',
                     }}
                   >
                     {LANG_OPTIONS.map((opt, i) => {
@@ -236,14 +232,14 @@ export default function Header() {
                           key={opt.code}
                           onClick={() => { setLang(opt.code); setLangOpen(false); }}
                           dir={opt.dir}
-                          className="w-full flex items-center justify-between gap-2 px-4 py-3 text-[12.5px]"
+                          className="w-full flex items-center justify-center gap-2 px-4 py-3 text-[12.5px]"
                           style={{
                             background:   isActive
-                              ? 'linear-gradient(90deg,rgba(6,182,212,0.10),rgba(139,92,246,0.10))'
+                              ? 'var(--nav-hover-bg)'
                               : 'transparent',
                             color:        isActive ? 'var(--text-primary)' : 'var(--text-tertiary)',
                             borderBottom: i < LANG_OPTIONS.length - 1
-                              ? '1px solid var(--mat-black-border)'
+                              ? '1px solid var(--header-glass-border)'
                               : 'none',
                             transition:   'background 0.15s ease, color 0.15s ease',
                           }}
@@ -260,15 +256,15 @@ export default function Header() {
                             <span
                               className="text-[8px] font-black tracking-widest px-1.5 py-0.5 rounded-md shrink-0"
                               style={{
-                                background: isActive ? 'rgba(6,182,212,0.18)' : 'var(--nav-hover-bg)',
-                                color:      isActive ? '#67e8f9' : 'var(--text-tertiary)',
+                                background: isActive ? 'var(--nav-active-bg)' : 'var(--nav-hover-bg)',
+                                color:      isActive ? 'var(--text-primary)' : 'var(--text-tertiary)',
                               }}
                             >
                               {opt.code.toUpperCase()}
                             </span>
                             <span className="font-medium">{opt.label}</span>
                           </span>
-                          {isActive && <Check size={11} className="shrink-0" style={{ color: '#67e8f9' }} />}
+                          {isActive && <Check size={11} className="shrink-0" style={{ color: 'var(--text-primary)' }} />}
                         </button>
                       );
                     })}
@@ -298,7 +294,8 @@ export default function Header() {
               ].map((anim, i) => (
                 <motion.span
                   key={i}
-                  className="block h-[1.5px] w-[18px] bg-white rounded-full origin-center"
+                  className="block h-[1.5px] w-[18px] rounded-full origin-center"
+                  style={{ backgroundColor: 'var(--text-primary)' }}
                   animate={anim}
                   transition={{ duration: 0.2 }}
                 />
@@ -345,6 +342,7 @@ export default function Header() {
             {/* Top bar */}
             <div
               className="relative flex items-center justify-between px-6 h-14 shrink-0"
+              dir={lang === 'ar' ? 'rtl' : 'ltr'}
               style={{ borderBottom: '1px solid var(--mat-black-border)' }}
             >
               <Link
@@ -353,7 +351,7 @@ export default function Header() {
                 className="flex items-center gap-3"
               >
                 <div
-                  className="w-[28px] h-[28px] flex items-center justify-center rounded-lg"
+                  className="w-[28px] h-[28px] flex items-center justify-center rounded-lg shrink-0"
                   style={{ background: 'var(--nav-hover-bg)', border: '1px solid var(--mat-liquid-border)' }}
                 >
                   <Image
@@ -368,7 +366,7 @@ export default function Header() {
               </Link>
               <button
                 onClick={() => setMenuOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-lg"
+                className="w-8 h-8 flex items-center justify-center rounded-lg shrink-0"
                 style={{ background: 'var(--nav-hover-bg)', border: '1px solid var(--mat-liquid-border)' }}
                 aria-label="Close menu"
               >
@@ -479,11 +477,29 @@ export default function Header() {
                 })}
               </div>
 
-              {/* Register button */}
+              {/* Theme + Register row */}
               <div className="flex items-center justify-between pt-1 gap-4">
-                <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-                  {t('nav.date')}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                    {t('nav.date')}
+                  </span>
+                  {/* Theme toggle */}
+                  <button
+                    onClick={toggleTheme}
+                    aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
+                    className="flex w-9 h-9 items-center justify-center rounded-full shrink-0"
+                    style={{
+                      background:           'var(--mat-liquid-bg)',
+                      backdropFilter:       'blur(20px)',
+                      WebkitBackdropFilter: 'blur(20px)',
+                      border:               '1px solid var(--mat-liquid-border)',
+                      color:                'var(--text-secondary)',
+                      boxShadow:            'inset 0 1px 0 var(--mat-liquid-inset)',
+                    }}
+                  >
+                    {isLight ? <Moon size={14} /> : <Sun size={14} />}
+                  </button>
+                </div>
                 <a
                   href="/register"
                   onClick={() => setMenuOpen(false)}

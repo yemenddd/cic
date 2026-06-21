@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '@/lib/theme-context';
 
 export default function ScrollToTop() {
   const [visible, setVisible] = useState(false);
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
 
   useEffect(() => {
     const onScroll = () => {
@@ -35,28 +38,18 @@ export default function ScrollToTop() {
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           whileHover={{ scale: 1.12 }}
           whileTap={{ scale: 0.93 }}
-          className="fixed bottom-8 right-8 z-50 group"
+          className="fixed bottom-8 right-8 z-50 group outline-none focus:outline-none"
         >
-          {/* Outer glow ring */}
-          <span
-            className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-            style={{
-              background:
-                'radial-gradient(circle, rgba(59,130,246,0.35) 0%, transparent 70%)',
-              transform: 'scale(1.6)',
-            }}
-          />
 
           {/* Button body */}
           <span
             className="relative flex items-center justify-center w-12 h-12 rounded-full overflow-hidden"
             style={{
-              background: 'rgba(3,7,18,0.75)',
+              background: isLight ? 'rgba(30,27,50,0.90)' : 'rgba(255,255,255,0.90)',
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              boxShadow:
-                '0 0 0 1px rgba(59,130,246,0.18), 0 8px 32px rgba(0,0,0,0.5)',
+              border: isLight ? '1px solid rgba(255,255,255,0.10)' : '1px solid rgba(0,0,0,0.08)',
+              boxShadow: 'none',
             }}
           >
             {/* Subtle gradient fill on hover */}
@@ -76,7 +69,7 @@ export default function ScrollToTop() {
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="relative w-5 h-5 stroke-white/80 group-hover:stroke-white transition-colors duration-200"
+              className={`relative w-5 h-5 transition-colors duration-200 ${isLight ? 'stroke-white/90 group-hover:stroke-white' : 'stroke-black/70 group-hover:stroke-black'}`}
               animate={{ y: 0 }}
               whileHover={{ y: -2 }}
               transition={{ type: 'spring', stiffness: 400, damping: 20 }}

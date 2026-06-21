@@ -101,7 +101,7 @@ export default function RegisterCTA() {
   return (
     <section
       id="register"
-      className="relative py-32 flex items-center"
+      className="relative py-14 md:py-32 flex items-center"
       style={{ background: 'var(--bg-base)' }}
     >
       <div className="max-w-5xl mx-auto px-6 w-full text-center">
@@ -116,6 +116,7 @@ export default function RegisterCTA() {
           </motion.span>
           <motion.span
             className="inline-block gradient-text py-[0.2em] leading-[1.1]"
+            style={{ fontSize: 'clamp(1.4rem, 3.2vw, 2.8rem)' }}
             {...inViewWord(0.08)}
           >
             {t('register.titleB')}
@@ -149,9 +150,9 @@ export default function RegisterCTA() {
         <motion.div {...inView(0.26)}>
           <CtaCard
             imageSrc="/images/CTA/CTA1.png"
-            titleA={t('register.titleA')}
-            titleB={t('register.titleB')}
-            description={t('register.subtext')}
+            titleA={t('register.cardTitleA')}
+            titleB={t('register.cardTitleB')}
+            description={t('register.cardSubtext')}
             buttonText={t('register.register')}
             href="/register"
           />
