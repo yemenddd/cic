@@ -203,7 +203,8 @@ export default function AchievementsPage() {
 
   return (
     <section
-      className="min-h-screen bg-black flex flex-col items-center justify-center py-24"
+      className="min-h-screen flex flex-col items-center justify-center py-24"
+      style={{ background: 'var(--bg-base)' }}
       dir={isRtl ? 'rtl' : 'ltr'}
     >
       {/* Header */}
@@ -214,8 +215,8 @@ export default function AchievementsPage() {
         className="px-5 md:px-8 mb-14 md:mb-18 text-center"
       >
         <h1
-          className="font-outfit font-black text-white leading-[1.1] inline"
-          style={{ fontSize: 'clamp(2rem, 5vw, 4rem)' }}
+          className="font-outfit font-black leading-[1.1] inline"
+          style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', color: 'var(--text-primary)' }}
         >
           {t('achievements.titleA')}{' '}
           <span style={{

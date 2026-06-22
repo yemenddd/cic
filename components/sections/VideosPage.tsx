@@ -19,7 +19,6 @@ interface Edition {
   videos: Video[];
 }
 
-// Films section: three editions with their own video sets
 const FILM_EDITIONS: Edition[] = [
   {
     key: 'ed1',
@@ -92,20 +91,17 @@ const MULHAMOON_SECTION: FlatSection = {
   labelTr: 'Mulhamoon',
   icon: <Sparkles size={14} />,
   videos: [
-    { id: 'XMZ4htBi20s', titleAr: 'ملهمون — الحلقة الأولى', titleEn: 'Mulhamoon — Episode 1', titleTr: 'Mulhamoon — Bölüm 1' },
-    { id: 'REGcpGlNvC8', titleAr: 'ملهمون — الحلقة الثانية', titleEn: 'Mulhamoon — Episode 2', titleTr: 'Mulhamoon — Bölüm 2' },
+    { id: 'XMZ4htBi20s', titleAr: 'ملهمون — الحلقة الأولى',   titleEn: 'Mulhamoon — Episode 1', titleTr: 'Mulhamoon — Bölüm 1' },
+    { id: 'REGcpGlNvC8', titleAr: 'ملهمون — الحلقة الثانية',  titleEn: 'Mulhamoon — Episode 2', titleTr: 'Mulhamoon — Bölüm 2' },
     { id: 'XMZ4htBi20s', titleAr: 'ملهمون — الحلقة الثالثة', titleEn: 'Mulhamoon — Episode 3', titleTr: 'Mulhamoon — Bölüm 3' },
     { id: 'REGcpGlNvC8', titleAr: 'ملهمون — الحلقة الرابعة', titleEn: 'Mulhamoon — Episode 4', titleTr: 'Mulhamoon — Bölüm 4' },
   ],
 };
 
-// Top-level section keys
 type SectionKey = 'films' | 'tv' | 'mulhamoon';
 const SECTION_ORDER: SectionKey[] = ['films', 'tv', 'mulhamoon'];
-
 const GRID_COLS = 2;
 
-// Dynamically calculates grid positions based on actual video count
 function videosToFrames(videos: Video[], lang: string) {
   const cols = GRID_COLS;
   const rows = Math.ceil(videos.length / cols);
@@ -140,7 +136,6 @@ export default function VideosPage() {
   const [activeEdition, setActiveEdition] = useState(0);
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
-  // Resolve which videos to show
   let currentVideos: Video[];
   let currentLabel: string;
   let currentCount: number;
@@ -181,7 +176,7 @@ export default function VideosPage() {
 
       {/* Background grid */}
       <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(to right,rgba(255,255,255,0.02) 1px,transparent 1px)',
+        backgroundImage: 'linear-gradient(var(--mat-liquid-border) 1px,transparent 1px),linear-gradient(to right,var(--mat-liquid-border) 1px,transparent 1px)',
         backgroundSize: '4rem 4rem',
         maskImage: 'radial-gradient(ellipse 80% 60% at 50% 20%, black, transparent)',
         WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 20%, black, transparent)',
@@ -193,7 +188,9 @@ export default function VideosPage() {
         <div className="mb-8 md:mb-10">
           <h1 className="font-outfit font-bold leading-[0.9] tracking-tight mb-3"
             style={{ fontSize: 'clamp(1.8rem, 5vw, 4.5rem)' }}>
-            <motion.span className="block text-white"
+            <motion.span
+              className="block"
+              style={{ color: 'var(--text-primary)' }}
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.7, ease: EASE }}>
               {t('videos.titleA')}
@@ -210,7 +207,11 @@ export default function VideosPage() {
         {/* ── Sticky tab area ── */}
         <div
           className="sticky top-14 md:top-16 z-20 py-3 flex flex-col gap-2"
-          style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
+          style={{
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            background: 'var(--bg-base)',
+          }}
         >
           {/* Main section tabs */}
           <motion.div
@@ -224,18 +225,18 @@ export default function VideosPage() {
                 onClick={() => { setActiveSection(key); setActiveEdition(0); }}
                 className="flex items-center gap-2 px-3 md:px-5 py-2 rounded-full text-[12px] md:text-[13px] font-semibold transition-all duration-300"
                 style={activeSection === key ? {
-                  background: 'rgba(255,255,255,0.12)',
+                  background: 'var(--mat-liquid-bg)',
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255,255,255,0.35)',
-                  color: '#fff',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)',
+                  border: '1px solid var(--accent-blue)',
+                  color: 'var(--text-primary)',
+                  boxShadow: 'var(--mat-liquid-shadow)',
                 } : {
-                  background: 'rgba(255,255,255,0.04)',
+                  background: 'var(--mat-liquid-bg)',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  color: 'rgba(255,255,255,0.45)',
+                  border: '1px solid var(--mat-liquid-border)',
+                  color: 'var(--text-tertiary)',
                 }}
               >
                 <span className="opacity-70">{sectionIcon(key)}</span>
@@ -244,7 +245,7 @@ export default function VideosPage() {
             ))}
           </motion.div>
 
-          {/* Edition sub-tabs — only visible when Films is active */}
+          {/* Edition sub-tabs */}
           <AnimatePresence>
             {activeSection === 'films' && (
               <motion.div
@@ -260,13 +261,13 @@ export default function VideosPage() {
                     onClick={() => setActiveEdition(i)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] md:text-[12px] font-medium transition-all duration-200"
                     style={activeEdition === i ? {
-                      background: 'rgba(99,179,237,0.15)',
+                      background: 'rgba(99,179,237,0.12)',
                       border: '1px solid rgba(99,179,237,0.4)',
-                      color: '#93c5fd',
+                      color: '#60a5fa',
                     } : {
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      color: 'rgba(255,255,255,0.35)',
+                      background: 'var(--mat-liquid-bg)',
+                      border: '1px solid var(--mat-liquid-border)',
+                      color: 'var(--text-tertiary)',
                     }}
                   >
                     <span className="font-mono opacity-50 text-[9px]">0{i + 1}</span>
@@ -308,14 +309,14 @@ export default function VideosPage() {
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.4 }}
         >
-          <span className="opacity-40">{sectionIcon(activeSection)}</span>
-          <span className="text-white font-semibold text-sm md:text-base">{currentLabel}</span>
-          <span className="text-white/25 text-[12px]">· {currentCount} {t('videos.count')}</span>
+          <span style={{ color: 'var(--text-tertiary)' }}>{sectionIcon(activeSection)}</span>
+          <span className="font-semibold text-sm md:text-base" style={{ color: 'var(--text-primary)' }}>{currentLabel}</span>
+          <span className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>· {currentCount} {t('videos.count')}</span>
         </motion.div>
 
       </div>
 
-      {/* Video modal */}
+      {/* Video modal — always dark */}
       <AnimatePresence>
         {activeVideo && (
           <motion.div

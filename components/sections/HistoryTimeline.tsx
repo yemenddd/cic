@@ -3,11 +3,11 @@
 import { useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useMotionValueEvent, useSpring } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
+import { useTheme } from '@/lib/theme-context';
 import dynamic from 'next/dynamic';
 
-// Lazy-load particle & canvas-heavy components
 const SparklesCore = dynamic(() => import('@/components/ui/sparkles').then(m => ({ default: m.Sparkles })), { ssr: false });
-const Starfield = dynamic(() => import('@/components/ui/starfield').then(m => ({ default: m.Starfield })), { ssr: false });
+const Starfield    = dynamic(() => import('@/components/ui/starfield').then(m => ({ default: m.Starfield })), { ssr: false });
 
 type Edition = {
   year: string;
@@ -20,11 +20,9 @@ type Edition = {
 
 const ACCENTS = ['#67e8f9', '#818cf8', '#60a5fa', '#a78bfa'];
 const EASE = [0.16, 1, 0.3, 1] as const;
-
-// Each card reveals at this scroll threshold (0–1 across the whole timeline)
 const CARD_THRESHOLDS = [0.02, 0.42, 0.70];
 
-/* ── Ghost year parallax ── */
+/* ── Ghost year ── */
 function GhostYear({ year, color }: { year: string; color: string }) {
   return (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden rounded-3xl">
@@ -47,9 +45,11 @@ function Card({ edition, accent, isRtl, t, visible, fromLeft }: {
       style={{
         background: edition.current
           ? 'linear-gradient(135deg,rgba(6,182,212,0.08),rgba(59,130,246,0.08),rgba(139,92,246,0.08))'
-          : 'rgba(255,255,255,0.03)',
-        border: edition.current ? '1px solid rgba(96,165,250,0.3)' : '1px solid rgba(255,255,255,0.07)',
-        boxShadow: edition.current ? '0 0 40px rgba(96,165,250,0.07)' : 'none',
+          : 'var(--mat-liquid-bg)',
+        border: edition.current
+          ? '1px solid rgba(96,165,250,0.3)'
+          : '1px solid var(--mat-liquid-border)',
+        boxShadow: edition.current ? '0 0 40px rgba(96,165,250,0.07)' : 'var(--mat-liquid-shadow)',
       }}
       initial={{ opacity: 0, x: fromLeft ? -50 : 50 }}
       animate={visible ? { opacity: 1, x: 0 } : { opacity: 0, x: fromLeft ? -50 : 50 }}
@@ -76,8 +76,8 @@ function Card({ edition, accent, isRtl, t, visible, fromLeft }: {
         </motion.div>
 
         <motion.h3
-          className="font-outfit font-bold text-white leading-snug mb-3"
-          style={{ fontSize: 'clamp(1.2rem,2.2vw,1.5rem)' }}
+          className="font-outfit font-bold leading-snug mb-3"
+          style={{ fontSize: 'clamp(1.2rem,2.2vw,1.5rem)', color: 'var(--text-primary)' }}
           initial={{ opacity: 0, y: 12 }}
           animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
           transition={{ duration: 0.5, delay: 0.22, ease: EASE }}
@@ -86,7 +86,8 @@ function Card({ edition, accent, isRtl, t, visible, fromLeft }: {
         </motion.h3>
 
         <motion.p
-          className="text-[13px] text-white/50 leading-relaxed mb-5"
+          className="text-[13px] leading-relaxed mb-5"
+          style={{ color: 'var(--text-secondary)' }}
           initial={{ opacity: 0, y: 10 }}
           animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
           transition={{ duration: 0.5, delay: 0.32, ease: EASE }}
@@ -106,7 +107,7 @@ function Card({ edition, accent, isRtl, t, visible, fromLeft }: {
             <span className="opacity-70">{t('history.attendeesLabel')}</span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
-            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
+            style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)', color: 'var(--text-secondary)' }}>
             <span className="font-bold">{edition.speakers}</span>
             <span className="opacity-70">{t('history.speakersLabel')}</span>
           </div>
@@ -119,21 +120,20 @@ function Card({ edition, accent, isRtl, t, visible, fromLeft }: {
 /* ── Main export ── */
 export default function HistoryTimeline() {
   const { t, tx, dir } = useLang();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const isRtl = dir === 'rtl';
   const editions = tx<Edition[]>('history.editions') || [];
 
-  // Scroll tracking for the whole timeline
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start 10%', 'end 90%'],
   });
 
-  // Smooth spring for the line so it feels physical
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 60, damping: 20, restDelta: 0.001 });
   const lineScaleY = useTransform(smoothProgress, [0, 1], [0, 1]);
 
-  // Track current scroll for card reveals
   const [progress, setProgress] = useState(0);
   useMotionValueEvent(scrollYProgress, 'change', (v) => setProgress(v));
 
@@ -141,42 +141,59 @@ export default function HistoryTimeline() {
     <section id="history" className="min-h-screen" style={{ background: 'var(--bg-base)' }}>
 
       {/* ── Hero header ── */}
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-        {/* Starfield background */}
-        <Starfield
-          starColor="rgba(255,255,255,0.8)"
-          bgColor="#000000"
-          speed={0.5}
-          quantity={300}
-          opacity={1}
-        />
-        {/* Subtle radial glow */}
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ background: 'var(--bg-base)' }}>
+
+        {/* Starfield — dark mode only */}
+        {!isLight && (
+          <Starfield
+            starColor="rgba(255,255,255,0.8)"
+            bgColor="#000000"
+            speed={0.5}
+            quantity={300}
+            opacity={1}
+          />
+        )}
+
+        {/* Light mode subtle decoration */}
+        {isLight && (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.04] via-transparent to-rose-500/[0.04]" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse, rgba(59,130,246,0.07) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+          </>
+        )}
+
         <div
           className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(96,165,250,0.08) 0%, transparent 70%)' }}
         />
-      <div className="relative z-10 text-center px-6 py-20 max-w-4xl mx-auto w-full" dir={isRtl ? 'rtl' : 'ltr'}>
-        <h1 className="font-outfit font-bold leading-[0.9] tracking-tight mb-6"
-          style={{ fontSize: 'clamp(3rem,7vw,6rem)' }}>
-          <motion.span className="block text-white"
-            initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, duration: 0.8, ease: EASE }}>
-            {t('history.titleA')}
-          </motion.span>
-          <motion.span
-            className="block gradient-text pt-[0.2em] pb-[0.35em] leading-[1.1]"
-            initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45, duration: 0.8, ease: EASE }}>
-            {t('history.titleB')}
-          </motion.span>
-        </h1>
 
-        <motion.p className="text-base md:text-lg text-white/45 max-w-xl mx-auto leading-relaxed"
-          initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.65, duration: 0.6 }}>
-          {t('history.subtitle')}
-        </motion.p>
-      </div>
+        <div className="relative z-10 text-center px-6 py-20 max-w-4xl mx-auto w-full" dir={isRtl ? 'rtl' : 'ltr'}>
+          <h1 className="font-outfit font-bold leading-[0.9] tracking-tight mb-6"
+            style={{ fontSize: 'clamp(3rem,7vw,6rem)' }}>
+            <motion.span
+              className="block"
+              style={{ color: 'var(--text-primary)' }}
+              initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25, duration: 0.8, ease: EASE }}>
+              {t('history.titleA')}
+            </motion.span>
+            <motion.span
+              className="block gradient-text pt-[0.2em] pb-[0.35em] leading-[1.1]"
+              initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45, duration: 0.8, ease: EASE }}>
+              {t('history.titleB')}
+            </motion.span>
+          </h1>
+
+          <motion.p
+            className="text-base md:text-lg max-w-xl mx-auto leading-relaxed"
+            style={{ color: 'var(--text-secondary)' }}
+            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.65, duration: 0.6 }}>
+            {t('history.subtitle')}
+          </motion.p>
+        </div>
       </div>
 
       {/* ── Timeline ── */}
@@ -185,7 +202,7 @@ export default function HistoryTimeline() {
         {/* Faint background line */}
         <div
           className="hidden lg:block absolute top-0 bottom-0 w-px pointer-events-none"
-          style={{ left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,255,255,0.07)' }}
+          style={{ left: '50%', transform: 'translateX(-50%)', background: 'var(--mat-liquid-border)' }}
         />
 
         {/* Animated progress line */}
@@ -200,7 +217,7 @@ export default function HistoryTimeline() {
           }}
         />
 
-        {/* ── Start node — top of line ── */}
+        {/* Start node */}
         <div className="hidden lg:block absolute top-0 left-1/2 -translate-x-1/2 z-10">
           <motion.div
             className="relative flex items-center justify-center"
@@ -209,14 +226,12 @@ export default function HistoryTimeline() {
             viewport={{ once: true, margin: '0px' }}
             transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
           >
-            {/* Pulsing ring */}
             <motion.div
               className="absolute w-8 h-8 rounded-full"
               style={{ background: 'rgba(103,232,249,0.12)', border: '1px solid rgba(103,232,249,0.3)' }}
               animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             />
-            {/* Dot */}
             <div
               className="w-3 h-3 rounded-full"
               style={{ background: '#67e8f9', boxShadow: '0 0 16px #67e8f990' }}
@@ -239,8 +254,6 @@ export default function HistoryTimeline() {
               >
                 {/* Desktop layout */}
                 <div className="hidden lg:flex items-start w-full">
-
-                  {/* Left half */}
                   <div className="w-[calc(50%-14px)] flex justify-end pr-10">
                     {!cardOnRight && (
                       <div className="w-full max-w-[420px]">
@@ -249,9 +262,7 @@ export default function HistoryTimeline() {
                     )}
                   </div>
 
-                  {/* Node + floating year */}
                   <div className="w-[28px] shrink-0 flex justify-center pt-8 relative">
-                    {/* Year label beside node */}
                     <motion.span
                       className="absolute top-6 font-outfit font-black text-sm whitespace-nowrap"
                       style={{
@@ -269,14 +280,13 @@ export default function HistoryTimeline() {
 
                     <motion.div
                       className="w-5 h-5 rounded-full border-2"
-                      style={{ borderColor: accent, background: '#030712', boxShadow: visible ? `0 0 20px ${accent}90` : 'none' }}
+                      style={{ borderColor: accent, background: 'var(--bg-base)', boxShadow: visible ? `0 0 20px ${accent}90` : 'none' }}
                       initial={{ scale: 0, opacity: 0 }}
                       animate={visible ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
                       transition={{ duration: 0.45, ease: [0.34, 1.56, 0.64, 1] }}
                     />
                   </div>
 
-                  {/* Right half */}
                   <div className="w-[calc(50%-14px)] flex justify-start pl-10">
                     {cardOnRight && (
                       <div className="w-full max-w-[420px]">
@@ -291,7 +301,7 @@ export default function HistoryTimeline() {
                   <div className="flex flex-col items-center pt-7 shrink-0">
                     <motion.div
                       className="w-3 h-3 rounded-full border-2 shrink-0"
-                      style={{ borderColor: accent, background: '#030712' }}
+                      style={{ borderColor: accent, background: 'var(--bg-base)' }}
                       initial={{ scale: 0 }} animate={visible ? { scale: 1 } : { scale: 0 }}
                       transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
                     />
@@ -310,7 +320,7 @@ export default function HistoryTimeline() {
         </div>
       </div>
 
-      {/* ── 5th edition node — line terminates here ── */}
+      {/* ── Terminal node ── */}
       <div className="hidden lg:flex justify-center -mt-2 mb-2 relative z-10">
         <motion.div
           className="relative flex items-center justify-center"
@@ -318,31 +328,28 @@ export default function HistoryTimeline() {
           animate={progress >= 0.95 ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
           transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
         >
-          {/* Outer glow ring */}
           <motion.div
             className="absolute w-10 h-10 rounded-full"
             style={{ background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)' }}
             animate={progress >= 0.95 ? { scale: [1, 1.4, 1], opacity: [0.6, 0, 0.6] } : {}}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           />
-          {/* Node dot */}
           <div
             className="w-5 h-5 rounded-full border-2"
-            style={{ borderColor: '#a78bfa', background: '#030712', boxShadow: '0 0 24px #a78bfa90' }}
+            style={{ borderColor: '#a78bfa', background: 'var(--bg-base)', boxShadow: '0 0 24px #a78bfa90' }}
           />
         </motion.div>
       </div>
 
-      {/* ── Sparkles Finale ── */}
+      {/* ── Sparkles Finale — always dark ── */}
       <div className="max-w-5xl mx-auto px-6 pb-32">
         <motion.div
           className="relative rounded-3xl overflow-hidden"
-          style={{ height: '380px' }}
+          style={{ height: '380px', background: '#0a0a12' }}
           initial={{ opacity: 0, y: 40 }}
           animate={progress >= 0.95 ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
           transition={{ duration: 0.9, ease: EASE }}
         >
-          {/* Sparkles background */}
           <SparklesCore
             background="transparent"
             minSize={0.6}
@@ -352,14 +359,11 @@ export default function HistoryTimeline() {
             speed={1.2}
             className="absolute inset-0 w-full h-full"
           />
-
-          {/* Radial glow */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(96,165,250,0.12) 0%, transparent 70%)' }}
           />
 
-          {/* Content — 4th edition finale */}
           {editions[3] && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10" dir={isRtl ? 'rtl' : 'ltr'}>
               <motion.div
@@ -400,7 +404,6 @@ export default function HistoryTimeline() {
                 {editions[3].desc}
               </motion.p>
 
-              {/* Quote line */}
               <motion.p
                 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/35 mt-4 mb-1"
                 initial={{ opacity: 0 }}
@@ -430,7 +433,6 @@ export default function HistoryTimeline() {
             </div>
           )}
 
-          {/* Bottom border glow */}
           <div
             className="absolute bottom-0 left-0 right-0 h-px"
             style={{ background: 'linear-gradient(to right, transparent, #06b6d4, #3b82f6, #8b5cf6, transparent)' }}

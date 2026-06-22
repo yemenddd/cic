@@ -9,11 +9,7 @@ import { ACHIEVEMENT_EDITIONS, type AchievementStudent } from '@/lib/achievement
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-// photos[0] = student portrait · photos[1,2] = project photos
-
-function Avatar({
-  src, name, color, size,
-}: { src: string; name: string; color: string; size: number }) {
+function Avatar({ src, name, color, size }: { src: string; name: string; color: string; size: number }) {
   const [failed, setFailed] = useState(false);
   return (
     <div
@@ -22,8 +18,7 @@ function Avatar({
     >
       {!failed ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={name} className="w-full h-full object-cover"
-          onError={() => setFailed(true)} />
+        <img src={src} alt={name} className="w-full h-full object-cover" onError={() => setFailed(true)} />
       ) : (
         <User size={size * 0.45} style={{ color, opacity: 0.7 }} />
       )}
@@ -35,11 +30,10 @@ function ProjectPhoto({ src, color }: { src: string; color: string }) {
   const [failed, setFailed] = useState(false);
   return (
     <div className="aspect-[4/3] rounded-xl overflow-hidden flex items-center justify-center"
-      style={{ background: 'rgba(255,255,255,0.06)' }}>
+      style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)' }}>
       {!failed ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt="" className="w-full h-full object-cover"
-          onError={() => setFailed(true)} />
+        <img src={src} alt="" className="w-full h-full object-cover" onError={() => setFailed(true)} />
       ) : (
         <Users size={28} style={{ color, opacity: 0.35 }} />
       )}
@@ -47,7 +41,7 @@ function ProjectPhoto({ src, color }: { src: string; color: string }) {
   );
 }
 
-// ── Card 1: Individual innovator ────────────────────────────────────────────
+/* ── Individual innovator ── */
 function IndividualCard({ student, index }: { student: AchievementStudent; index: number }) {
   const { lang } = useLang();
   return (
@@ -55,34 +49,36 @@ function IndividualCard({ student, index }: { student: AchievementStudent; index
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.42, delay: index * 0.055, ease: EASE }}
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-4 rounded-2xl p-5"
+      style={{
+        background: 'var(--mat-liquid-bg)',
+        border: '1px solid var(--mat-liquid-border)',
+        boxShadow: 'var(--mat-liquid-shadow)',
+      }}
     >
-      {/* Student identity */}
       <div className="flex items-center gap-3">
         <Avatar src={student.photos[0]} name={student.name} color={student.color} size={52} />
         <div className="flex-1 min-w-0">
-          <p className="font-outfit font-bold text-white text-[15px] leading-tight truncate">
+          <p className="font-outfit font-bold text-[15px] leading-tight truncate" style={{ color: 'var(--text-primary)' }}>
             {student.name}
           </p>
-          <p className="text-[12px] text-white/40 leading-snug mt-0.5 line-clamp-2">
+          <p className="text-[12px] leading-snug mt-0.5 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
             {lang === 'ar' ? student.projectAr : student.projectEn}
           </p>
         </div>
       </div>
 
-      <div className="h-px bg-white/[0.06]" />
+      <div className="h-px" style={{ background: 'var(--mat-liquid-border)' }} />
 
-      {/* 2 project photos */}
       <div className="grid grid-cols-2 gap-2">
         <ProjectPhoto src={student.photos[1]} color={student.color} />
         <ProjectPhoto src={student.photos[2]} color={student.color} />
       </div>
-
     </motion.div>
   );
 }
 
-// ── Card 2: Team innovator (full-width) ──────────────────────────────────────
+/* ── Team innovator ── */
 function TeamCard({ student, index }: { student: AchievementStudent; index: number }) {
   const { lang } = useLang();
   const members = student.members ?? [];
@@ -91,38 +87,41 @@ function TeamCard({ student, index }: { student: AchievementStudent; index: numb
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: index * 0.055, ease: EASE }}
-      className="sm:col-span-2 flex flex-col-reverse sm:flex-row-reverse gap-5 items-start"
+      className="sm:col-span-2 flex flex-col-reverse sm:flex-row-reverse gap-5 items-start rounded-2xl p-5"
+      style={{
+        background: 'var(--mat-liquid-bg)',
+        border: '1px solid var(--mat-liquid-border)',
+        boxShadow: 'var(--mat-liquid-shadow)',
+      }}
     >
-      {/* Project photos */}
       <div className="w-full sm:w-[45%] shrink-0 grid grid-cols-2 gap-2">
         <ProjectPhoto src={student.photos[1]} color={student.color} />
         <ProjectPhoto src={student.photos[2]} color={student.color} />
       </div>
 
-      {/* Members + project info */}
       <div className="flex-1 flex flex-col gap-3">
         <div className="flex items-center gap-1.5">
-          <Users size={11} className="text-white/30 shrink-0" />
-          <span className="text-[9px] font-bold tracking-widest uppercase text-white/30">فريق</span>
+          <Users size={11} className="shrink-0" style={{ color: 'var(--text-tertiary)' }} />
+          <span className="text-[9px] font-bold tracking-widest uppercase" style={{ color: 'var(--text-tertiary)' }}>فريق</span>
         </div>
 
-        <p className="font-outfit font-bold text-white text-[17px] leading-snug">
+        <p className="font-outfit font-bold text-[17px] leading-snug" style={{ color: 'var(--text-primary)' }}>
           {student.name}
         </p>
-        <p className="text-[13px] text-white/45 leading-relaxed">
+        <p className="text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
           {lang === 'ar' ? student.projectAr : student.projectEn}
         </p>
 
-        <div className="h-px bg-white/[0.06]" />
+        <div className="h-px" style={{ background: 'var(--mat-liquid-border)' }} />
 
-        {/* Members */}
         <div className="flex flex-col gap-2">
           {members.map((member, i) => (
             <div key={i} className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 bg-white/[0.06]">
-                <User size={13} className="text-white/40" />
+              <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+                style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)' }}>
+                <User size={13} style={{ color: 'var(--text-tertiary)' }} />
               </div>
-              <span className="text-[13px] text-white/60">{member}</span>
+              <span className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>{member}</span>
             </div>
           ))}
         </div>
@@ -131,7 +130,7 @@ function TeamCard({ student, index }: { student: AchievementStudent; index: numb
   );
 }
 
-// ── Card 3: Researcher — horizontal (photo | name + title) ──────────────────
+/* ── Researcher ── */
 function ResearcherCard({ student, index }: { student: AchievementStudent; index: number }) {
   const { lang } = useLang();
   const title = lang === 'ar' ? student.projectAr : student.projectEn;
@@ -140,27 +139,29 @@ function ResearcherCard({ student, index }: { student: AchievementStudent; index
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.42, delay: index * 0.055, ease: EASE }}
-      className="flex items-center gap-5"
+      className="flex items-center gap-5 rounded-2xl p-4"
+      style={{
+        background: 'var(--mat-liquid-bg)',
+        border: '1px solid var(--mat-liquid-border)',
+        boxShadow: 'var(--mat-liquid-shadow)',
+      }}
     >
-      {/* Circular photo */}
       <div className="relative shrink-0">
-        <div className="absolute inset-0 rounded-full blur-md opacity-25"
-          style={{ background: student.color }} />
+        <div className="absolute inset-0 rounded-full blur-md opacity-25" style={{ background: student.color }} />
         <div className="relative w-16 h-16 rounded-full overflow-hidden"
           style={{ boxShadow: `0 0 0 2px ${student.color}44` }}>
           <Avatar src={student.photos[0]} name={student.name} color={student.color} size={64} />
         </div>
       </div>
 
-      {/* Name + title */}
       <div className="flex-1 min-w-0">
-        <p className="font-outfit font-bold text-white text-[15px] leading-tight mb-1.5">
+        <p className="font-outfit font-bold text-[15px] leading-tight mb-1.5" style={{ color: 'var(--text-primary)' }}>
           {student.name}
         </p>
         <div className="flex items-start gap-1.5">
           <Quote size={10} style={{ color: student.color }} className="shrink-0 mt-0.5 opacity-50" />
           <p className="text-[12px] leading-relaxed line-clamp-3"
-            style={{ color: 'rgba(255,255,255,0.45)', fontStyle: 'italic' }}>
+            style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>
             {title}
           </p>
         </div>
@@ -169,7 +170,7 @@ function ResearcherCard({ student, index }: { student: AchievementStudent; index
   );
 }
 
-// ── Section heading ──────────────────────────────────────────────────────────
+/* ── Section heading ── */
 function SectionHeading({ label }: { label: string }) {
   return (
     <h2 className="font-outfit font-black mb-8"
@@ -187,7 +188,7 @@ function SectionHeading({ label }: { label: string }) {
   );
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
+/* ── Page ── */
 export default function EditionAchievements({ slug }: { slug: string }) {
   const { t, lang } = useLang();
   const isRtl = lang === 'ar';
@@ -195,36 +196,41 @@ export default function EditionAchievements({ slug }: { slug: string }) {
   const edition = ACHIEVEMENT_EDITIONS.find(e => e.slug === slug);
   if (!edition) return null;
 
-  const innovators   = edition.students.filter(s => s.role === 'innovator');
-  const researchers  = edition.students.filter(s => s.role === 'participant');
-  const labelKey     = `achievements.edition${edition.number}Label`;
-  const yearKey      = `achievements.edition${edition.number}Year`;
-
-  const solo  = innovators.filter(s => !s.members);
-  const teams = innovators.filter(s => s.members);
+  const innovators  = edition.students.filter(s => s.role === 'innovator');
+  const researchers = edition.students.filter(s => s.role === 'participant');
+  const labelKey    = `achievements.edition${edition.number}Label`;
+  const yearKey     = `achievements.edition${edition.number}Year`;
+  const solo        = innovators.filter(s => !s.members);
+  const teams       = innovators.filter(s => s.members);
 
   return (
     <section
-      className="min-h-screen bg-black pt-28 pb-24 px-5 md:px-8"
+      className="min-h-screen pt-28 pb-24 px-5 md:px-8"
+      style={{ background: 'var(--bg-base)' }}
       dir={isRtl ? 'rtl' : 'ltr'}
     >
       <div className="max-w-6xl mx-auto">
 
-        {/* ── Back ── */}
+        {/* Back */}
         <motion.div
           initial={{ opacity: 0, x: isRtl ? 12 : -12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.38, ease: EASE }}
           className="mb-10"
         >
-          <Link href="/achievements"
-            className="inline-flex items-center gap-2 text-[13px] text-white/35 hover:text-white transition-colors duration-200">
+          <Link
+            href="/achievements"
+            className="inline-flex items-center gap-2 text-[13px] transition-colors duration-200"
+            style={{ color: 'var(--text-tertiary)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
+          >
             <ArrowLeft size={14} className={isRtl ? 'rotate-180' : ''} />
             {t('achievements.back')}
           </Link>
         </motion.div>
 
-        {/* ── Title ── */}
+        {/* Title */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -232,27 +238,25 @@ export default function EditionAchievements({ slug }: { slug: string }) {
           className="mb-14"
         >
           <div className="flex items-baseline justify-center gap-4 flex-wrap">
-            <h1 className="font-outfit font-black text-white leading-none"
-              style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}>
+            <h1 className="font-outfit font-black leading-none"
+              style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', color: 'var(--text-primary)' }}>
               {t(labelKey)}
             </h1>
-            <span className="font-outfit font-black text-white/20 leading-none"
-              style={{ fontSize: 'clamp(1.4rem, 3.5vw, 2.5rem)' }}>
+            <span className="font-outfit font-black leading-none"
+              style={{ fontSize: 'clamp(1.4rem, 3.5vw, 2.5rem)', color: 'var(--text-tertiary)' }}>
               {t(yearKey)}
             </span>
           </div>
         </motion.div>
 
-        {/* ── Innovators ── */}
+        {/* Innovators */}
         {innovators.length > 0 && (
           <div className="mb-14">
             <SectionHeading label={t('achievements.innovatorsSection')} />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {/* Individual cards */}
               {solo.map((s, i) => (
                 <IndividualCard key={s.id} student={s} index={i} />
               ))}
-              {/* Team cards — span both columns */}
               {teams.map((s, i) => (
                 <TeamCard key={s.id} student={s} index={solo.length + i} />
               ))}
@@ -260,7 +264,7 @@ export default function EditionAchievements({ slug }: { slug: string }) {
           </div>
         )}
 
-        {/* ── Researchers ── */}
+        {/* Researchers */}
         {researchers.length > 0 && (
           <div>
             <SectionHeading label={t('achievements.participantsSection')} />

@@ -1,15 +1,15 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { motion, useScroll, useMotionValueEvent, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Lightbulb, FlaskConical, Users, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useLang } from '@/lib/i18n';
 import CircularGallerySection from '@/components/sections/CircularGallerySection';
 
-/* ─── Animated counter — resets and replays every time it enters view ─── */
-function Counter({ target, suffix = '', prefix = '', visible }: { target: number; suffix?: string; prefix?: string; visible: boolean }) {
+/* ─── Animated counter ─── */
+function Counter({ target, suffix = '', visible }: { target: number; suffix?: string; visible: boolean }) {
   const [count, setCount] = useState(0);
   useEffect(() => {
     if (!visible) { setCount(0); return; }
@@ -26,27 +26,24 @@ function Counter({ target, suffix = '', prefix = '', visible }: { target: number
     id = requestAnimationFrame(step);
     return () => cancelAnimationFrame(id);
   }, [visible, target]);
-  return <>{prefix}{count.toLocaleString('en-US')}{suffix}</>;
+  return <>{count.toLocaleString('en-US')}{suffix}</>;
 }
 
-/* ─── Section scroll hook ─── */
-function useSection() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  const [p, setP] = useState(0);
-  useMotionValueEvent(scrollYProgress, 'change', setP);
-  const reveal = (t: number) => ({
-    initial: { opacity: 0, y: 28 },
-    animate: { opacity: p >= t ? 1 : 0, y: p >= t ? 0 : 28 },
-    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
-  });
-  const revealWord = (t: number) => ({
-    initial: { opacity: 0, y: 56 },
-    animate: { opacity: p >= t ? 1 : 0, y: p >= t ? 0 : 56 },
-    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const },
-  });
-  return { ref, p, scrollYProgress, reveal, revealWord };
-}
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+const inView = (delay = 0) => ({
+  initial:     { opacity: 0, y: 28 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport:    { once: true, amount: 0.2 },
+  transition:  { duration: 0.55, delay, ease: EASE },
+});
+
+const inViewWord = (delay = 0) => ({
+  initial:     { opacity: 0, y: 56 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport:    { once: true, amount: 0.2 },
+  transition:  { duration: 0.7, delay, ease: EASE },
+});
 
 /* ─── Elegant floating shape ─── */
 function ElegantShape({
@@ -82,10 +79,10 @@ function ElegantShape({
             "absolute inset-0 rounded-full",
             "bg-gradient-to-r to-transparent",
             gradient,
-            "backdrop-blur-[2px] border-2 border-white/[0.15]",
-            "shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]",
+            "backdrop-blur-[2px] border-2 border-white/[0.12]",
+            "shadow-[0_8px_32px_0_rgba(255,255,255,0.06)]",
             "after:absolute after:inset-0 after:rounded-full",
-            "after:bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2),transparent_70%)]",
+            "after:bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.15),transparent_70%)]",
           )}
         />
       </motion.div>
@@ -96,7 +93,7 @@ function ElegantShape({
 /* ─── Grid background ─── */
 const Grid = () => (
   <div className="absolute inset-0 z-0 pointer-events-none" style={{
-    backgroundImage: 'linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px)',
+    backgroundImage: 'linear-gradient(var(--mat-liquid-border) 1px, transparent 1px), linear-gradient(to right, var(--mat-liquid-border) 1px, transparent 1px)',
     backgroundSize: '3rem 3rem',
     maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black, transparent)',
     WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black, transparent)',
@@ -107,21 +104,20 @@ const PILLAR_ICONS = [Lightbulb, FlaskConical, Users];
 const PILLAR_COLORS = ['#67e8f9', '#818cf8', '#a78bfa'];
 
 const STAT_META = [
-  { target: 4,   suffix: '',  color: '#67e8f9', colorB: '#3b82f6' },
-  { target: 500, suffix: '+', color: '#818cf8', colorB: '#6366f1' },
-  { target: 12,  suffix: '+', color: '#60a5fa', colorB: '#06b6d4' },
-  { target: 4,   suffix: '',  color: '#a78bfa', colorB: '#8b5cf6' },
+  { target: 4,   suffix: '' },
+  { target: 500, suffix: '+' },
+  { target: 12,  suffix: '+' },
+  { target: 4,   suffix: '' },
 ];
 
 /* ─────────────────────────────────────────
    SECTION 1 — Hero
 ───────────────────────────────────────── */
 function HeroSection() {
-  const { ref } = useSection();
   const { t, dir } = useLang();
   return (
-    <div ref={ref} className="relative h-screen">
-      <div className="h-full w-full flex items-center justify-center overflow-hidden bg-[#030712]">
+    <div className="relative h-screen">
+      <div className="h-full w-full flex items-center justify-center overflow-hidden" style={{ background: 'var(--bg-base)' }}>
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.05] via-transparent to-rose-500/[0.05] blur-3xl" />
         <div className="absolute inset-0 overflow-hidden">
           <ElegantShape delay={0.3} width={600} height={140} rotate={12} gradient="from-indigo-500/[0.15]" className="left-[-10%] md:left-[-5%] top-[15%] md:top-[20%]" />
@@ -130,16 +126,19 @@ function HeroSection() {
           <ElegantShape delay={0.6} width={200} height={60} rotate={20} gradient="from-amber-500/[0.15]" className="right-[15%] md:right-[20%] top-[10%] md:top-[15%]" />
           <ElegantShape delay={0.7} width={150} height={40} rotate={-25} gradient="from-cyan-500/[0.15]" className="left-[20%] md:left-[25%] top-[5%] md:top-[10%]" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#030712] via-transparent to-[#030712]/80 pointer-events-none" />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'linear-gradient(to top, var(--bg-base) 0%, transparent 40%, var(--bg-base) 85%)' }}
+        />
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto" dir={dir}>
-
           <h1 className="font-outfit font-bold leading-[0.88] tracking-tight mb-8"
             style={{ fontSize: 'clamp(4rem, 10vw, 9rem)' }}>
             <motion.span
-              className="block text-white"
+              className="block"
+              style={{ color: 'var(--text-primary)' }}
               initial={{ opacity: 0, y: 56 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ delay: 0.2, duration: 0.8, ease: EASE }}
             >
               {t('about.heroWord1')}
             </motion.span>
@@ -147,21 +146,20 @@ function HeroSection() {
               className="block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
               initial={{ opacity: 0, y: 56 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ delay: 0.5, duration: 0.8, ease: EASE }}
             >
               {t('about.heroWord2')}
             </motion.span>
           </h1>
-
           <motion.p
-            className="text-lg md:text-xl text-white/50 max-w-xl mx-auto leading-relaxed"
+            className="text-lg md:text-xl max-w-xl mx-auto leading-relaxed"
+            style={{ color: 'var(--text-secondary)' }}
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.85, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ delay: 0.85, duration: 0.6, ease: EASE }}
           >
             {t('about.heroTagline')}
           </motion.p>
-
         </div>
       </div>
     </div>
@@ -172,87 +170,83 @@ function HeroSection() {
    SECTION 2 — Mission / Story
 ───────────────────────────────────────── */
 function MissionSection() {
-  const { ref, reveal, revealWord, scrollYProgress } = useSection();
   const { t, dir } = useLang();
-  const mapX = useTransform(scrollYProgress, [0, 0.55], [750, 0]);
-  const mapOpacity = useTransform(scrollYProgress, [0, 0.15, 1], [0, 1, 1]);
   return (
-    <div ref={ref} className="relative h-[130vh]" style={{ overflowX: 'clip' }}>
-      <div className="sticky top-0 h-screen w-full flex items-center" style={{ background: 'var(--bg-base)' }}>
+    <div className="relative" style={{ background: '#ffffff' }}>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute right-0 top-0 w-1/2 h-full"
+          style={{ background: 'radial-gradient(ellipse 60% 50% at 80% 50%, rgba(59,130,246,0.07) 0%, transparent 70%)' }} />
+        <div className="absolute left-0 bottom-0 w-[400px] h-[400px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+      </div>
 
-        {/* Background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute right-0 top-0 w-1/2 h-full"
-            style={{ background: 'radial-gradient(ellipse 60% 50% at 80% 50%, rgba(59,130,246,0.07) 0%, transparent 70%)' }} />
-          <div className="absolute left-0 bottom-0 w-[400px] h-[400px] rounded-full"
-            style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%)', filter: 'blur(80px)' }} />
-        </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full py-20 md:py-32">
+        <div className={`flex flex-col ${dir === 'rtl' ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-10 lg:gap-20`}>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full py-16" dir="ltr">
-          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-20">
+          {/* Yemen map */}
+          <motion.div
+            className="flex shrink-0 w-[220px] sm:w-[320px] lg:w-[460px] items-center justify-center"
+            initial={{ opacity: 0, x: dir === 'rtl' ? 60 : -60 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.8, ease: EASE }}
+          >
+            <img
+              src="/images/logos/yemen.png"
+              alt="Yemen map"
+              loading="lazy"
+              decoding="async"
+              className="w-full h-auto object-contain drop-shadow-[0_0_60px_rgba(59,130,246,0.15)]"
+            />
+          </motion.div>
 
-            {/* Yemen map */}
-            <motion.div
-              className="flex shrink-0 w-[240px] sm:w-[350px] lg:w-[480px] items-center justify-center relative"
-              style={{ x: mapX, opacity: mapOpacity }}
-            >
-              <img
-                src="/images/logos/yemen.png"
-                alt="Yemen map"
-                loading="lazy"
-                decoding="async"
-                className="w-full h-auto object-contain drop-shadow-[0_0_60px_rgba(59,130,246,0.15)]"
-              />
+          {/* Text */}
+          <div className="flex-1" dir={dir}>
+            <h2 className="font-outfit font-bold tracking-tight mb-10"
+              style={{ fontSize: 'clamp(2.2rem, 4.5vw, 4rem)' }}>
+              <motion.span
+                className="block"
+                style={{
+                  lineHeight: 1,
+                  paddingTop: '0.15em',
+                  paddingBottom: '0.15em',
+                  background: 'var(--metallic-grad)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+                {...inViewWord(0)}
+              >
+                {t('about.missionTitleA')}
+              </motion.span>
+              <motion.span
+                className="block gradient-text"
+                style={{ lineHeight: 1.1, paddingTop: '0.1em', paddingBottom: '0.3em' }}
+                {...inViewWord(0.1)}
+              >
+                {t('about.missionTitleB')}
+              </motion.span>
+            </h2>
+
+            <motion.div className="space-y-5 max-w-2xl" {...inView(0.15)}>
+              <p className="text-lg leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                {t('about.missionP1')}
+              </p>
+              <p className="text-base leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                {t('about.missionP2')}
+              </p>
             </motion.div>
 
-            {/* Text */}
-            <div className="flex-1" dir={dir}>
-              <h2 className="font-outfit font-bold tracking-tight mb-10"
-                style={{ fontSize: 'clamp(2.2rem, 4.5vw, 4rem)' }}>
-                <motion.span
-                  className="block"
-                  style={{
-                    lineHeight: 1,
-                    paddingTop: '0.15em',
-                    paddingBottom: '0.15em',
-                    background: 'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                  {...revealWord(0.10)}
-                >
-                  {t('about.missionTitleA')}
-                </motion.span>
-                <motion.span
-                  className="block gradient-text"
-                  style={{ lineHeight: 1.1, paddingTop: '0.1em', paddingBottom: '0.3em' }}
-                  {...revealWord(0.18)}
-                >
-                  {t('about.missionTitleB')}
-                </motion.span>
-              </h2>
-
-              <motion.div className="space-y-5 max-w-2xl" {...reveal(0.28)}>
-                <p className="text-lg leading-relaxed" style={{ color: 'rgba(255,255,255,0.70)' }}>
-                  {t('about.missionP1')}
-                </p>
-                <p className="text-base leading-relaxed" style={{ color: 'rgba(255,255,255,0.42)' }}>
-                  {t('about.missionP2')}
-                </p>
-              </motion.div>
-
-              <motion.div className="mt-10" {...reveal(0.38)}>
-                <Link
-                  href="/history"
-                  dir={dir}
-                  className="inline-flex items-center gap-2.5 text-sm font-semibold gradient-text group"
-                >
-                  <ArrowLeft size={15} className="text-blue-400 transition-transform duration-200 group-hover:-translate-x-1" />
-                  {t('about.missionLink')}
-                </Link>
-              </motion.div>
-            </div>
+            <motion.div className="mt-10" {...inView(0.22)}>
+              <Link
+                href="/history"
+                dir={dir}
+                className="inline-flex items-center gap-2.5 text-sm font-semibold gradient-text group"
+              >
+                <ArrowLeft size={15} className="text-blue-400 transition-transform duration-200 group-hover:-translate-x-1" />
+                {t('about.missionLink')}
+              </Link>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -264,159 +258,140 @@ function MissionSection() {
    SECTION 2.5 — President's Speech
 ───────────────────────────────────────── */
 function PresidentSection() {
-  const { ref, p, reveal } = useSection();
   const { t, dir } = useLang();
 
   return (
-    <div ref={ref} className="relative h-[200vh]">
-      <div className="sticky top-0 h-screen w-full overflow-hidden bg-[#020509]">
+    <div className="relative min-h-screen overflow-hidden" style={{ background: '#020509' }}>
 
-        {/* ── Full-bleed photo ── */}
-        <motion.div
-          className="absolute inset-0 z-0"
-          initial={{ scale: 1.06 }}
-          animate={{ scale: p >= 0.04 ? 1 : 1.06 }}
-          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {/* Desktop Image */}
-          <img
-            src="/images/about/president.jpg"
-            alt={t('about.presidentImgAlt')}
-            loading="lazy"
-            decoding="async"
-            className="hidden md:block w-full h-full object-cover"
-            style={{ objectPosition: '30% 20%' }}
-          />
-          {/* Mobile Image */}
-          <img
-            src="/images/about/president-mobile.jpg"
-            alt={t('about.presidentImgAlt')}
-            loading="lazy"
-            decoding="async"
-            className="block md:hidden w-full h-full object-cover"
-            style={{ objectPosition: 'center center' }}
-            onError={(e) => {
-              e.currentTarget.src = "/images/about/president.jpg";
-              e.currentTarget.style.objectPosition = "30% 20%";
-            }}
-          />
-
-          <div className="absolute inset-0" style={{
-            background: 'linear-gradient(to right, rgba(2,5,9,0.4) 0%, transparent 30%)'
-          }} />
-          <div className="absolute inset-0" style={{
-            background: 'linear-gradient(to left, rgba(2,5,9,0.95) 0%, rgba(2,5,9,0.80) 20%, rgba(2,5,9,0.4) 40%, transparent 58%)'
-          }} />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(2,5,9,0.6) 0%, transparent 15%)' }} />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(2,5,9,0.8) 0%, transparent 20%)' }} />
-        </motion.div>
-
-        {/* ── Ambient violet glow behind text panel ── */}
-        <div
-          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 w-[55%] h-[80%] z-0"
-          style={{ background: 'radial-gradient(ellipse 70% 60% at 85% 50%, rgba(139,92,246,0.07) 0%, transparent 70%)' }}
+      {/* Full-bleed photo */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="/images/about/president.jpg"
+          alt={t('about.presidentImgAlt')}
+          loading="lazy"
+          decoding="async"
+          className="hidden md:block w-full h-full object-cover"
+          style={{ objectPosition: '30% 20%' }}
         />
-
-        <div className="relative z-10 h-full">
-          <div className="absolute bottom-16 md:bottom-auto md:top-1/2 md:-translate-y-1/2 left-1/2 md:left-auto -translate-x-1/2 md:translate-x-0 md:right-[12%] lg:right-[18%] w-[92%] md:w-[540px] max-w-[540px] z-10">
-            <motion.div
-              className="p-6 md:p-8 rounded-3xl bg-[#020509]/30 backdrop-blur-lg border border-white/5"
-              dir={dir}
-              {...reveal(0.04)}
-            >
-
-              <motion.h2
-                className="text-white font-bold mb-8 leading-tight"
-                style={{ fontSize: 'clamp(1.8rem, 3vw, 2.8rem)', fontFamily: 'var(--font-thmanyah)' }}
-                {...reveal(0.08)}
-              >
-                {t('about.presidentTitle')}
-              </motion.h2>
-
-              <motion.div
-                className="mb-2 select-none"
-                style={{
-                  fontFamily: 'Georgia, serif',
-                  fontSize: 'clamp(3.5rem, 6vw, 6rem)',
-                  lineHeight: 0.75,
-                  background: 'linear-gradient(135deg, #67e8f9 0%, #60a5fa 50%, #8b5cf6 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  opacity: 0.3,
-                }}
-                {...reveal(0.12)}
-              >
-                &ldquo;
-              </motion.div>
-
-              <div className="space-y-4 mb-8">
-                <motion.p
-                  className="text-white/90 leading-[1.8]"
-                  style={{ fontSize: 'clamp(1.05rem, 1.5vw, 1.25rem)', fontWeight: 500 }}
-                  {...reveal(0.16)}
-                >
-                  {t('about.presidentQ1')}
-                </motion.p>
-                <motion.p
-                  className="text-white/60 leading-[1.8]"
-                  style={{ fontSize: 'clamp(0.9rem, 1.3vw, 1.05rem)', fontWeight: 400 }}
-                  {...reveal(0.22)}
-                >
-                  {t('about.presidentQ2')}
-                </motion.p>
-              </div>
-
-              <motion.div className="flex items-center gap-4" {...reveal(0.28)}>
-                <div
-                  className="w-[3px] rounded-full flex-shrink-0 self-stretch"
-                  style={{ background: 'linear-gradient(to bottom, #67e8f9, #8b5cf6)' }}
-                />
-                <div className="space-y-1">
-                  <p
-                    className="text-white font-bold"
-                    style={{ fontSize: 'clamp(1rem, 1.3vw, 1.15rem)', fontFamily: 'var(--font-thmanyah)' }}
-                  >
-                    {t('about.presidentName')}
-                  </p>
-                  <p className="text-white/55 text-xs md:text-sm leading-relaxed">
-                    {t('about.presidentRole1')}
-                  </p>
-                  <p className="text-white/35 text-xs md:text-sm leading-relaxed">
-                    {t('about.presidentRole2')}
-                  </p>
-                </div>
-              </motion.div>
-
-            </motion.div>
-          </div>
-        </div>
-
-        <div
-          className="pointer-events-none absolute bottom-0 left-0 right-0 h-28 z-20"
-          style={{ background: 'linear-gradient(to top, #030712, transparent)' }}
+        <img
+          src="/images/about/president-mobile.jpg"
+          alt={t('about.presidentImgAlt')}
+          loading="lazy"
+          decoding="async"
+          className="block md:hidden w-full h-full object-cover"
+          style={{ objectPosition: 'center center' }}
+          onError={(e) => {
+            e.currentTarget.src = "/images/about/president.jpg";
+            e.currentTarget.style.objectPosition = "30% 20%";
+          }}
         />
-
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(2,5,9,0.4) 0%, transparent 30%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to left, rgba(2,5,9,0.95) 0%, rgba(2,5,9,0.80) 20%, rgba(2,5,9,0.4) 40%, transparent 58%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(2,5,9,0.6) 0%, transparent 15%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(2,5,9,0.8) 0%, transparent 20%)' }} />
       </div>
+
+      <div
+        className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 w-[55%] h-[80%] z-0"
+        style={{ background: 'radial-gradient(ellipse 70% 60% at 85% 50%, rgba(139,92,246,0.07) 0%, transparent 70%)' }}
+      />
+
+      <div className="relative z-10 flex items-center justify-end min-h-screen px-6 pt-64 pb-20 md:py-20" dir="ltr">
+        <div className="w-full md:w-[540px] max-w-[540px] md:mr-[8%] lg:mr-[14%]">
+          <motion.div
+            className="p-6 md:p-8 rounded-3xl"
+            style={{
+              background:           'rgba(8,10,16,0.80)',
+              backdropFilter:       'blur(24px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+              border:               '1px solid rgba(255,255,255,0.08)',
+            }}
+            dir={dir}
+            {...inView(0)}
+          >
+            <h2
+              className="font-bold mb-8 leading-tight"
+              style={{
+                fontSize: 'clamp(1.8rem, 3vw, 2.8rem)',
+                fontFamily: 'var(--font-thmanyah)',
+                color: '#ffffff',
+              }}
+            >
+              {t('about.presidentTitle')}
+            </h2>
+
+            <div
+              className="mb-2 select-none"
+              style={{
+                fontFamily: 'Georgia, serif',
+                fontSize: 'clamp(3.5rem, 6vw, 6rem)',
+                lineHeight: 0.75,
+                background: 'linear-gradient(135deg, #67e8f9 0%, #60a5fa 50%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                opacity: 0.3,
+              }}
+            >
+              &ldquo;
+            </div>
+
+            <div className="space-y-4 mb-8">
+              <p
+                className="leading-[1.8]"
+                style={{ fontSize: 'clamp(1.05rem, 1.5vw, 1.25rem)', fontWeight: 500, color: 'rgba(255,255,255,0.90)' }}
+              >
+                {t('about.presidentQ1')}
+              </p>
+              <p
+                className="leading-[1.8]"
+                style={{ fontSize: 'clamp(0.9rem, 1.3vw, 1.05rem)', fontWeight: 400, color: 'rgba(255,255,255,0.55)' }}
+              >
+                {t('about.presidentQ2')}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div
+                className="w-[3px] rounded-full flex-shrink-0 self-stretch"
+                style={{ background: 'linear-gradient(to bottom, #67e8f9, #8b5cf6)' }}
+              />
+              <div className="space-y-1">
+                <p
+                  className="font-bold"
+                  style={{ fontSize: 'clamp(1rem, 1.3vw, 1.15rem)', fontFamily: 'var(--font-thmanyah)', color: '#ffffff' }}
+                >
+                  {t('about.presidentName')}
+                </p>
+                <p className="text-xs md:text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                  {t('about.presidentRole1')}
+                </p>
+                <p className="text-xs md:text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  {t('about.presidentRole2')}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
     </div>
   );
 }
 
-
 /* ─────────────────────────────────────────
-   SECTION 3 — Stats (bento)
+   SECTION 3 — Stats
 ───────────────────────────────────────── */
 function StatsSection() {
-  const { ref, p, revealWord } = useSection();
   const { t, tx, dir } = useLang();
   const statsRef = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(false);
+  const [inViewStat, setInViewStat] = useState(false);
 
   useEffect(() => {
     const el = statsRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
+      ([entry]) => setInViewStat(entry.isIntersecting),
       { threshold: 0.4 }
     );
     observer.observe(el);
@@ -427,72 +402,67 @@ function StatsSection() {
   const stats = STAT_META.map((m, i) => ({ ...m, label: statLabels?.[i]?.label ?? '' }));
 
   return (
-    <div ref={ref} className="relative h-[150vh]">
-      <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center" style={{ background: 'var(--bg-base)' }}>
+    <div className="relative py-20 md:py-32" style={{ background: 'var(--bg-base)' }}>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <Grid />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full"
+          style={{ background: 'radial-gradient(ellipse, rgba(59,130,246,0.06) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+      </div>
 
-        {/* Background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <Grid />
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full"
-            style={{ background: 'radial-gradient(ellipse, rgba(59,130,246,0.06) 0%, transparent 70%)', filter: 'blur(40px)' }} />
-        </div>
-
-        <div className="relative z-10 max-w-4xl mx-auto px-6 w-full text-center" dir={dir}>
-
-          <h2 className="font-outfit font-bold tracking-tight mb-16"
-            style={{ fontSize: 'clamp(2.6rem, 5vw, 4.5rem)' }}>
-            <motion.span
-              className="block"
-              style={{
-                lineHeight: 1,
-                paddingTop: '0.15em',
-                paddingBottom: '0.3em',
-                background: 'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-              {...revealWord(0.10)}
-            >
-              {t('about.statsTitleA')}
-            </motion.span>
-            <motion.span
-              className="block gradient-text"
-              style={{ lineHeight: 1.1, paddingTop: '0.1em', paddingBottom: '0.45em' }}
-              {...revealWord(0.17)}
-            >
-              {t('about.statsTitleB')}
-            </motion.span>
-          </h2>
-
-          <motion.div
-            ref={statsRef}
-            className="grid grid-cols-1 sm:grid-cols-4 w-full gap-y-8 sm:gap-y-0"
-            initial={{ opacity: 0, y: 20 }}
-            animate={p >= 0.28 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      <div className="relative z-10 max-w-4xl mx-auto px-6 w-full text-center" dir={dir}>
+        <h2 className="font-outfit font-bold tracking-tight mb-16"
+          style={{ fontSize: 'clamp(2.6rem, 5vw, 4.5rem)' }}>
+          <motion.span
+            className="block"
+            style={{
+              lineHeight: 1,
+              paddingTop: '0.15em',
+              paddingBottom: '0.3em',
+              background: 'var(--metallic-grad)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+            {...inViewWord(0)}
           >
-            {stats.map((stat, i) => (
-              <div key={stat.label} className="flex items-center">
-                <div className="flex flex-col items-center gap-3 px-4 py-2 w-full">
-                  <span
-                    className="font-outfit font-black tabular-nums leading-none text-white"
-                    style={{ fontSize: 'clamp(2.2rem, 4vw, 4.2rem)' }}
-                  >
-                    <Counter target={stat.target} suffix={stat.suffix} visible={inView} />
-                  </span>
-                  <span className="text-base sm:text-lg text-white/50 tracking-[0.06em] uppercase font-medium text-center">
-                    {stat.label}
-                  </span>
-                </div>
-                {i < stats.length - 1 && (
-                  <div className="hidden sm:block w-px h-10 bg-white/10 shrink-0" />
-                )}
-              </div>
-            ))}
-          </motion.div>
+            {t('about.statsTitleA')}
+          </motion.span>
+          <motion.span
+            className="block gradient-text"
+            style={{ lineHeight: 1.1, paddingTop: '0.1em', paddingBottom: '0.45em' }}
+            {...inViewWord(0.1)}
+          >
+            {t('about.statsTitleB')}
+          </motion.span>
+        </h2>
 
-        </div>
+        <motion.div
+          ref={statsRef}
+          className="grid grid-cols-2 sm:grid-cols-4 w-full gap-y-10 sm:gap-y-0"
+          {...inView(0.15)}
+        >
+          {stats.map((stat, i) => (
+            <div key={stat.label} className="flex items-center">
+              <div className="flex flex-col items-center gap-3 px-4 py-2 w-full">
+                <span
+                  className="font-outfit font-black tabular-nums leading-none"
+                  style={{ fontSize: 'clamp(2.2rem, 4vw, 4.2rem)', color: 'var(--text-primary)' }}
+                >
+                  <Counter target={stat.target} suffix={stat.suffix} visible={inViewStat} />
+                </span>
+                <span
+                  className="text-sm sm:text-base tracking-[0.06em] uppercase font-medium text-center"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  {stat.label}
+                </span>
+              </div>
+              {i < stats.length - 1 && (
+                <div className="hidden sm:block w-px h-10 shrink-0" style={{ background: 'var(--mat-liquid-border)' }} />
+              )}
+            </div>
+          ))}
+        </motion.div>
       </div>
     </div>
   );
@@ -502,7 +472,6 @@ function StatsSection() {
    SECTION 4 — Values / Pillars
 ───────────────────────────────────────── */
 function ValuesSection() {
-  const { ref, p, revealWord } = useSection();
   const { t, tx, dir } = useLang();
 
   const pillarData = tx<{ title: string; body: string }[]>('about.pillars');
@@ -514,85 +483,79 @@ function ValuesSection() {
   }));
 
   return (
-    <div ref={ref} className="relative h-[130vh]">
-      <div className="sticky top-0 h-screen w-full flex items-center" style={{ background: 'var(--bg-base)' }}>
+    <div className="relative py-20 md:py-32" style={{ background: 'var(--bg-base)' }}>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[700px] h-[400px] rounded-full"
+          style={{ background: 'radial-gradient(ellipse, rgba(139,92,246,0.08) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+        <div className="absolute right-0 top-1/4 w-[400px] h-[400px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+      </div>
 
-        {/* Background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[700px] h-[400px] rounded-full"
-            style={{ background: 'radial-gradient(ellipse, rgba(139,92,246,0.08) 0%, transparent 70%)', filter: 'blur(60px)' }} />
-          <div className="absolute right-0 top-1/4 w-[400px] h-[400px] rounded-full"
-            style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full" dir={dir}>
+        <div className="text-center mb-10 lg:mb-14">
+          <h2 className="font-outfit font-bold tracking-tight"
+            style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)' }}>
+            <motion.span
+              className="block"
+              style={{
+                lineHeight: 1,
+                paddingTop: '0.15em',
+                paddingBottom: '0.15em',
+                background: 'var(--metallic-grad)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+              {...inViewWord(0)}
+            >
+              {t('about.valsTitleA')}
+            </motion.span>
+            <motion.span
+              className="block gradient-text"
+              style={{ lineHeight: 1.1, paddingTop: '0.1em', paddingBottom: '0.3em' }}
+              {...inViewWord(0.1)}
+            >
+              {t('about.valsTitleB')}
+            </motion.span>
+          </h2>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full py-16" dir={dir}>
-
-          <div className="text-center mb-10 lg:mb-14">
-            <h2 className="font-outfit font-bold tracking-tight"
-              style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)' }}>
-              <motion.span
-                className="block"
+        <div className="grid md:grid-cols-3 gap-4 lg:gap-6">
+          {pillars.map((pillar, i) => (
+            <motion.div
+              key={pillar.title}
+              {...inView(i * 0.1)}
+              className="relative rounded-2xl p-5 lg:p-8 flex flex-col transition-all duration-300 hover:-translate-y-1"
+              style={{
+                background:           'var(--mat-liquid-bg)',
+                backdropFilter:       'blur(20px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                border:               '1px solid var(--mat-liquid-border)',
+                boxShadow:            'var(--mat-liquid-shadow)',
+              }}
+            >
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center mb-5 shrink-0"
                 style={{
-                  lineHeight: 1,
-                  paddingTop: '0.15em',
-                  paddingBottom: '0.15em',
-                  background: 'linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
-                {...revealWord(0.10)}
-              >
-                {t('about.valsTitleA')}
-              </motion.span>
-              <motion.span
-                className="block gradient-text"
-                style={{ lineHeight: 1.1, paddingTop: '0.1em', paddingBottom: '0.3em' }}
-                {...revealWord(0.17)}
-              >
-                {t('about.valsTitleB')}
-              </motion.span>
-            </h2>
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-4 lg:gap-6">
-            {pillars.map((pillar, i) => (
-              <motion.div
-                key={pillar.title}
-                initial={{ opacity: 0, y: 36 }}
-                animate={{ opacity: p >= 0.26 + i * 0.08 ? 1 : 0, y: p >= 0.26 + i * 0.08 ? 0 : 36 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="relative rounded-2xl p-5 lg:p-8 flex flex-col transition-all duration-300 hover:-translate-y-1"
-                style={{
-                  background:  'rgba(15,15,18,0.75)',
-                  backdropFilter: 'blur(20px) saturate(180%)',
-                  WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                  border:      '1px solid rgba(255,255,255,0.08)',
-                  boxShadow:   '0 4px 30px rgba(0,0,0,0.40), inset 0 1px 1px rgba(255,255,255,0.06)',
+                  background: `${pillar.color}15`,
+                  border: `1px solid ${pillar.color}30`,
+                  boxShadow: `0 0 20px ${pillar.color}20`,
                 }}
               >
-                {/* Icon */}
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-5 shrink-0"
-                  style={{
-                    background: `${pillar.color}15`,
-                    border: `1px solid ${pillar.color}30`,
-                    boxShadow: `0 0 20px ${pillar.color}20`,
-                  }}
-                >
-                  <pillar.icon size={18} style={{ color: pillar.color }} />
-                </div>
-                {/* Top accent line */}
-                <div
-                  className="absolute top-0 inset-x-0 h-[1px] rounded-t-2xl"
-                  style={{ background: `linear-gradient(90deg, transparent, ${pillar.color}40, transparent)` }}
-                />
-                <h3 className="font-outfit font-bold text-white text-xl mb-3">{pillar.title}</h3>
-                <p className="text-[14px] leading-relaxed flex-1" style={{ color: 'rgba(255,255,255,0.48)' }}>{pillar.body}</p>
-              </motion.div>
-            ))}
-          </div>
-
+                <pillar.icon size={18} style={{ color: pillar.color }} />
+              </div>
+              <div
+                className="absolute top-0 inset-x-0 h-[1px] rounded-t-2xl"
+                style={{ background: `linear-gradient(90deg, transparent, ${pillar.color}40, transparent)` }}
+              />
+              <h3 className="font-outfit font-bold text-xl mb-3" style={{ color: 'var(--text-primary)' }}>
+                {pillar.title}
+              </h3>
+              <p className="text-[14px] leading-relaxed flex-1" style={{ color: 'var(--text-secondary)' }}>
+                {pillar.body}
+              </p>
+            </motion.div>
+          ))}
         </div>
       </div>
     </div>
@@ -604,7 +567,7 @@ function ValuesSection() {
 ───────────────────────────────────────── */
 export default function AboutPage() {
   return (
-    <main className="bg-[#030712]">
+    <main style={{ background: 'var(--bg-base)' }}>
       <HeroSection />
       <MissionSection />
       <PresidentSection />

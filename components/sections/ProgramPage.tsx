@@ -3,13 +3,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
+import { useTheme } from '@/lib/theme-context';
 import { dict } from '@/lib/dictionary';
 import dynamic from 'next/dynamic';
 
-// Lazy-load particles — only needed after hero section scrolls into view
 const SparklesCore = dynamic(() => import('@/components/ui/sparkles').then(m => ({ default: m.SparklesCore })), { ssr: false });
 
-/* ─── Session card data ─── */
 type Session = {
   readonly time: string;
   readonly title: string;
@@ -19,7 +18,6 @@ type Session = {
   readonly color: string;
 };
 
-/* ─── Collapsed peek offsets (cards stacked behind each other) ─── */
 const COLLAPSED_OFFSETS = [
   'top-6',
   'top-[calc(1.5rem+0.6rem)]',
@@ -27,7 +25,6 @@ const COLLAPSED_OFFSETS = [
   'top-[calc(1.5rem+1.8rem)]',
 ];
 
-/* ─── Expanded offsets: card height (h-36 = 144px) + gap (1rem = 16px) per step ─── */
 const EXPANDED_OFFSETS = [
   'top-6',
   'top-[calc(1.5rem+144px+1rem)]',
@@ -44,27 +41,23 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
   collapseLabel: string;
 }) {
   const [isActive, setIsActive] = useState(false);
-
-  /* total expanded height = n * 144px + (n-1) * 16px + 1.5rem top offset + 40px collapse btn */
   const expandedHeight = sessions.length * 144 + (sessions.length - 1) * 16 + 24 + 40;
 
   return (
     <div className="flex flex-col">
-      {/* Day header */}
       <motion.div
         className="mb-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: day * 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
-        <h2 className="font-outfit font-bold text-white mb-2"
-          style={{ fontSize: 'clamp(1.8rem, 3vw, 2.8rem)' }}>
+        <h2 className="font-outfit font-bold mb-2"
+          style={{ fontSize: 'clamp(1.8rem, 3vw, 2.8rem)', color: 'var(--text-primary)' }}>
           {label}
         </h2>
-        <p className="text-white/40 text-base">{date}</p>
+        <p className="text-base" style={{ color: 'var(--text-secondary)' }}>{date}</p>
       </motion.div>
 
-      {/* Stacked cards wrapper — height animates smoothly via transition */}
       <div
         className="relative w-full cursor-pointer transition-all duration-1000 ease-[cubic-bezier(0.075,0.82,0.165,1)]"
         style={{ height: isActive ? `${expandedHeight}px` : '12.5rem', overflow: isActive ? 'visible' : 'hidden' }}
@@ -76,28 +69,35 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
             className={[
               'absolute right-0 left-0',
               'flex flex-row items-start gap-4',
-              'h-36 rounded-2xl px-4 sm:px-5 pt-4 pb-3 border border-white/[0.07] backdrop-blur-xl',
+              'h-36 rounded-2xl px-4 sm:px-5 pt-4 pb-3 backdrop-blur-xl',
               'transition-all duration-1000 ease-[cubic-bezier(0.075,0.82,0.165,1)]',
-              'hover:border-white/15 hover:bg-white/[0.06]',
               isActive ? EXPANDED_OFFSETS[i] : COLLAPSED_OFFSETS[i],
             ].join(' ')}
-            style={{ background: 'rgba(255,255,255,0.04)', zIndex: sessions.length - i }}
+            style={{
+              background: 'var(--mat-liquid-bg)',
+              border: '1px solid var(--mat-liquid-border)',
+              boxShadow: 'var(--mat-liquid-shadow)',
+              zIndex: sessions.length - i,
+            }}
           >
-            {/* Time — pinned to top */}
-            <span className="shrink-0 font-outfit font-black text-white text-lg sm:text-2xl tabular-nums w-14 sm:w-16 text-right leading-none pt-0.5">
+            <span className="shrink-0 font-outfit font-black text-lg sm:text-2xl tabular-nums w-14 sm:w-16 text-right leading-none pt-0.5"
+              style={{ color: 'var(--text-primary)' }}>
               {session.time}
             </span>
 
-            {/* Content */}
             <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold text-base sm:text-lg leading-snug mb-1 line-clamp-2">
+              <p className="font-semibold text-base sm:text-lg leading-snug mb-1 line-clamp-2"
+                style={{ color: 'var(--text-primary)' }}>
                 {session.title}
               </p>
-              <p className="text-white/55 text-sm sm:text-base truncate">{session.speaker}</p>
-              <p className="text-xs sm:text-sm mt-1 truncate" style={{ color: session.color, opacity: 0.75 }}>{session.role}</p>
+              <p className="text-sm sm:text-base truncate" style={{ color: 'var(--text-secondary)' }}>
+                {session.speaker}
+              </p>
+              <p className="text-xs sm:text-sm mt-1 truncate" style={{ color: session.color, opacity: 0.85 }}>
+                {session.role}
+              </p>
             </div>
 
-            {/* Speaker photo */}
             <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden"
               style={{ border: `1px solid ${session.color}30` }}>
               <img
@@ -111,18 +111,20 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
           </div>
         ))}
 
-        {/* Collapse button */}
         <div
           className={[
             'absolute right-0 transition-all duration-300 ease-in-out',
-            isActive
-              ? 'pointer-events-auto visible opacity-100'
-              : 'pointer-events-none invisible opacity-0',
+            isActive ? 'pointer-events-auto visible opacity-100' : 'pointer-events-none invisible opacity-0',
           ].join(' ')}
           style={{ top: `${expandedHeight - 32}px` }}
           onClick={(e) => { e.stopPropagation(); setIsActive(false); }}
         >
-          <button className="text-[11px] text-white/30 hover:text-white/60 transition-colors uppercase tracking-[0.22em] font-medium">
+          <button
+            className="text-[11px] uppercase tracking-[0.22em] font-medium transition-colors duration-200"
+            style={{ color: 'var(--text-tertiary)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
+          >
             {collapseLabel}
           </button>
         </div>
@@ -134,8 +136,10 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
 /* ─── Main page ─── */
 export default function ProgramPage() {
   const { t, dir, lang } = useLang();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const isRtl = dir === 'rtl';
-  
+
   const scheduleData = dict[lang].schedule;
 
   return (
@@ -144,11 +148,11 @@ export default function ProgramPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
     >
-    <section className="min-h-screen bg-[#030712] relative overflow-x-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
+    <section className="min-h-screen relative overflow-x-hidden" style={{ background: 'var(--bg-base)' }} dir={isRtl ? 'rtl' : 'ltr'}>
 
       {/* Background grid */}
       <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(to right,rgba(255,255,255,0.03) 1px,transparent 1px)',
+        backgroundImage: 'linear-gradient(var(--mat-liquid-border) 1px,transparent 1px),linear-gradient(to right,var(--mat-liquid-border) 1px,transparent 1px)',
         backgroundSize: '4rem 4rem',
         maskImage: 'radial-gradient(ellipse 80% 70% at 50% 30%, black, transparent)',
         WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 30%, black, transparent)',
@@ -158,40 +162,46 @@ export default function ProgramPage() {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full pointer-events-none"
         style={{ background: 'radial-gradient(ellipse, rgba(96,165,250,0.06) 0%, transparent 70%)' }} />
 
-      {/* ── Hero — full screen, title centered ── */}
+      {/* ── Hero ── */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
-        {/* Sparkles behind title */}
-        <SparklesCore
-          className="absolute inset-0 w-full h-full"
-          background="transparent"
-          particleColor="#818cf8"
-          particleDensity={60}
-          minSize={0.4}
-          maxSize={1.2}
-          speed={1.5}
-        />
-          <h1 className="font-outfit font-bold leading-[0.9] tracking-tight mb-6"
-            style={{ fontSize: 'clamp(2.8rem, 6vw, 5.5rem)' }}>
-            <motion.span className="block text-white"
-              initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}>
-              {t('program.titleA')}
-            </motion.span>
-            <motion.span
-              className="block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
-              initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}>
-              {t('program.titleB')}
-            </motion.span>
-          </h1>
 
-          <motion.p
-            className="text-white/40 max-w-md mx-auto text-base leading-relaxed"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.55, duration: 0.6 }}>
-            {t('program.lead')}
-          </motion.p>
+        {/* Sparkles — dark mode only */}
+        {!isLight && (
+          <SparklesCore
+            className="absolute inset-0 w-full h-full"
+            background="transparent"
+            particleColor="#818cf8"
+            particleDensity={60}
+            minSize={0.4}
+            maxSize={1.2}
+            speed={1.5}
+          />
+        )}
 
+        <h1 className="font-outfit font-bold leading-[0.9] tracking-tight mb-6 relative z-10"
+          style={{ fontSize: 'clamp(2.8rem, 6vw, 5.5rem)' }}>
+          <motion.span
+            className="block"
+            style={{ color: 'var(--text-primary)' }}
+            initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}>
+            {t('program.titleA')}
+          </motion.span>
+          <motion.span
+            className="block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
+            initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}>
+            {t('program.titleB')}
+          </motion.span>
+        </h1>
+
+        <motion.p
+          className="max-w-md mx-auto text-base leading-relaxed relative z-10"
+          style={{ color: 'var(--text-secondary)' }}
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55, duration: 0.6 }}>
+          {t('program.lead')}
+        </motion.p>
       </div>
 
       {/* ── Program cards ── */}
@@ -212,7 +222,7 @@ export default function ProgramPage() {
             collapseLabel={scheduleData.collapse}
           />
         </div>
-      </div>{/* end program cards */}
+      </div>
     </section>
     </motion.div>
   );

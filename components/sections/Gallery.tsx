@@ -91,10 +91,10 @@ export default function Gallery() {
           whileTap={{ scale: 0.96 }}
           className="w-11 h-11 rounded-full flex items-center justify-center"
           style={{
-            background: 'rgba(255,255,255,0.06)',
+            background: 'var(--mat-liquid-bg)',
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)',
-            border: `1px solid ${isPlaying ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)'}`,
+            border: '1px solid var(--mat-liquid-border)',
             transition: 'border-color 0.3s ease',
           }}
         >
@@ -104,7 +104,7 @@ export default function Gallery() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.2 }}
             width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke={isPlaying ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.35)'}
+            stroke={isPlaying ? 'var(--text-primary)' : 'var(--text-tertiary)'}
             strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"
           >
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
@@ -126,8 +126,8 @@ export default function Gallery() {
       {/* Centered title overlay */}
       <div className="absolute inset-0 z-20 flex items-start justify-center pt-36 pointer-events-none" dir={isRtl ? 'rtl' : 'ltr'}>
         <motion.h1
-          className="font-outfit font-bold leading-[0.9] tracking-tight text-center text-white"
-          style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)' }}
+          className="font-outfit font-bold leading-[0.9] tracking-tight text-center"
+          style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', color: 'var(--text-primary)' }}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}

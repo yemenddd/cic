@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useLang } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme-context';
+
+const HeroWave = dynamic(() => import('@/components/ui/hero-wave'), { ssr: false });
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -59,6 +62,12 @@ export default function Hero() {
       className="relative min-h-screen w-full flex items-center overflow-hidden"
       style={{ background: 'var(--bg-base)' }}
     >
+      {/* Wave background — dark mode only */}
+      {!isLight && (
+        <div className="absolute inset-0 z-0">
+          <HeroWave />
+        </div>
+      )}
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 w-full flex flex-col gap-10 pt-16 pb-20 lg:py-28" dir={dir}>
 
