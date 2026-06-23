@@ -1,3 +1,4 @@
+import HeroSlider from "@/components/sections/HeroSlider";
 import Hero from "@/components/sections/Hero";
 import CinematicBreak from "@/components/sections/CinematicBreak";
 import BoldStatement from "@/components/sections/BoldStatement";
@@ -11,7 +12,10 @@ import RegisterCTA from "@/components/sections/RegisterCTA";
 export default function Home() {
   return (
     <div className="overflow-x-clip bg-black">
-      {/* 01 · Hero — dark, 3-D robot, countdown */}
+      {/* 01 · Full-screen image slider */}
+      <HeroSlider />
+
+      {/* 02 · Hero — dark, 3-D robot, countdown */}
       <Hero />
 
       {/* 02 · Cinematic break — parallax photo, play-reel CTA */}

@@ -1,27 +1,27 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useLang } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme-context';
 
-const HeroWave = dynamic(() => import('@/components/ui/hero-wave'), { ssr: false });
-
 const EASE = [0.16, 1, 0.3, 1] as const;
+const VP   = { once: true } as const;
 
-const fade = (delay: number) => ({
-  initial:    { opacity: 0, y: 22 },
-  animate:    { opacity: 1, y: 0 },
-  transition: { duration: 0.55, delay, ease: EASE },
+const reveal = (delay: number) => ({
+  initial:     { opacity: 0, y: 32 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport:    VP,
+  transition:  { duration: 0.62, delay, ease: EASE },
 });
 
-const fadeWord = (delay: number) => ({
-  initial:    { opacity: 0, y: 36 },
-  animate:    { opacity: 1, y: 0 },
-  transition: { duration: 0.65, delay, ease: EASE },
+const revealWord = (delay: number) => ({
+  initial:     { opacity: 0, y: 56 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport:    VP,
+  transition:  { duration: 0.78, delay, ease: EASE },
 });
 
 export default function Hero() {
@@ -62,11 +62,14 @@ export default function Hero() {
       className="relative min-h-screen w-full flex items-center overflow-hidden"
       style={{ background: 'var(--bg-base)' }}
     >
-      {/* Wave background — dark mode only */}
+      {/* Subtle radial gradient — dark mode only */}
       {!isLight && (
-        <div className="absolute inset-0 z-0">
-          <HeroWave />
-        </div>
+        <div
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse 80% 55% at 15% -5%, rgba(255,255,255,0.045) 0%, transparent 60%), radial-gradient(ellipse 55% 45% at 85% 105%, rgba(255,255,255,0.025) 0%, transparent 55%)',
+          }}
+        />
       )}
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 w-full flex flex-col gap-10 pt-16 pb-20 lg:py-28" dir={dir}>
@@ -81,7 +84,7 @@ export default function Hero() {
               {lang === 'ar' ? (
                 <>
                   <span className="block w-full text-right -mb-10 md:-mb-20">
-                    <motion.span className="inline-block" {...fadeWord(0.1)}>
+                    <motion.span className="inline-block" {...revealWord(0.1)}>
                       <img
                         src="/images/logos/من_العقل.svg"
                         alt="من العقل"
@@ -91,21 +94,18 @@ export default function Hero() {
                     </motion.span>
                   </span>
                   <span className="block w-full text-right">
-                    <motion.span className="inline-block" {...fadeWord(0.2)}>
+                    <motion.span className="inline-block" {...revealWord(0.2)}>
                       <span
                         dir="rtl"
                         style={{
-                          fontFamily:           'var(--font-thmanyah)',
-                          fontWeight:           900,
-                          fontSize:             'clamp(4rem, 11vw, 7.5rem)',
-                          lineHeight:           1.05,
-                          display:              'inline-block',
-                          paddingTop:           '0.1em',
-                          paddingBottom:        '0.2em',
-                          background:           'var(--gradient-text)',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor:  'transparent',
-                          backgroundClip:       'text',
+                          fontFamily:   'var(--font-thmanyah)',
+                          fontWeight:   900,
+                          fontSize:     'clamp(4rem, 11vw, 7.5rem)',
+                          lineHeight:   1.05,
+                          display:      'inline-block',
+                          paddingTop:   '0.1em',
+                          paddingBottom:'0.2em',
+                          color:        'var(--text-primary)',
                         }}
                       >
                         إلى الآلة
@@ -116,7 +116,7 @@ export default function Hero() {
               ) : (
                 <>
                   <span className="block w-full text-left">
-                    <motion.span className="inline-block" {...fadeWord(0.1)}>
+                    <motion.span className="inline-block" {...revealWord(0.1)}>
                       <span
                         dir="ltr"
                         style={{
@@ -133,21 +133,18 @@ export default function Hero() {
                     </motion.span>
                   </span>
                   <span className="block w-full text-left -mt-2 md:-mt-3">
-                    <motion.span className="inline-block" {...fadeWord(0.2)}>
+                    <motion.span className="inline-block" {...revealWord(0.2)}>
                       <span
                         dir="ltr"
                         style={{
-                          fontFamily:           'var(--font-outfit)',
-                          fontWeight:           900,
-                          fontSize:             'clamp(4rem, 10vw, 7rem)',
-                          lineHeight:           1.05,
-                          display:              'inline-block',
-                          paddingTop:           '0.1em',
-                          paddingBottom:        '0.2em',
-                          background:           'var(--gradient-text)',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor:  'transparent',
-                          backgroundClip:       'text',
+                          fontFamily:   'var(--font-outfit)',
+                          fontWeight:   900,
+                          fontSize:     'clamp(4rem, 10vw, 7rem)',
+                          lineHeight:   1.05,
+                          display:      'inline-block',
+                          paddingTop:   '0.1em',
+                          paddingBottom:'0.2em',
+                          color:        'var(--text-primary)',
                         }}
                       >
                         {t('hero.word3')}
@@ -161,14 +158,14 @@ export default function Hero() {
             <motion.p
               className="text-base md:text-[1.0625rem] mb-8 max-w-md leading-relaxed font-bold"
               style={{ color: 'var(--text-secondary)' }}
-              {...fade(0.3)}
+              {...reveal(0.3)}
             >
               {t('hero.description')}
             </motion.p>
 
             <motion.div
               className={`flex flex-row flex-wrap gap-3 ${isRtl ? 'items-center justify-end' : 'items-center justify-start'}`}
-              {...fade(0.38)}
+              {...reveal(0.38)}
             >
               <Link
                 href="/register"
@@ -204,16 +201,17 @@ export default function Hero() {
           {/* ── Video column ── */}
           <motion.div
             className="w-full flex items-center justify-center order-1 lg:order-2"
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.75, delay: 0.15, ease: EASE }}
+            initial={{ opacity: 0, x: isRtl ? -52 : 52, scale: 0.94 }}
+            whileInView={{ opacity: 1, x: 0, scale: 1 }}
+            viewport={VP}
+            transition={{ duration: 0.85, delay: 0.08, ease: EASE }}
           >
             <motion.img
               src={isRtl ? "/images/hero/1-RTL.png" : "/images/hero/1-LTR.png"}
               alt="CICT 2026"
               className="w-[75%] lg:w-full h-auto block mx-auto"
-              animate={{ y: [0, -18, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              animate={{ y: [0, -16, 0], rotate: [0, -0.6, 0] }}
+              transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
             />
           </motion.div>
 
@@ -222,7 +220,7 @@ export default function Hero() {
         {/* ── Countdown centered below ── */}
         <motion.div
           className="flex flex-col items-center gap-4"
-          {...fade(0.46)}
+          {...reveal(0.46)}
         >
           <p className="text-center font-bold text-base" style={{ color: 'var(--text-primary)', letterSpacing: '0.08em' }}>
             {t('hero.countdownLabel')}
@@ -230,8 +228,12 @@ export default function Hero() {
           <div className="flex items-center gap-2 sm:gap-3">
             {countdownItems.map((item, i) => (
               <div key={item.label} className="flex items-center gap-2 sm:gap-3">
-                <div
+                <motion.div
                   className="flex flex-col items-center justify-center"
+                  initial={{ opacity: 0, y: 24, scale: 0.82 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={VP}
+                  transition={{ duration: 0.48, delay: 0.38 + i * 0.08, ease: EASE }}
                   style={{
                     minWidth:             'clamp(54px, 16vw, 72px)',
                     padding:              'clamp(8px, 2vw, 12px) clamp(6px, 1.5vw, 10px)',
@@ -255,7 +257,7 @@ export default function Hero() {
                   <span className="mt-1 text-caption" style={{ fontSize: 'clamp(8px, 2.2vw, 11px)', letterSpacing: '0.10em', color: 'var(--text-tertiary)' }}>
                     {item.label}
                   </span>
-                </div>
+                </motion.div>
                 {i < countdownItems.length - 1 && (
                   <span className="text-lg sm:text-2xl font-light -mt-4 sm:-mt-5 select-none" style={{ color: 'var(--text-tertiary)' }}>:</span>
                 )}

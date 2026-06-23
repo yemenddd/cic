@@ -72,8 +72,10 @@ export default function Header() {
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
-  const isHome = pathname === '/';
-  const showBg = !isHome || scrolled;
+  const isHome    = pathname === '/';
+  const showBg    = !isHome || scrolled;
+  // When header is transparent (home, not scrolled) it sits over a dark photo → always white
+  const overDark  = isHome && !scrolled;
 
   /* ─────────────────────────────────────── */
   return (
@@ -99,14 +101,14 @@ export default function Header() {
           {/* ── Logo ── */}
           <Link href="/" className="flex items-center gap-3 shrink-0 group" aria-label="CICT Home">
             <Image
-              src={isLight ? "/images/logos/logo_colored.png" : "/images/logos/logo_white.png"}
+              src={(overDark || !isLight) ? "/images/logos/logo_white.png" : "/images/logos/logo_colored.png"}
               alt="CICT"
               width={32}
               height={32}
               priority
               className="w-[32px] h-[32px] object-contain opacity-90 group-hover:opacity-100 transition-opacity duration-200"
             />
-            <span className="font-outfit font-bold text-[13px] tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            <span className="font-outfit font-bold text-[13px] tracking-tight" style={{ color: overDark ? 'rgba(255,255,255,0.88)' : 'var(--text-primary)' }}>
               {t('footer.copyright')}
             </span>
           </Link>
@@ -125,7 +127,9 @@ export default function Header() {
                   onMouseEnter={() => setHovered(link.key)}
                   className="relative px-3.5 py-2 rounded-lg text-[13px] font-medium select-none"
                   style={{
-                    color: active ? 'var(--text-primary)' : hovered === link.key ? 'var(--text-secondary)' : 'var(--text-tertiary)',
+                    color: overDark
+                    ? (active ? '#ffffff' : hovered === link.key ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.52)')
+                    : (active ? 'var(--text-primary)' : hovered === link.key ? 'var(--text-secondary)' : 'var(--text-tertiary)'),
                     transition: 'color 0.15s ease',
                   }}
                 >
@@ -171,11 +175,11 @@ export default function Header() {
               aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
               className="hidden md:flex w-8 h-8 items-center justify-center rounded-full transition-all duration-200"
               style={{
-                background:           'var(--mat-liquid-bg)',
+                background:           overDark ? 'rgba(255,255,255,0.10)' : 'var(--mat-liquid-bg)',
                 backdropFilter:       'blur(20px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                border:               '1px solid var(--mat-liquid-border)',
-                color:                'var(--text-secondary)',
+                border:               overDark ? '1px solid rgba(255,255,255,0.18)' : '1px solid var(--mat-liquid-border)',
+                color:                overDark ? 'rgba(255,255,255,0.80)' : 'var(--text-secondary)',
               }}
             >
               {isLight ? <Moon size={13} /> : <Sun size={13} />}
@@ -189,12 +193,12 @@ export default function Header() {
                 aria-expanded={langOpen}
                 className="flex items-center gap-1.5 px-3 py-[6px] rounded-full text-[11px] font-semibold select-none"
                 style={{
-                  color:                langOpen ? 'var(--text-primary)' : 'var(--text-tertiary)',
-                  background:           'var(--mat-liquid-bg)',
+                  color:                overDark ? (langOpen ? '#ffffff' : 'rgba(255,255,255,0.62)') : (langOpen ? 'var(--text-primary)' : 'var(--text-tertiary)'),
+                  background:           overDark ? 'rgba(255,255,255,0.10)' : 'var(--mat-liquid-bg)',
                   backdropFilter:       'blur(20px) saturate(180%)',
                   WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                  border:               '1px solid var(--mat-liquid-border)',
-                  boxShadow:            'inset 0 1px 0 var(--mat-liquid-inset)',
+                  border:               overDark ? '1px solid rgba(255,255,255,0.18)' : '1px solid var(--mat-liquid-border)',
+                  boxShadow:            overDark ? 'none' : 'inset 0 1px 0 var(--mat-liquid-inset)',
                   transition:           'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
                 }}
               >
@@ -295,7 +299,7 @@ export default function Header() {
                 <motion.span
                   key={i}
                   className="block h-[1.5px] w-[18px] rounded-full origin-center"
-                  style={{ backgroundColor: 'var(--text-primary)' }}
+                  style={{ backgroundColor: overDark ? 'rgba(255,255,255,0.88)' : 'var(--text-primary)' }}
                   animate={anim}
                   transition={{ duration: 0.2 }}
                 />
@@ -355,7 +359,7 @@ export default function Header() {
                   style={{ background: 'var(--nav-hover-bg)', border: '1px solid var(--mat-liquid-border)' }}
                 >
                   <Image
-                    src={isLight ? "/images/logos/logo_colored.png" : "/images/logos/logo_white.png"}
+                    src={(overDark || !isLight) ? "/images/logos/logo_white.png" : "/images/logos/logo_colored.png"}
                     alt="CICT"
                     width={18}
                     height={18}
