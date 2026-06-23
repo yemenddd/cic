@@ -498,7 +498,7 @@ export default function RegisterForm() {
                 style={{ background: 'var(--mat-liquid-border)' }}
               />
 
-              <div className="text-center">
+              <div>
                 <h4 className="text-base font-bold leading-snug" style={{ color: 'var(--text-primary)' }}>{p.cardTitle}</h4>
                 <p className="mt-1.5 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{p.cardDesc}</p>
               </div>
@@ -509,7 +509,7 @@ export default function RegisterForm() {
                   { icon: Calendar, text: p.date },
                   { icon: MapPin, text: p.location },
                 ].map(({ icon: Icon, text }, i) => (
-                  <div key={i} className="flex items-center justify-center gap-2.5 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+                  <div key={i} className={cn('flex items-center gap-2.5 text-[13px]', isRtl ? 'flex-row-reverse' : '')} style={{ color: 'var(--text-secondary)' }}>
                     <Icon className="h-3.5 w-3.5 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} />
                     {text}
                   </div>
@@ -521,7 +521,7 @@ export default function RegisterForm() {
               {/* Highlights */}
               <ul className="space-y-2">
                 {[p.cardF2, p.cardF3].map((item, i) => (
-                  <li key={i} className="flex items-center justify-center gap-2 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+                  <li key={i} className={cn('flex items-center gap-2 text-[13px]', isRtl ? 'flex-row-reverse' : '')} style={{ color: 'var(--text-secondary)' }}>
                     <CircleCheck className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} />
                     {item}
                   </li>
@@ -538,15 +538,15 @@ export default function RegisterForm() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}
                   transition={{ duration: 0.2 }}
-                  className="flex flex-col items-center gap-2 text-center"
+                  className={cn('flex items-center gap-3', isRtl ? 'flex-row-reverse' : '')}
                 >
                   <div
-                    className="flex h-9 w-9 items-center justify-center rounded-full"
+                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
                     style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)' }}
                   >
                     <Check className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
                   </div>
-                  <div>
+                  <div className={isRtl ? 'text-right' : 'text-left'}>
                     <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
                       {p.selectedLabel ?? 'نوع المشاركة المختار'}
                     </p>
