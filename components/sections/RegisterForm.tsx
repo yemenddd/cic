@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { MapPin, Calendar, Users, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, CircleCheck, MapPin, Calendar, Users, ArrowRight, Award, Eye, HandHelping, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useLang } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme-context';
@@ -85,6 +85,12 @@ const CATEGORIES: Category[] = [
     },
   },
 ];
+
+const CATEGORY_ICONS: Record<string, typeof Award> = {
+  visitor:     Eye,
+  participant: Award,
+  volunteer:   HandHelping,
+};
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -175,143 +181,90 @@ export default function RegisterForm() {
 
   const optionBg = isLight ? '#f2f2f7' : '#0d0d0f';
 
-  const brandWords = isRtl
-    ? ['إبداعك.', 'ابتكارك.', 'مستقبلك.']
-    : ['Innovate.', 'Create.', 'Impact.'];
-
   return (
     <div
-      className="min-h-screen flex flex-col lg:flex-row"
+      className="min-h-screen"
       style={{ background: 'var(--bg-base)' }}
       dir={isRtl ? 'rtl' : 'ltr'}
     >
-      {/* ── Left branding panel ─────────────────────────────────────────── */}
-      <div
-        className={cn('hidden lg:flex lg:w-[44%] relative flex-col overflow-hidden', isRtl ? 'items-end' : '')}
-        style={{
-          background: 'linear-gradient(145deg, #1a0438 0%, #2e1b6e 45%, #0c0a28 100%)',
-          minHeight: '100vh',
-        }}
-      >
-        {/* Grid overlay */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px),
-                             linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px)`,
-            backgroundSize: '48px 48px',
-          }}
-        />
-        {/* Radial glow */}
-        <div className="absolute inset-0" style={{
-          background: 'radial-gradient(ellipse 80% 55% at 50% 18%, rgba(139,92,246,0.40) 0%, transparent 70%)',
-        }} />
-        {/* Bottom fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-48" style={{
-          background: 'linear-gradient(to top, rgba(10,5,30,0.9), transparent)',
-        }} />
-
-        {/* Logo — top */}
-        <div className={cn('relative z-10 p-10 flex items-center gap-3', isRtl ? 'flex-row-reverse' : '')}>
+      {/* Subtle grid — dark mode only */}
+      {!isLight && (
+        <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
           <div
-            className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
-            style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)' }}
-          >
-            <span className="text-white font-black text-sm font-outfit">C</span>
-          </div>
-          <span className="text-white font-bold text-lg tracking-tight font-outfit">CICT 2026</span>
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `linear-gradient(var(--mat-liquid-border) 1px, transparent 1px),
+                                linear-gradient(90deg, var(--mat-liquid-border) 1px, transparent 1px)`,
+              backgroundSize: '80px 80px',
+              opacity: 0.4,
+            }}
+          />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 60%, var(--bg-base))' }} />
         </div>
+      )}
 
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Bottom text */}
-        <div className={cn('relative z-10 p-10', isRtl ? 'text-right' : 'text-left')}>
-          <div className="mb-6">
-            {brandWords.map((word, i) => (
-              <p
-                key={i}
-                className="font-outfit font-black leading-[1.05]"
-                style={{
-                  fontSize: 'clamp(2rem, 3vw, 2.6rem)',
-                  color: `rgba(255,255,255,${1 - i * 0.25})`,
-                }}
-              >
-                {word}
-              </p>
-            ))}
+      <form onSubmit={handleSubmit} className="mx-auto max-w-5xl px-5 md:px-8 pt-32 pb-24">
+        {/* Page heading */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: EASE }}
+          className="mb-14"
+        >
+          {/* Conference identifier */}
+          <div className={cn('flex items-center gap-3 mb-6', isRtl ? 'flex-row-reverse' : '')}>
+            <div
+              className="flex items-center gap-2 px-3 py-1.5 rounded-md text-[11px] font-bold tracking-[0.1em] uppercase"
+              style={{ background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.18)', color: 'var(--accent-cyan)' }}
+            >
+              CICT 2026
+            </div>
+            <div className="h-4 w-px" style={{ background: 'var(--mat-liquid-border)' }} />
+            <span className="text-[11px] font-medium tracking-wide" style={{ color: 'var(--text-tertiary)' }}>
+              {p.edition ?? 'الدورة السابعة'}
+            </span>
           </div>
+
+          <h1
+            className="font-outfit font-bold tracking-tight"
+            style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', color: 'var(--text-primary)', lineHeight: 1.1 }}
+          >
+            {p.title}
+          </h1>
           <p
-            className="text-[13px] leading-relaxed mb-7"
-            style={{ color: 'rgba(255,255,255,0.45)', maxWidth: '30ch' }}
+            className="mt-3 max-w-xl"
+            style={{ fontSize: '0.9375rem', lineHeight: 1.65, color: 'var(--text-secondary)' }}
           >
-            {isRtl
-              ? 'نربط بين الإبداع البشري والتقنيات المتقدمة في مؤتمر دولي استثنائي.'
-              : 'Connecting human creativity with advanced technology at an extraordinary international conference.'}
+            {p.subtitle}
           </p>
-          <div className={cn('flex flex-col gap-2.5', isRtl ? 'items-end' : '')}>
-            {[
-              { icon: Calendar, text: p.date },
-              { icon: MapPin, text: p.location },
-              { icon: Users, text: isRtl ? '+٥٠٠ مشارك' : '500+ attendees' },
-            ].map(({ icon: Icon, text }, i) => (
-              <div
-                key={i}
-                className={cn('flex items-center gap-2 text-[13px]', isRtl ? 'flex-row-reverse' : '')}
-                style={{ color: 'rgba(255,255,255,0.45)' }}
-              >
-                <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.30)' }} />
-                {text}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      {/* ── Right form panel ────────────────────────────────────────────── */}
-      <div className="flex-1 flex items-center justify-center px-5 py-20 lg:py-16 overflow-y-auto">
-        <div className="w-full max-w-[460px]">
-          <form onSubmit={handleSubmit}>
+          {/* Required fields note */}
+          <p className="mt-4 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+            <span style={{ color: 'var(--accent-cyan)' }}>*</span>
+            {' '}{p.requiredNote ?? 'الحقول المشار إليها إلزامية'}
+          </p>
+        </motion.div>
 
-            {/* Heading */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: EASE }}
-              className="mb-8"
-            >
-              {/* Mobile logo */}
-              <div className={cn('flex items-center gap-2.5 mb-7 lg:hidden', isRtl ? 'flex-row-reverse' : '')}>
-                <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-violet))' }}
-                >
-                  <span className="text-white font-black text-xs font-outfit">C</span>
-                </div>
-                <span className="font-bold text-sm font-outfit" style={{ color: 'var(--text-primary)' }}>CICT 2026</span>
-              </div>
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
 
-              <h1
-                className="font-outfit font-bold tracking-tight"
-                style={{ fontSize: 'clamp(1.5rem, 3.5vw, 1.875rem)', color: 'var(--text-primary)', lineHeight: 1.15 }}
-              >
-                {p.title}
-              </h1>
-              <p className="mt-2 text-[14px]" style={{ color: 'var(--text-secondary)' }}>
-                {p.subtitle}
-              </p>
-            </motion.div>
+          {/* ── Left column: form fields ─────────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.5, ease: EASE }}
+            className="lg:col-span-7 space-y-10"
+          >
+            {/* Personal info */}
+            <div>
+            <div className={cn('flex items-center gap-3 mb-6', isRtl ? 'flex-row-reverse' : '')}>
+              <div className="w-1 h-5 rounded-full flex-shrink-0" style={{ background: 'var(--accent-cyan)' }} />
+              <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{p.sectionPersonal}</p>
+            </div>
+            <div className="space-y-4">
 
-            {/* Fields */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.08, duration: 0.5, ease: EASE }}
-              className="space-y-4"
-            >
-              {/* Full Name */}
+              {/* Name */}
               <div>
-                <label className="block text-[13px] font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
                   {p.fieldName} <span style={{ color: 'var(--accent-cyan)' }}>*</span>
                 </label>
                 <input
@@ -324,10 +277,10 @@ export default function RegisterForm() {
                 />
               </div>
 
-              {/* Email + Phone */}
+              {/* Email + Phone row */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-[13px] font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {p.fieldEmail} <span style={{ color: 'var(--accent-cyan)' }}>*</span>
                   </label>
                   <input
@@ -340,7 +293,7 @@ export default function RegisterForm() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[13px] font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {p.fieldPhone} <span style={{ color: 'var(--accent-cyan)' }}>*</span>
                   </label>
                   <input
@@ -355,10 +308,10 @@ export default function RegisterForm() {
                 </div>
               </div>
 
-              {/* Country + Org */}
+              {/* Country + Org row */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-[13px] font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {p.fieldCountry} <span style={{ color: 'var(--accent-cyan)' }}>*</span>
                   </label>
                   <input
@@ -371,7 +324,7 @@ export default function RegisterForm() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[13px] font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {p.fieldOrg}
                   </label>
                   <input
@@ -386,7 +339,7 @@ export default function RegisterForm() {
 
               {/* Track */}
               <div>
-                <label className="block text-[13px] font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
                   {p.fieldTrack} <span style={{ color: 'var(--accent-cyan)' }}>*</span>
                 </label>
                 <div className="relative">
@@ -412,105 +365,262 @@ export default function RegisterForm() {
                   </div>
                 </div>
               </div>
+            </div>
+            </div>
 
-              {/* Participation type — pill tabs */}
-              <div>
-                <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-                  {p.sectionParticipation}
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {CATEGORIES.map(cat => {
-                    const isSel = selected === cat.id;
-                    return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => setSelected(cat.id)}
-                        className="relative rounded-xl py-3 text-sm font-medium transition-all duration-200 text-center"
-                        style={{
-                          background: isSel
-                            ? 'linear-gradient(135deg, var(--accent-cyan), var(--accent-violet))'
-                            : 'var(--mat-liquid-bg)',
-                          border: `1px solid ${isSel ? 'transparent' : 'var(--mat-liquid-border)'}`,
-                          color: isSel ? '#ffffff' : 'var(--text-secondary)',
-                        }}
-                      >
-                        {cat.recommended && (
-                          <span
-                            className="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-px text-[9px] font-bold rounded-full whitespace-nowrap"
+            {/* Divider */}
+            <div className="h-px" style={{ background: 'var(--mat-liquid-border)' }} />
+
+            {/* Participation type */}
+            <div>
+            <div className={cn('flex items-center gap-3 mb-2', isRtl ? 'flex-row-reverse' : '')}>
+              <div className="w-1 h-5 rounded-full flex-shrink-0" style={{ background: 'var(--accent-violet)' }} />
+              <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{p.sectionParticipation}</p>
+            </div>
+            <p className="mb-6 text-[13px]" style={{ color: 'var(--text-secondary)', paddingInlineStart: '1rem' }}>{p.catLabel}</p>
+
+              <div className="space-y-3">
+                {CATEGORIES.map(cat => {
+                  const isSelected = selected === cat.id;
+                  const CatIcon = CATEGORY_ICONS[cat.id];
+                  return (
+                    <label
+                      key={cat.id}
+                      htmlFor={`cat-${cat.id}`}
+                      className="relative block cursor-pointer rounded-xl transition-all duration-200"
+                      style={{
+                        background: isSelected ? 'var(--mat-liquid-bg)' : 'transparent',
+                        border: `1px solid ${isSelected ? 'var(--accent-cyan)' : 'var(--mat-liquid-border)'}`,
+                        boxShadow: isSelected ? '0 0 0 1px var(--accent-cyan), var(--mat-liquid-shadow)' : 'none',
+                      }}
+                    >
+                      <div className={cn('flex items-start gap-4 px-5 py-5', isRtl ? 'flex-row-reverse' : 'flex-row')}>
+                        {/* Category icon + radio */}
+                        <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                          <div
+                            className="w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200"
                             style={{
-                              background: isSel ? 'rgba(255,255,255,0.25)' : 'var(--accent-cyan)',
-                              color: isSel ? '#fff' : 'var(--bg-base)',
+                              background: isSelected ? 'rgba(6,182,212,0.12)' : 'var(--mat-liquid-bg)',
+                              border: `1px solid ${isSelected ? 'rgba(6,182,212,0.25)' : 'var(--mat-liquid-border)'}`,
                             }}
                           >
-                            ★
+                            <CatIcon className="h-4.5 w-4.5" style={{ color: isSelected ? 'var(--accent-cyan)' : 'var(--text-tertiary)', width: 18, height: 18 }} />
+                          </div>
+                          <input
+                            type="radio"
+                            id={`cat-${cat.id}`}
+                            name="category"
+                            value={cat.id}
+                            checked={isSelected}
+                            onChange={() => setSelected(cat.id)}
+                            className="sr-only"
+                          />
+                          <div
+                            className="h-4 w-4 rounded-full border-2 flex items-center justify-center transition-all duration-200"
+                            style={{
+                              borderColor: isSelected ? 'var(--accent-cyan)' : 'var(--mat-liquid-border)',
+                              background: isSelected ? 'var(--accent-cyan)' : 'transparent',
+                            }}
+                          >
+                            {isSelected && <div className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--bg-base)' }} />}
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className={cn('flex flex-wrap items-center gap-2 mb-2.5', isRtl ? 'flex-row-reverse' : '')}>
+                            <span className="text-[15px] font-bold" style={{ color: 'var(--text-primary)' }}>{cat.labels[l]}</span>
+                            {cat.recommended && (
+                              <span
+                                className="rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                                style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)', color: 'var(--accent-cyan)' }}
+                              >
+                                {p.catBadge}
+                              </span>
+                            )}
+                          </div>
+                          <ul className="space-y-1.5">
+                            {cat.features[l].map((f, i) => (
+                              <li
+                                key={i}
+                                className={cn('flex items-center gap-2 text-[12px]', isRtl ? 'flex-row-reverse' : '')}
+                                style={{ color: 'var(--text-secondary)' }}
+                              >
+                                <Check
+                                  className="flex-shrink-0"
+                                  style={{ width: 12, height: 12, color: isSelected ? 'var(--accent-cyan)' : 'var(--text-tertiary)' }}
+                                />
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* Free badge */}
+                        <div className={cn('shrink-0 flex flex-col items-end gap-0.5', isRtl ? 'items-start' : '')}>
+                          <span
+                            className="text-[11px] font-bold px-2 py-0.5 rounded-md"
+                            style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#10b981' }}
+                          >
+                            {p.free}
                           </span>
-                        )}
-                        {cat.labels[l]}
-                      </button>
-                    );
-                  })}
-                </div>
+                          <p className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>{p.free_mo}</p>
+                        </div>
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
-            </motion.div>
+            </div>
+          </motion.div>
 
-            {/* Error */}
-            {status === 'error' && (
-              <p className="mt-4 text-sm text-center text-red-400">{p.errorMsg}</p>
-            )}
-
-            {/* Submit */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-              className="mt-6 space-y-4"
+          {/* ── Right column: summary card ───────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.5, ease: EASE }}
+            className="lg:col-span-5"
+          >
+            <div
+              className="sticky top-28 rounded-2xl p-6 space-y-5 relative overflow-hidden"
+              style={{
+                background: 'var(--mat-liquid-bg)',
+                border: '1px solid var(--mat-liquid-border)',
+                boxShadow: 'var(--mat-liquid-shadow)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+              }}
             >
-              <button
-                type="submit"
-                disabled={status === 'loading'}
-                className={cn(
-                  'w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white',
-                  'transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99]',
-                  isRtl && 'flex-row-reverse',
-                )}
-                style={{ background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-violet))' }}
-              >
-                {status === 'loading' ? (
-                  <>
-                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    <span>…</span>
-                  </>
-                ) : (
-                  <>
-                    {p.btnSubmit}
-                    <ArrowRight className={cn('h-4 w-4', isRtl && 'rotate-180')} />
-                  </>
-                )}
-              </button>
+              {/* Top accent line */}
+              <div
+                className="pointer-events-none absolute inset-x-0 top-0 h-px"
+                style={{ background: 'linear-gradient(90deg, transparent, var(--accent-cyan), var(--accent-violet), transparent)' }}
+              />
 
-              <p className={cn('text-center text-[13px]', isRtl ? '' : '')}>
-                <span style={{ color: 'var(--text-tertiary)' }}>
-                  {isRtl ? 'تريد العودة؟ ' : 'Changed your mind? '}
-                </span>
-                <Link
-                  href="/"
-                  className="font-medium underline underline-offset-2 transition-colors"
-                  style={{ color: 'var(--text-secondary)' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] mb-1.5" style={{ color: 'var(--accent-cyan)' }}>
+                  {p.edition ?? 'الدورة السابعة'}
+                </p>
+                <h4 className="text-base font-bold leading-snug" style={{ color: 'var(--text-primary)' }}>{p.cardTitle}</h4>
+                <p className="mt-1.5 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{p.cardDesc}</p>
+              </div>
+
+              {/* Event meta */}
+              <div className="space-y-2.5">
+                {[
+                  { icon: Calendar, text: p.date },
+                  { icon: MapPin, text: p.location },
+                  { icon: Users, text: p.cardF1 },
+                ].map(({ icon: Icon, text }, i) => (
+                  <div key={i} className={cn('flex items-center gap-2.5 text-[13px]', isRtl ? 'flex-row-reverse' : '')} style={{ color: 'var(--text-secondary)' }}>
+                    <Icon className="h-3.5 w-3.5 flex-shrink-0" style={{ color: 'var(--accent-cyan)' }} />
+                    {text}
+                  </div>
+                ))}
+              </div>
+
+              <div className="h-px" style={{ background: 'var(--mat-liquid-border)' }} />
+
+              {/* Highlights */}
+              <ul className="space-y-2">
+                {[p.cardF2, p.cardF3].map((item, i) => (
+                  <li key={i} className={cn('flex items-center gap-2 text-[13px]', isRtl ? 'flex-row-reverse' : '')} style={{ color: 'var(--text-secondary)' }}>
+                    <CircleCheck className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--accent-cyan)' }} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="h-px" style={{ background: 'var(--mat-liquid-border)' }} />
+
+              {/* Selected category summary */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selected}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.2 }}
+                  className={cn('flex items-center gap-3', isRtl ? 'flex-row-reverse' : '')}
                 >
-                  {p.btnCancel}
-                </Link>
-              </p>
-            </motion.div>
-
-          </form>
+                  <div
+                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
+                    style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)' }}
+                  >
+                    <Check className="h-4 w-4" style={{ color: 'var(--accent-cyan)' }} />
+                  </div>
+                  <div className={isRtl ? 'text-right' : 'text-left'}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
+                      {p.selectedLabel ?? 'نوع المشاركة المختار'}
+                    </p>
+                    <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>
+                      {CATEGORIES.find(c => c.id === selected)?.labels[l]}
+                    </p>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
         </div>
-      </div>
+
+        {/* ── Footer: action buttons ─────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="mt-14"
+        >
+          <div className="h-px mb-8" style={{ background: 'var(--mat-liquid-border)' }} />
+
+          {status === 'error' && (
+            <p className="mb-4 text-center text-sm text-red-400">{p.errorMsg}</p>
+          )}
+
+          {/* Submit button — full width for formality */}
+          <button
+            type="submit"
+            disabled={status === 'loading'}
+            className={cn(
+              'w-full inline-flex items-center justify-center gap-2.5 rounded-xl px-8 py-3.5 text-[15px] font-semibold text-white transition-all',
+              'disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99]',
+              isRtl && 'flex-row-reverse',
+            )}
+            style={{ background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-violet))', boxShadow: '0 4px 24px rgba(6,182,212,0.25)' }}
+          >
+            {status === 'loading' ? (
+              <>
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                <span>…</span>
+              </>
+            ) : (
+              <>
+                {p.btnSubmit}
+                <ArrowRight className={cn('h-4 w-4', isRtl && 'rotate-180')} />
+              </>
+            )}
+          </button>
+
+          {/* Footer row: cancel + privacy note */}
+          <div className={cn('flex items-center justify-between mt-4 flex-wrap gap-3', isRtl ? 'flex-row-reverse' : '')}>
+            <Link
+              href="/"
+              className="text-[13px] font-medium transition-colors"
+              style={{ color: 'var(--text-tertiary)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
+            >
+              ← {p.btnCancel}
+            </Link>
+            <div className={cn('flex items-center gap-1.5', isRtl ? 'flex-row-reverse' : '')} style={{ color: 'var(--text-tertiary)' }}>
+              <Lock style={{ width: 11, height: 11 }} />
+              <span className="text-[11px]">{p.privacyNote ?? 'بياناتك محمية ولن تُشارك مع أي طرف ثالث'}</span>
+            </div>
+          </div>
+        </motion.div>
+      </form>
     </div>
   );
 }
