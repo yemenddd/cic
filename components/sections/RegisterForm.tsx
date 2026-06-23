@@ -123,7 +123,7 @@ export default function RegisterForm() {
 
   const trackOptions = [p.trackOpt1, p.trackOpt2, p.trackOpt3, p.trackOpt4];
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setStatus('loading');
     try {
@@ -235,9 +235,11 @@ export default function RegisterForm() {
         <div
           className="rounded-3xl p-8 md:p-10 mb-2"
           style={{
-            background: 'var(--mat-liquid-bg)',
+            background: isLight ? 'rgba(255,255,255,0.72)' : '#161618',
             border: '1px solid var(--mat-liquid-border)',
-            boxShadow: 'var(--mat-liquid-shadow)',
+            boxShadow: isLight
+              ? '0 2px 32px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)'
+              : '0 4px 48px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
           }}
@@ -483,11 +485,11 @@ export default function RegisterForm() {
             <div
               className="sticky top-28 rounded-2xl p-6 space-y-5 relative overflow-hidden"
               style={{
-                background: 'var(--mat-liquid-bg)',
+                background: isLight ? 'rgba(245,245,247,0.8)' : '#0d0d0f',
                 border: '1px solid var(--mat-liquid-border)',
-                boxShadow: 'var(--mat-liquid-shadow)',
-                backdropFilter: 'blur(24px)',
-                WebkitBackdropFilter: 'blur(24px)',
+                boxShadow: isLight
+                  ? '0 2px 16px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.9)'
+                  : '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
               }}
             >
               {/* Top accent line */}
@@ -584,7 +586,11 @@ export default function RegisterForm() {
               'disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99]',
               isRtl && 'flex-row-reverse',
             )}
-            style={{ background: '#1a1a1e', boxShadow: '0 2px 12px rgba(0,0,0,0.25)' }}
+            style={{
+              background: isLight ? '#1a1a1e' : 'rgba(255,255,255,0.92)',
+              color: isLight ? '#ffffff' : '#0d0d0f',
+              boxShadow: isLight ? '0 2px 12px rgba(0,0,0,0.25)' : '0 2px 16px rgba(255,255,255,0.08)',
+            }}
           >
             {status === 'loading' ? (
               <>
