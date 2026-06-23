@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, CircleCheck, Download, Copy, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useTheme } from '@/lib/theme-context';
 
 export interface BadgeProps {
   name:          string;
@@ -63,6 +64,14 @@ export default function ConferenceBadge({
   const isRtl = lang === 'ar';
   const accent = CATEGORY_ACCENT[categoryId] ?? DEFAULT_ACCENT;
   const dir = isRtl ? 'rtl' : 'ltr';
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
+  const btnSecondary = {
+    background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.07)',
+    border:     isLight ? '1px solid rgba(0,0,0,0.10)' : '1px solid rgba(255,255,255,0.15)',
+    color:      isLight ? '#374151' : 'rgba(255,255,255,0.75)',
+  };
 
   const lbl = {
     confirmed:  isRtl ? 'تم تأكيد تسجيلك' : lang === 'tr' ? 'Kaydınız onaylandı' : 'Registration Confirmed',
@@ -311,9 +320,9 @@ export default function ConferenceBadge({
                 style={{
                   flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   gap: 6, padding: '11px 16px', borderRadius: 14, cursor: 'pointer',
-                  background: copied ? '#f0fdf4' : 'rgba(255,255,255,0.07)',
-                  border: copied ? '1px solid #86efac' : '1px solid rgba(255,255,255,0.15)',
-                  color: copied ? '#16a34a' : 'rgba(255,255,255,0.75)',
+                  background: copied ? '#f0fdf4' : btnSecondary.background,
+                  border: copied ? '1px solid #86efac' : btnSecondary.border,
+                  color: copied ? '#16a34a' : btnSecondary.color,
                   fontWeight: 600, fontSize: 13,
                   flexDirection: isRtl ? 'row-reverse' : 'row',
                 }}
@@ -329,9 +338,10 @@ export default function ConferenceBadge({
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 gap: 6, padding: '11px 16px', borderRadius: 14, textDecoration: 'none',
-                background: 'rgba(255,255,255,0.07)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                color: 'rgba(255,255,255,0.55)', fontWeight: 600, fontSize: 13,
+                background: btnSecondary.background,
+                border: btnSecondary.border,
+                color: btnSecondary.color,
+                fontWeight: 600, fontSize: 13,
                 flexDirection: isRtl ? 'row-reverse' : 'row',
               }}
             >
