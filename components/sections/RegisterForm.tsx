@@ -211,20 +211,6 @@ export default function RegisterForm() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mb-14"
         >
-          {/* Conference identifier */}
-          <div className={cn('flex items-center gap-3 mb-6', isRtl ? 'flex-row-reverse' : '')}>
-            <div
-              className="flex items-center gap-2 px-3 py-1.5 rounded-md text-[11px] font-bold tracking-[0.1em] uppercase"
-              style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)', color: 'var(--text-secondary)' }}
-            >
-              CICT 2026
-            </div>
-            <div className="h-4 w-px" style={{ background: 'var(--mat-liquid-border)' }} />
-            <span className="text-[11px] font-medium tracking-wide" style={{ color: 'var(--text-tertiary)' }}>
-              {p.edition ?? 'الدورة السابعة'}
-            </span>
-          </div>
-
           <h1
             className="font-outfit font-bold tracking-tight"
             style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', color: 'var(--text-primary)', lineHeight: 1.1 }}
