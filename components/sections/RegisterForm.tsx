@@ -499,9 +499,6 @@ export default function RegisterForm() {
               />
 
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.12em] mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                  {p.edition ?? 'الدورة السابعة'}
-                </p>
                 <h4 className="text-base font-bold leading-snug" style={{ color: 'var(--text-primary)' }}>{p.cardTitle}</h4>
                 <p className="mt-1.5 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{p.cardDesc}</p>
               </div>
