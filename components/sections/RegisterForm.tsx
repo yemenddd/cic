@@ -218,7 +218,7 @@ export default function RegisterForm() {
             {p.title}
           </h1>
           <p
-            className="mt-3 max-w-xl mx-auto md:mx-0"
+            className="mt-3 max-w-xl mx-auto md:mx-0 font-semibold"
             style={{ fontSize: '0.9375rem', lineHeight: 1.65, color: 'var(--text-secondary)' }}
           >
             {p.subtitle}
