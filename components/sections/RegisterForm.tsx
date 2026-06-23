@@ -209,7 +209,7 @@ export default function RegisterForm() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: EASE }}
-          className="mb-14 text-center md:text-start"
+          className="mb-14 text-center"
         >
           <h1
             className="font-outfit font-black tracking-tight"
