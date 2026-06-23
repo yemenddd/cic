@@ -218,14 +218,14 @@ export default function RegisterForm() {
             {p.title}
           </h1>
           <p
-            className="mt-3 max-w-xl mx-auto md:mx-0 font-semibold"
+            className="mt-3 max-w-xl mx-auto font-semibold"
             style={{ fontSize: '0.9375rem', lineHeight: 1.65, color: 'var(--text-secondary)' }}
           >
             {p.subtitle}
           </p>
 
           {/* Required fields note */}
-          <p className="mt-4 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="mt-4 text-[12px] text-center" style={{ color: 'var(--text-tertiary)' }}>
             <span style={{ color: '#ef4444' }}>*</span>
             {' '}{p.requiredNote ?? 'الحقول المشار إليها إلزامية'}
           </p>
