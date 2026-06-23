@@ -209,16 +209,16 @@ export default function RegisterForm() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: EASE }}
-          className="mb-14"
+          className="mb-14 text-center md:text-start"
         >
           <h1
-            className="font-outfit font-bold tracking-tight"
+            className="font-outfit font-black tracking-tight"
             style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', color: 'var(--text-primary)', lineHeight: 1.1 }}
           >
             {p.title}
           </h1>
           <p
-            className="mt-3 max-w-xl"
+            className="mt-3 max-w-xl mx-auto md:mx-0"
             style={{ fontSize: '0.9375rem', lineHeight: 1.65, color: 'var(--text-secondary)' }}
           >
             {p.subtitle}
