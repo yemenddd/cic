@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, CircleCheck, MapPin, Calendar, Users, ArrowRight, Award, Eye, HandHelping, Lock } from 'lucide-react';
+import { Check, CircleCheck, MapPin, Calendar, ArrowRight, Award, Eye, HandHelping, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useLang } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme-context';
@@ -511,7 +511,6 @@ export default function RegisterForm() {
                 {[
                   { icon: Calendar, text: p.date },
                   { icon: MapPin, text: p.location },
-                  { icon: Users, text: p.cardF1 },
                 ].map(({ icon: Icon, text }, i) => (
                   <div key={i} className={cn('flex items-center gap-2.5 text-[13px]', isRtl ? 'flex-row-reverse' : '')} style={{ color: 'var(--text-secondary)' }}>
                     <Icon className="h-3.5 w-3.5 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} />
