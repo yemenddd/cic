@@ -255,7 +255,7 @@ export default function RegisterForm() {
           >
             {/* Personal info */}
             <div>
-            <div className={cn('flex items-center gap-3 mb-6', isRtl ? 'flex-row-reverse' : '')}>
+            <div className="flex items-center gap-3 mb-6">
               <div className="w-1 h-5 rounded-full flex-shrink-0" style={{ background: 'var(--border-strong)' }} />
               <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{p.sectionPersonal}</p>
             </div>
@@ -372,7 +372,7 @@ export default function RegisterForm() {
 
             {/* Participation type */}
             <div>
-            <div className={cn('flex items-center gap-3 mb-2', isRtl ? 'flex-row-reverse' : '')}>
+            <div className="flex items-center gap-3 mb-2">
               <div className="w-1 h-5 rounded-full flex-shrink-0" style={{ background: 'var(--border-strong)' }} />
               <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{p.sectionParticipation}</p>
             </div>
@@ -393,7 +393,7 @@ export default function RegisterForm() {
                         boxShadow: isSelected ? 'var(--mat-liquid-shadow)' : 'none',
                       }}
                     >
-                      <div className={cn('flex items-start gap-4 px-5 py-5', isRtl ? 'flex-row-reverse' : 'flex-row')}>
+                      <div className="flex items-start gap-4 px-5 py-5">
                         {/* Category icon + radio */}
                         <div className="flex flex-col items-center gap-2 flex-shrink-0">
                           <div
@@ -427,7 +427,7 @@ export default function RegisterForm() {
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">
-                          <div className={cn('flex flex-wrap items-center gap-2 mb-2.5', isRtl ? 'flex-row-reverse' : '')}>
+                          <div className="flex flex-wrap items-center gap-2 mb-2.5">
                             <span className="text-[15px] font-bold" style={{ color: 'var(--text-primary)' }}>{cat.labels[l]}</span>
                             {cat.recommended && (
                               <span
@@ -442,7 +442,7 @@ export default function RegisterForm() {
                             {cat.features[l].map((f, i) => (
                               <li
                                 key={i}
-                                className={cn('flex items-center gap-2 text-[12px]', isRtl ? 'flex-row-reverse' : '')}
+                                className="flex items-center gap-2 text-[12px]"
                                 style={{ color: 'var(--text-secondary)' }}
                               >
                                 <Check
@@ -509,7 +509,7 @@ export default function RegisterForm() {
                   { icon: Calendar, text: p.date },
                   { icon: MapPin, text: p.location },
                 ].map(({ icon: Icon, text }, i) => (
-                  <div key={i} className={cn('flex items-center gap-2.5 text-[13px]', isRtl ? 'flex-row-reverse' : '')} style={{ color: 'var(--text-secondary)' }}>
+                  <div key={i} className="flex items-center gap-2.5 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
                     <Icon className="h-3.5 w-3.5 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} />
                     {text}
                   </div>
@@ -521,7 +521,7 @@ export default function RegisterForm() {
               {/* Highlights */}
               <ul className="space-y-2">
                 {[p.cardF2, p.cardF3].map((item, i) => (
-                  <li key={i} className={cn('flex items-center gap-2 text-[13px]', isRtl ? 'flex-row-reverse' : '')} style={{ color: 'var(--text-secondary)' }}>
+                  <li key={i} className="flex items-center gap-2 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
                     <CircleCheck className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} />
                     {item}
                   </li>
@@ -538,7 +538,7 @@ export default function RegisterForm() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}
                   transition={{ duration: 0.2 }}
-                  className={cn('flex items-center gap-3', isRtl ? 'flex-row-reverse' : '')}
+                  className="flex items-center gap-3"
                 >
                   <div
                     className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
@@ -546,7 +546,7 @@ export default function RegisterForm() {
                   >
                     <Check className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
                   </div>
-                  <div className={isRtl ? 'text-right' : 'text-left'}>
+                  <div className="text-start">
                     <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
                       {p.selectedLabel ?? 'نوع المشاركة المختار'}
                     </p>
@@ -580,7 +580,6 @@ export default function RegisterForm() {
             className={cn(
               'w-full inline-flex items-center justify-center gap-2.5 rounded-xl px-8 py-3.5 text-[15px] font-semibold text-white transition-all',
               'disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.99]',
-              isRtl && 'flex-row-reverse',
             )}
             style={{
               background: isLight ? '#1a1a1e' : 'rgba(255,255,255,0.92)',
@@ -605,17 +604,18 @@ export default function RegisterForm() {
           </button>
 
           {/* Footer row: cancel + privacy note */}
-          <div className={cn('flex items-center justify-between mt-4 flex-wrap gap-3', isRtl ? 'flex-row-reverse' : '')}>
+          <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
             <Link
               href="/"
-              className="text-[13px] font-medium transition-colors"
+              className="flex items-center gap-1 text-[13px] font-medium transition-colors"
               style={{ color: 'var(--text-tertiary)' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
             >
-              ← {p.btnCancel}
+              <ArrowRight className="h-3.5 w-3.5 rotate-180" style={{ flexShrink: 0 }} />
+              {p.btnCancel}
             </Link>
-            <div className={cn('flex items-center gap-1.5', isRtl ? 'flex-row-reverse' : '')} style={{ color: 'var(--text-tertiary)' }}>
+            <div className="flex items-center gap-1.5" style={{ color: 'var(--text-tertiary)' }}>
               <Lock style={{ width: 11, height: 11 }} />
               <span className="text-[11px]">{p.privacyNote ?? 'بياناتك محمية ولن تُشارك مع أي طرف ثالث'}</span>
             </div>
