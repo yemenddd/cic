@@ -2,9 +2,10 @@
 
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, CircleCheck, MapPin, Calendar, Users, ExternalLink, ArrowRight } from 'lucide-react';
+import { Check, CircleCheck, MapPin, Calendar, Users, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useLang } from '@/lib/i18n';
+import { useTheme } from '@/lib/theme-context';
 import { cn } from '@/lib/utils';
 import ConferenceBadge from '@/components/ui/ConferenceBadge';
 import { downloadBadgePDF } from '@/lib/download-badge-pdf';
@@ -87,10 +88,6 @@ const CATEGORIES: Category[] = [
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-const inputClass = 'input-glass text-sm';
-
-const labelClass = 'block text-sm font-medium mb-1.5' + ' ' + 'text-white/65';
-
 // ── Confirmation code: deterministic 6-char from name + timestamp ──────────
 function generateCode(name: string): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -103,6 +100,8 @@ function generateCode(name: string): string {
 
 export default function RegisterForm() {
   const { tx, lang, dir } = useLang();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const p = tx<Record<string, string>>('registerPage');
   const isRtl = dir === 'rtl';
   const l = lang as Lang;
@@ -174,49 +173,84 @@ export default function RegisterForm() {
     );
   }
 
-  return (
-    <div className="min-h-screen px-4 pb-20 pt-32" style={{ background: 'var(--bg-base)' }} dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* Stars background */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.15) 0%, transparent 100%), radial-gradient(1px 1px at 80% 70%, rgba(255,255,255,0.1) 0%, transparent 100%), radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.08) 0%, transparent 100%)',
-          backgroundSize: '400px 400px, 300px 300px, 500px 500px',
-        }} />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent, transparent, var(--bg-base))' }} />
-      </div>
+  const optionBg = isLight ? '#f2f2f7' : '#0d0d0f';
 
-      <form onSubmit={handleSubmit} className="mx-auto max-w-6xl">
+  return (
+    <div
+      className="min-h-screen"
+      style={{ background: 'var(--bg-base)' }}
+      dir={isRtl ? 'rtl' : 'ltr'}
+    >
+      {/* Subtle grid — dark mode only */}
+      {!isLight && (
+        <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `linear-gradient(var(--mat-liquid-border) 1px, transparent 1px),
+                                linear-gradient(90deg, var(--mat-liquid-border) 1px, transparent 1px)`,
+              backgroundSize: '80px 80px',
+              opacity: 0.4,
+            }}
+          />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 60%, var(--bg-base))' }} />
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="mx-auto max-w-5xl px-5 md:px-8 pt-32 pb-24">
         {/* Page heading */}
         <motion.div
-          initial={{ opacity: 0, y: 28 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: EASE }}
-          className="mb-10"
+          className="mb-14"
         >
-          <span className="mb-3 inline-block rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-cyan-400">
-            CICT 2026
-          </span>
-          <h1 className="text-3xl font-bold text-white sm:text-4xl">{p.title}</h1>
-          <p className="mt-2 text-sm text-white/50 max-w-xl">{p.subtitle}</p>
+          <div
+            className="inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full"
+            style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)' }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--accent-cyan)' }} />
+            <span className="text-[11px] font-semibold tracking-[0.12em] uppercase" style={{ color: 'var(--text-tertiary)' }}>
+              CICT 2026
+            </span>
+          </div>
+          <h1
+            className="font-outfit font-bold tracking-tight"
+            style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', color: 'var(--text-primary)', lineHeight: 1.1 }}
+          >
+            {p.title}
+          </h1>
+          <p
+            className="mt-3 max-w-lg"
+            style={{ fontSize: '0.9375rem', lineHeight: 1.65, color: 'var(--text-secondary)' }}
+          >
+            {p.subtitle}
+          </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
 
           {/* ── Left column: form fields ─────────────────────────────────── */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.6, ease: EASE }}
-            className="lg:col-span-7"
+            transition={{ delay: 0.1, duration: 0.5, ease: EASE }}
+            className="lg:col-span-7 space-y-10"
           >
             {/* Personal info */}
-            <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-white/40">{p.sectionPersonal}</p>
+            <div>
+            <p
+              className="mb-5 text-[11px] font-bold uppercase tracking-[0.12em]"
+              style={{ color: 'var(--text-tertiary)' }}
+            >
+              {p.sectionPersonal}
+            </p>
             <div className="space-y-4">
 
               {/* Name */}
               <div>
-                <label className={labelClass}>
-                  {p.fieldName} <span className="text-red-400">*</span>
+                <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                  {p.fieldName} <span style={{ color: 'var(--accent-cyan)' }}>*</span>
                 </label>
                 <input
                   required
@@ -224,15 +258,15 @@ export default function RegisterForm() {
                   value={fields.fullName}
                   onChange={set('fullName')}
                   placeholder={p.phName}
-                  className={inputClass}
+                  className="input-glass"
                 />
               </div>
 
               {/* Email + Phone row */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className={labelClass}>
-                    {p.fieldEmail} <span className="text-red-400">*</span>
+                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    {p.fieldEmail} <span style={{ color: 'var(--accent-cyan)' }}>*</span>
                   </label>
                   <input
                     required
@@ -240,12 +274,12 @@ export default function RegisterForm() {
                     value={fields.email}
                     onChange={set('email')}
                     placeholder={p.phEmail}
-                    className={inputClass}
+                    className="input-glass"
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>
-                    {p.fieldPhone} <span className="text-red-400">*</span>
+                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    {p.fieldPhone} <span style={{ color: 'var(--accent-cyan)' }}>*</span>
                   </label>
                   <input
                     required
@@ -253,7 +287,7 @@ export default function RegisterForm() {
                     value={fields.phone}
                     onChange={set('phone')}
                     placeholder={p.phPhone}
-                    className={inputClass}
+                    className="input-glass"
                     dir="ltr"
                   />
                 </div>
@@ -262,8 +296,8 @@ export default function RegisterForm() {
               {/* Country + Org row */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className={labelClass}>
-                    {p.fieldCountry} <span className="text-red-400">*</span>
+                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    {p.fieldCountry} <span style={{ color: 'var(--accent-cyan)' }}>*</span>
                   </label>
                   <input
                     required
@@ -271,40 +305,45 @@ export default function RegisterForm() {
                     value={fields.country}
                     onChange={set('country')}
                     placeholder={p.phCountry}
-                    className={inputClass}
+                    className="input-glass"
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>{p.fieldOrg}</label>
+                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    {p.fieldOrg}
+                  </label>
                   <input
                     type="text"
                     value={fields.organization}
                     onChange={set('organization')}
                     placeholder={p.phOrg}
-                    className={inputClass}
+                    className="input-glass"
                   />
                 </div>
               </div>
 
               {/* Track */}
               <div>
-                <label className={labelClass}>
-                  {p.fieldTrack} <span className="text-red-400">*</span>
+                <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                  {p.fieldTrack} <span style={{ color: 'var(--accent-cyan)' }}>*</span>
                 </label>
                 <div className="relative">
                   <select
                     required
                     value={track}
                     onChange={e => setTrack(e.target.value)}
-                    className={cn(inputClass, 'appearance-none cursor-pointer')}
+                    className="input-glass appearance-none cursor-pointer"
                     style={{ direction: isRtl ? 'rtl' : 'ltr' }}
                   >
-                    <option value="" disabled style={{ background: '#000' }}>—</option>
+                    <option value="" disabled style={{ background: optionBg }}>—</option>
                     {trackOptions.map((opt, i) => (
-                      <option key={i} value={opt} style={{ background: '#000' }}>{opt}</option>
+                      <option key={i} value={opt} style={{ background: optionBg }}>{opt}</option>
                     ))}
                   </select>
-                  <div className={cn('pointer-events-none absolute top-1/2 -translate-y-1/2 text-white/40', isRtl ? 'left-3' : 'right-3')}>
+                  <div
+                    className={cn('pointer-events-none absolute top-1/2 -translate-y-1/2', isRtl ? 'left-3' : 'right-3')}
+                    style={{ color: 'var(--text-tertiary)' }}
+                  >
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                       <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -312,11 +351,20 @@ export default function RegisterForm() {
                 </div>
               </div>
             </div>
+            </div>
+
+            {/* Divider */}
+            <div className="h-px" style={{ background: 'var(--mat-liquid-border)' }} />
 
             {/* Participation type */}
-            <div className="mt-10">
-              <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-white/40">{p.sectionParticipation}</p>
-              <p className="mb-4 text-sm text-white/60">{p.catLabel}</p>
+            <div>
+            <p
+              className="mb-1 text-[11px] font-bold uppercase tracking-[0.12em]"
+              style={{ color: 'var(--text-tertiary)' }}
+            >
+              {p.sectionParticipation}
+            </p>
+            <p className="mb-5 text-[13px]" style={{ color: 'var(--text-secondary)' }}>{p.catLabel}</p>
 
               <div className="space-y-3">
                 {CATEGORIES.map(cat => {
@@ -325,12 +373,12 @@ export default function RegisterForm() {
                     <label
                       key={cat.id}
                       htmlFor={`cat-${cat.id}`}
-                      className={cn(
-                        'relative block cursor-pointer rounded-xl border transition-all duration-200',
-                        isSelected
-                          ? 'border-cyan-400/30 bg-white/5 ring-1 ring-cyan-400/20'
-                          : 'border-white/8 bg-white/2 hover:border-white/15 hover:bg-white/4',
-                      )}
+                      className="relative block cursor-pointer rounded-2xl transition-all duration-200"
+                      style={{
+                        background: isSelected ? 'var(--mat-liquid-bg)' : 'transparent',
+                        border: `1px solid ${isSelected ? 'var(--accent-cyan)' : 'var(--mat-liquid-border)'}`,
+                        boxShadow: isSelected ? '0 0 0 1px var(--accent-cyan)' : 'none',
+                      }}
                     >
                       <div className={cn('flex items-start gap-4 px-5 py-4', isRtl ? 'flex-row-reverse' : 'flex-row')}>
                         {/* Radio */}
@@ -344,47 +392,52 @@ export default function RegisterForm() {
                             onChange={() => setSelected(cat.id)}
                             className="sr-only"
                           />
-                          <div className={cn(
-                            'h-4 w-4 rounded-full border-2 flex items-center justify-center transition-all',
-                            isSelected ? 'border-cyan-400 bg-cyan-400' : 'border-white/30',
-                          )}>
-                            {isSelected && <div className="h-1.5 w-1.5 rounded-full bg-[#030712]" />}
+                          <div
+                            className="h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all duration-200"
+                            style={{
+                              borderColor: isSelected ? 'var(--accent-cyan)' : 'var(--mat-liquid-border)',
+                              background: isSelected ? 'var(--accent-cyan)' : 'transparent',
+                            }}
+                          >
+                            {isSelected && <div className="h-2 w-2 rounded-full" style={{ background: 'var(--bg-base)' }} />}
                           </div>
                         </div>
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">
                           <div className={cn('flex flex-wrap items-center gap-2 mb-2', isRtl ? 'flex-row-reverse' : '')}>
-                            <span className="text-sm font-semibold text-white">{cat.labels[l]}</span>
+                            <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{cat.labels[l]}</span>
                             {cat.recommended && (
-                              <span className="rounded-full bg-cyan-400/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-cyan-400 border border-cyan-400/20">
+                              <span
+                                className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                                style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)', color: 'var(--accent-cyan)' }}
+                              >
                                 {p.catBadge}
                               </span>
                             )}
                           </div>
                           <ul className="space-y-1">
                             {cat.features[l].map((f, i) => (
-                              <li key={i} className={cn('flex items-center gap-2 text-xs text-white/55', isRtl ? 'flex-row-reverse' : '')}>
-                                <Check className="h-3.5 w-3.5 flex-shrink-0 text-white/30" />
+                              <li
+                                key={i}
+                                className={cn('flex items-center gap-2 text-[12px]', isRtl ? 'flex-row-reverse' : '')}
+                                style={{ color: 'var(--text-secondary)' }}
+                              >
+                                <Check
+                                  className="h-3 w-3 flex-shrink-0"
+                                  style={{ color: isSelected ? 'var(--accent-cyan)' : 'var(--text-tertiary)' }}
+                                />
                                 {f}
                               </li>
                             ))}
                           </ul>
                         </div>
-                      </div>
 
-                      {/* Footer bar */}
-                      <div className={cn(
-                        'flex items-center justify-between rounded-b-xl border-t px-5 py-2.5',
-                        isSelected ? 'border-white/8 bg-white/4' : 'border-white/5 bg-white/2',
-                      )}>
-                        <a href="#" className={cn('inline-flex items-center gap-1 text-xs text-cyan-400/70 hover:text-cyan-400', isRtl ? 'flex-row-reverse' : '')}>
-                          {p.catLearnMore}
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                        <span className="text-sm font-semibold text-white/80">
-                          {p.free} <span className="text-xs font-normal text-white/40">/ {p.free_mo}</span>
-                        </span>
+                        {/* Price */}
+                        <div className={cn('shrink-0', isRtl ? 'text-left' : 'text-right')}>
+                          <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{p.free}</p>
+                          <p className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{p.free_mo}</p>
+                        </div>
                       </div>
                     </label>
                   );
@@ -393,84 +446,84 @@ export default function RegisterForm() {
             </div>
           </motion.div>
 
-          {/* ── Right column: info card ──────────────────────────────────── */}
+          {/* ── Right column: summary card ───────────────────────────────── */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6, ease: EASE }}
+            transition={{ delay: 0.15, duration: 0.5, ease: EASE }}
             className="lg:col-span-5"
           >
             <div
-              className="sticky top-28 rounded-2xl p-6"
+              className="sticky top-28 rounded-2xl p-6 space-y-5 relative overflow-hidden"
               style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                backdropFilter: 'blur(12px)',
+                background: 'var(--mat-liquid-bg)',
+                border: '1px solid var(--mat-liquid-border)',
+                boxShadow: 'var(--mat-liquid-shadow)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
               }}
             >
-              {/* Gradient accent */}
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px rounded-t-2xl"
-                style={{ background: 'linear-gradient(90deg, transparent, rgba(6,182,212,0.4), rgba(139,92,246,0.4), transparent)' }} />
+              {/* Top accent line */}
+              <div
+                className="pointer-events-none absolute inset-x-0 top-0 h-px"
+                style={{ background: 'linear-gradient(90deg, transparent, var(--accent-cyan), var(--accent-violet), transparent)' }}
+              />
 
-              <h4 className="text-sm font-semibold text-white">{p.cardTitle}</h4>
-              <p className="mt-2 text-sm leading-relaxed text-white/50">{p.cardDesc}</p>
+              <div>
+                <h4 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{p.cardTitle}</h4>
+                <p className="mt-1.5 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{p.cardDesc}</p>
+              </div>
 
               {/* Event meta */}
-              <div className="mt-5 space-y-2.5">
+              <div className="space-y-2.5">
                 {[
                   { icon: Calendar, text: p.date },
                   { icon: MapPin, text: p.location },
                   { icon: Users, text: p.cardF1 },
                 ].map(({ icon: Icon, text }, i) => (
-                  <div key={i} className={cn('flex items-center gap-2.5 text-sm text-white/70', isRtl ? 'flex-row-reverse' : '')}>
-                    <Icon className="h-4 w-4 flex-shrink-0 text-cyan-400/70" />
+                  <div key={i} className={cn('flex items-center gap-2.5 text-[13px]', isRtl ? 'flex-row-reverse' : '')} style={{ color: 'var(--text-secondary)' }}>
+                    <Icon className="h-3.5 w-3.5 flex-shrink-0" style={{ color: 'var(--accent-cyan)' }} />
                     {text}
                   </div>
                 ))}
               </div>
 
-              {/* Highlights */}
-              <div
-                className="mt-5 rounded-xl p-4"
-                style={{ background: 'rgba(6,182,212,0.05)', border: '1px solid rgba(6,182,212,0.1)' }}
-              >
-                <ul className="space-y-2">
-                  {[p.cardF2, p.cardF3].map((item, i) => (
-                    <li key={i} className={cn('flex items-center gap-2 text-sm text-white/70', isRtl ? 'flex-row-reverse' : '')}>
-                      <CircleCheck className="h-4 w-4 flex-shrink-0 text-cyan-400" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <div className="h-px" style={{ background: 'var(--mat-liquid-border)' }} />
 
-              {/* Gradient divider */}
-              <div className="my-5 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)' }} />
+              {/* Highlights */}
+              <ul className="space-y-2">
+                {[p.cardF2, p.cardF3].map((item, i) => (
+                  <li key={i} className={cn('flex items-center gap-2 text-[13px]', isRtl ? 'flex-row-reverse' : '')} style={{ color: 'var(--text-secondary)' }}>
+                    <CircleCheck className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--accent-cyan)' }} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="h-px" style={{ background: 'var(--mat-liquid-border)' }} />
 
               {/* Selected category summary */}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={selected}
-                  initial={{ opacity: 0, y: 6 }}
+                  initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
+                  exit={{ opacity: 0, y: -5 }}
                   transition={{ duration: 0.2 }}
+                  className={cn('flex items-center gap-3', isRtl ? 'flex-row-reverse' : '')}
                 >
-                  {(() => {
-                    const cat = CATEGORIES.find(c => c.id === selected)!;
-                    return (
-                      <div className={cn('flex items-center gap-3', isRtl ? 'flex-row-reverse' : '')}>
-                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
-                          style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.2), rgba(139,92,246,0.2))', border: '1px solid rgba(6,182,212,0.2)' }}>
-                          <Check className="h-4 w-4 text-cyan-400" />
-                        </div>
-                        <div className={isRtl ? 'text-right' : 'text-left'}>
-                          <p className="text-xs text-white/40">{p.sectionParticipation}</p>
-                          <p className="text-sm font-semibold text-white">{cat.labels[l]}</p>
-                        </div>
-                      </div>
-                    );
-                  })()}
+                  <div
+                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full"
+                    style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)' }}
+                  >
+                    <Check className="h-4 w-4" style={{ color: 'var(--accent-cyan)' }} />
+                  </div>
+                  <div className={isRtl ? 'text-right' : 'text-left'}>
+                    <p className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{p.sectionParticipation}</p>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      {CATEGORIES.find(c => c.id === selected)?.labels[l]}
+                    </p>
+                  </div>
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -482,9 +535,9 @@ export default function RegisterForm() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="mt-12"
+          className="mt-14"
         >
-          <div className="h-px mb-8" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)' }} />
+          <div className="h-px mb-8" style={{ background: 'var(--mat-liquid-border)' }} />
 
           {status === 'error' && (
             <p className="mb-4 text-center text-sm text-red-400">{p.errorMsg}</p>
@@ -493,7 +546,10 @@ export default function RegisterForm() {
           <div className={cn('flex items-center gap-4', isRtl ? 'flex-row-reverse justify-start' : 'justify-end')}>
             <Link
               href="/"
-              className="rounded-lg px-5 py-2.5 text-sm font-medium text-white/50 transition-colors hover:text-white/80"
+              className="rounded-lg px-5 py-2.5 text-sm font-medium transition-colors"
+              style={{ color: 'var(--text-tertiary)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
             >
               {p.btnCancel}
             </Link>
@@ -506,7 +562,7 @@ export default function RegisterForm() {
                 'disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.98]',
                 isRtl && 'flex-row-reverse',
               )}
-              style={{ background: 'linear-gradient(135deg, #06b6d4, #8b5cf6)' }}
+              style={{ background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-violet))' }}
             >
               {status === 'loading' ? (
                 <>
