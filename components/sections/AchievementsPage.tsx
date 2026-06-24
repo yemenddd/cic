@@ -205,7 +205,7 @@ export default function AchievementsPage() {
             WebkitTextFillColor: 'transparent',
             display: 'inline-block',
             paddingTop: '0.2em',
-            paddingBottom: '0.2em',
+            paddingBottom: '0.5em',
           }}>{t('achievements.titleB')}</span>
         </h1>
       </motion.div>

@@ -169,7 +169,7 @@ export default function HistoryTimeline() {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 paddingTop: '0.2em',
-                paddingBottom: '0.35em',
+                paddingBottom: '0.5em',
               }}
               initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45, duration: 0.8, ease: EASE }}>
