@@ -52,10 +52,10 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
         transition={{ delay: day * 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
         <h2 className="font-outfit font-bold mb-2"
-          style={{ fontSize: 'clamp(1.8rem, 3vw, 2.8rem)', color: 'var(--text-primary)' }}>
+          style={{ fontSize: 'clamp(1.8rem, 3vw, 2.8rem)', color: 'rgba(255,255,255,0.9)' }}>
           {label}
         </h2>
-        <p className="text-base" style={{ color: 'var(--text-secondary)' }}>{date}</p>
+        <p className="text-base" style={{ color: 'rgba(255,255,255,0.45)' }}>{date}</p>
       </motion.div>
 
       <div
@@ -74,23 +74,23 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
               isActive ? EXPANDED_OFFSETS[i] : COLLAPSED_OFFSETS[i],
             ].join(' ')}
             style={{
-              background: 'var(--mat-liquid-bg)',
-              border: '1px solid var(--mat-liquid-border)',
-              boxShadow: 'var(--mat-liquid-shadow)',
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
               zIndex: sessions.length - i,
             }}
           >
             <span className="shrink-0 font-outfit font-black text-lg sm:text-2xl tabular-nums w-14 sm:w-16 text-right leading-none pt-0.5"
-              style={{ color: 'var(--text-primary)' }}>
+              style={{ color: 'rgba(255,255,255,0.9)' }}>
               {session.time}
             </span>
 
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-base sm:text-lg leading-snug mb-1 line-clamp-2"
-                style={{ color: 'var(--text-primary)' }}>
+                style={{ color: 'rgba(255,255,255,0.9)' }}>
                 {session.title}
               </p>
-              <p className="text-sm sm:text-base truncate" style={{ color: 'var(--text-secondary)' }}>
+              <p className="text-sm sm:text-base truncate" style={{ color: 'rgba(255,255,255,0.55)' }}>
                 {session.speaker}
               </p>
               <p className="text-xs sm:text-sm mt-1 truncate" style={{ color: session.color, opacity: 0.85 }}>
@@ -99,7 +99,7 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
             </div>
 
             <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden"
-              style={{ border: `1px solid ${session.color}30` }}>
+              style={{ border: '1px solid rgba(255,255,255,0.10)' }}>
               <img
                 src={session.img}
                 alt={session.speaker}
@@ -148,7 +148,7 @@ export default function ProgramPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
     >
-    <section className="min-h-screen relative overflow-x-hidden" style={{ background: 'var(--bg-base)' }} dir={isRtl ? 'rtl' : 'ltr'}>
+    <section className="min-h-screen relative overflow-x-hidden" style={{ background: '#09090f' }} dir={isRtl ? 'rtl' : 'ltr'}>
 
       {/* Background grid */}
       <div className="absolute inset-0 pointer-events-none" style={{
@@ -158,9 +158,6 @@ export default function ProgramPage() {
         WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 30%, black, transparent)',
       }} />
 
-      {/* Ambient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse, rgba(96,165,250,0.06) 0%, transparent 70%)' }} />
 
       {/* ── Hero ── */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -182,13 +179,14 @@ export default function ProgramPage() {
           style={{ fontSize: 'clamp(2.8rem, 6vw, 5.5rem)' }}>
           <motion.span
             className="block"
-            style={{ color: 'var(--text-primary)' }}
+            style={{ color: '#ffffff' }}
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}>
             {t('program.titleA')}
           </motion.span>
           <motion.span
-            className="block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
+            className="block py-[0.2em] leading-[1.1]"
+            style={{ color: 'var(--text-tertiary)' }}
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}>
             {t('program.titleB')}
@@ -197,7 +195,7 @@ export default function ProgramPage() {
 
         <motion.p
           className="max-w-md mx-auto text-base leading-relaxed relative z-10"
-          style={{ color: 'var(--text-secondary)' }}
+          style={{ color: 'rgba(255,255,255,0.5)' }}
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.55, duration: 0.6 }}>
           {t('program.lead')}
