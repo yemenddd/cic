@@ -163,12 +163,13 @@ export default function HistoryTimeline() {
               {t('history.titleA')}
             </motion.span>
             <motion.span
-              className="block pt-[0.2em] pb-[0.35em] leading-[1.1]"
+              className="block leading-[1.1]"
               style={{
                 background: 'linear-gradient(to bottom, #72d6f3, #2b64be)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                display: 'inline-block',
+                paddingTop: '0.2em',
+                paddingBottom: '0.35em',
               }}
               initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45, duration: 0.8, ease: EASE }}>
