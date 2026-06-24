@@ -41,7 +41,7 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
   const [isActive, setIsActive] = useState(false);
 
   const expandedH = BASE_TOP + sessions.length * CARD_H + (sessions.length - 1) * CARD_GAP + 44;
-  const collapsedH = 208; // 13rem
+  const collapsedH = 232; // enough to show all peeking card edges
 
   return (
     <div className="flex flex-col">
