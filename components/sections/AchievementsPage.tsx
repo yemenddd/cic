@@ -203,6 +203,8 @@ export default function AchievementsPage() {
             background: 'linear-gradient(to right, #72d6f3, #2b64be)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
+            display: 'inline-block',
+            paddingBottom: '0.15em',
           }}>{t('achievements.titleB')}</span>
         </h1>
       </motion.div>
