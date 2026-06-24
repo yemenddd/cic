@@ -200,7 +200,7 @@ export default function AchievementsPage() {
           <span style={{ color: 'var(--text-primary)' }}>{t('achievements.titleA')}</span>
           {' '}
           <span style={{
-            background: 'linear-gradient(to right, #132dae, #3146dc)',
+            background: 'linear-gradient(to right, #693e92, #b99fdb)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
           }}>{t('achievements.titleB')}</span>
