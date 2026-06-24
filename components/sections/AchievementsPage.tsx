@@ -199,7 +199,11 @@ export default function AchievementsPage() {
         >
           <span style={{ color: 'var(--text-primary)' }}>{t('achievements.titleA')}</span>
           {' '}
-          <span style={{ color: 'var(--text-tertiary)' }}>{t('achievements.titleB')}</span>
+          <span style={{
+            background: 'linear-gradient(to right, #132dae, #3146dc)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}>{t('achievements.titleB')}</span>
         </h1>
       </motion.div>
 

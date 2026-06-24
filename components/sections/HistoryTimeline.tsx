@@ -164,7 +164,12 @@ export default function HistoryTimeline() {
             </motion.span>
             <motion.span
               className="block pt-[0.2em] pb-[0.35em] leading-[1.1]"
-              style={{ color: 'var(--text-tertiary)' }}
+              style={{
+                background: 'linear-gradient(to right, #132dae, #3146dc)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                display: 'inline-block',
+              }}
               initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45, duration: 0.8, ease: EASE }}>
               {t('history.titleB')}
