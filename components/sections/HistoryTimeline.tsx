@@ -165,7 +165,7 @@ export default function HistoryTimeline() {
             <motion.span
               className="block pt-[0.2em] pb-[0.35em] leading-[1.1]"
               style={{
-                background: 'linear-gradient(to right, #b99fdb, #693e92)',
+                background: 'linear-gradient(to right, #2b64be, #72d6f3)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 display: 'inline-block',
