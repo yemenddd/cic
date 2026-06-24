@@ -18,16 +18,15 @@ type Edition = {
   current?: boolean;
 };
 
-const ACCENTS = ['#67e8f9', '#818cf8', '#60a5fa', '#a78bfa'];
 const EASE = [0.16, 1, 0.3, 1] as const;
 const CARD_THRESHOLDS = [0.02, 0.42, 0.70];
 
 /* ── Ghost year ── */
-function GhostYear({ year, color }: { year: string; color: string }) {
+function GhostYear({ year }: { year: string }) {
   return (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden rounded-3xl">
       <span className="font-outfit font-black leading-none"
-        style={{ fontSize: 'clamp(5rem,14vw,12rem)', color, opacity: 0.07, letterSpacing: '-0.04em' }}>
+        style={{ fontSize: 'clamp(5rem,14vw,12rem)', color: 'var(--text-primary)', opacity: 0.04, letterSpacing: '-0.04em' }}>
         {year}
       </span>
     </div>
@@ -35,27 +34,25 @@ function GhostYear({ year, color }: { year: string; color: string }) {
 }
 
 /* ── Single card ── */
-function Card({ edition, accent, isRtl, t, visible, fromLeft }: {
-  edition: Edition; accent: string; isRtl: boolean; t: (k: string) => string;
+function Card({ edition, isRtl, t, visible, fromLeft }: {
+  edition: Edition; isRtl: boolean; t: (k: string) => string;
   visible: boolean; fromLeft: boolean;
 }) {
   return (
     <motion.div
       className="relative rounded-3xl overflow-hidden w-full"
       style={{
-        background: edition.current
-          ? 'linear-gradient(135deg,rgba(6,182,212,0.08),rgba(59,130,246,0.08),rgba(139,92,246,0.08))'
-          : 'var(--mat-liquid-bg)',
+        background: 'var(--mat-liquid-bg)',
         border: edition.current
-          ? '1px solid rgba(96,165,250,0.3)'
+          ? '1px solid var(--border-strong)'
           : '1px solid var(--mat-liquid-border)',
-        boxShadow: edition.current ? '0 0 40px rgba(96,165,250,0.07)' : 'var(--mat-liquid-shadow)',
+        boxShadow: 'var(--mat-liquid-shadow)',
       }}
       initial={{ opacity: 0, x: fromLeft ? -50 : 50 }}
       animate={visible ? { opacity: 1, x: 0 } : { opacity: 0, x: fromLeft ? -50 : 50 }}
       transition={{ duration: 0.7, ease: EASE }}
     >
-      <GhostYear year={edition.year} color={accent} />
+      <GhostYear year={edition.year} />
       <div className="relative z-10 p-7" dir={isRtl ? 'rtl' : 'ltr'}>
 
         <motion.div
@@ -64,12 +61,12 @@ function Card({ edition, accent, isRtl, t, visible, fromLeft }: {
           animate={visible ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.5, delay: 0.15, ease: EASE }}
         >
-          <span className="font-outfit font-black text-4xl leading-none" style={{ color: accent }}>
+          <span className="font-outfit font-black text-4xl leading-none" style={{ color: 'var(--text-primary)' }}>
             {edition.year}
           </span>
           {edition.current && (
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full text-white"
-              style={{ background: 'linear-gradient(to right,#06b6d4,#3b82f6,#8b5cf6)' }}>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full"
+              style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--border-strong)', color: 'var(--text-secondary)' }}>
               {t('history.currentBadge')}
             </span>
           )}
@@ -102,7 +99,7 @@ function Card({ edition, accent, isRtl, t, visible, fromLeft }: {
           transition={{ duration: 0.5, delay: 0.42, ease: EASE }}
         >
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
-            style={{ background: `${accent}18`, color: accent }}>
+            style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)', color: 'var(--text-secondary)' }}>
             <span className="font-bold">{edition.attendees}</span>
             <span className="opacity-70">{t('history.attendeesLabel')}</span>
           </div>
@@ -154,19 +151,6 @@ export default function HistoryTimeline() {
           />
         )}
 
-        {/* Light mode subtle decoration */}
-        {isLight && (
-          <>
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.04] via-transparent to-rose-500/[0.04]" />
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse, rgba(59,130,246,0.07) 0%, transparent 70%)', filter: 'blur(60px)' }} />
-          </>
-        )}
-
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(96,165,250,0.08) 0%, transparent 70%)' }}
-        />
 
         <div className="relative z-10 text-center px-6 py-20 max-w-4xl mx-auto w-full" dir={isRtl ? 'rtl' : 'ltr'}>
           <h1 className="font-outfit font-bold leading-[0.9] tracking-tight mb-6"
@@ -179,7 +163,8 @@ export default function HistoryTimeline() {
               {t('history.titleA')}
             </motion.span>
             <motion.span
-              className="block gradient-text pt-[0.2em] pb-[0.35em] leading-[1.1]"
+              className="block pt-[0.2em] pb-[0.35em] leading-[1.1]"
+              style={{ color: 'var(--text-tertiary)' }}
               initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45, duration: 0.8, ease: EASE }}>
               {t('history.titleB')}
@@ -213,7 +198,8 @@ export default function HistoryTimeline() {
             transform: 'translateX(-50%)',
             bottom: 0,
             scaleY: lineScaleY,
-            background: 'linear-gradient(to bottom,#06b6d4,#3b82f6,#8b5cf6)',
+            background: 'var(--text-tertiary)',
+            opacity: 0.4,
           }}
         />
 
@@ -228,13 +214,13 @@ export default function HistoryTimeline() {
           >
             <motion.div
               className="absolute w-8 h-8 rounded-full"
-              style={{ background: 'rgba(103,232,249,0.12)', border: '1px solid rgba(103,232,249,0.3)' }}
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)' }}
               animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             />
             <div
               className="w-3 h-3 rounded-full"
-              style={{ background: '#67e8f9', boxShadow: '0 0 16px #67e8f990' }}
+              style={{ background: 'var(--text-tertiary)', opacity: 0.7 }}
             />
           </motion.div>
         </div>
@@ -242,7 +228,6 @@ export default function HistoryTimeline() {
         {/* Cards */}
         <div className="flex flex-col" style={{ paddingTop: '17vh' }}>
           {editions.slice(0, 3).map((edition, i) => {
-            const accent = ACCENTS[i % ACCENTS.length];
             const visible = progress >= CARD_THRESHOLDS[i];
             const cardOnRight = isRtl ? i % 2 !== 0 : i % 2 === 0;
 
@@ -257,7 +242,7 @@ export default function HistoryTimeline() {
                   <div className="w-[calc(50%-14px)] flex justify-end pr-10">
                     {!cardOnRight && (
                       <div className="w-full max-w-[420px]">
-                        <Card edition={edition} accent={accent} isRtl={isRtl} t={t} visible={visible} fromLeft={true} />
+                        <Card edition={edition} isRtl={isRtl} t={t} visible={visible} fromLeft={true} />
                       </div>
                     )}
                   </div>
@@ -266,13 +251,13 @@ export default function HistoryTimeline() {
                     <motion.span
                       className="absolute top-6 font-outfit font-black text-sm whitespace-nowrap"
                       style={{
-                        color: accent,
+                        color: 'var(--text-tertiary)',
                         ...(cardOnRight
                           ? { left: '100%', paddingLeft: '10px' }
                           : { right: '100%', paddingRight: '10px' }),
                       }}
                       initial={{ opacity: 0 }}
-                      animate={visible ? { opacity: 0.65 } : { opacity: 0 }}
+                      animate={visible ? { opacity: 0.55 } : { opacity: 0 }}
                       transition={{ duration: 0.5, ease: EASE }}
                     >
                       {edition.year}
@@ -280,7 +265,7 @@ export default function HistoryTimeline() {
 
                     <motion.div
                       className="w-5 h-5 rounded-full border-2"
-                      style={{ borderColor: accent, background: 'var(--bg-base)', boxShadow: visible ? `0 0 20px ${accent}90` : 'none' }}
+                      style={{ borderColor: 'var(--border-strong)', background: 'var(--bg-base)' }}
                       initial={{ scale: 0, opacity: 0 }}
                       animate={visible ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
                       transition={{ duration: 0.45, ease: [0.34, 1.56, 0.64, 1] }}
@@ -290,7 +275,7 @@ export default function HistoryTimeline() {
                   <div className="w-[calc(50%-14px)] flex justify-start pl-10">
                     {cardOnRight && (
                       <div className="w-full max-w-[420px]">
-                        <Card edition={edition} accent={accent} isRtl={isRtl} t={t} visible={visible} fromLeft={false} />
+                        <Card edition={edition} isRtl={isRtl} t={t} visible={visible} fromLeft={false} />
                       </div>
                     )}
                   </div>
@@ -301,17 +286,17 @@ export default function HistoryTimeline() {
                   <div className="flex flex-col items-center pt-7 shrink-0">
                     <motion.div
                       className="w-3 h-3 rounded-full border-2 shrink-0"
-                      style={{ borderColor: accent, background: 'var(--bg-base)' }}
+                      style={{ borderColor: 'var(--border-strong)', background: 'var(--bg-base)' }}
                       initial={{ scale: 0 }} animate={visible ? { scale: 1 } : { scale: 0 }}
                       transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
                     />
                     {i < editions.length - 1 && (
                       <div className="flex-1 w-px mt-2"
-                        style={{ background: `linear-gradient(to bottom,${accent}60,transparent)` }} />
+                        style={{ background: 'var(--mat-liquid-border)' }} />
                     )}
                   </div>
                   <div className="flex-1 pb-10">
-                    <Card edition={edition} accent={accent} isRtl={isRtl} t={t} visible={visible} fromLeft={false} />
+                    <Card edition={edition} isRtl={isRtl} t={t} visible={visible} fromLeft={false} />
                   </div>
                 </div>
               </div>
@@ -330,13 +315,13 @@ export default function HistoryTimeline() {
         >
           <motion.div
             className="absolute w-10 h-10 rounded-full"
-            style={{ background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)' }}
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)' }}
             animate={progress >= 0.95 ? { scale: [1, 1.4, 1], opacity: [0.6, 0, 0.6] } : {}}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           />
           <div
             className="w-5 h-5 rounded-full border-2"
-            style={{ borderColor: '#a78bfa', background: 'var(--bg-base)', boxShadow: '0 0 24px #a78bfa90' }}
+            style={{ borderColor: 'var(--border-strong)', background: 'var(--bg-base)' }}
           />
         </motion.div>
       </div>
@@ -358,10 +343,6 @@ export default function HistoryTimeline() {
             color="#818cf8"
             speed={1.2}
             className="absolute inset-0 w-full h-full"
-          />
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(96,165,250,0.12) 0%, transparent 70%)' }}
           />
 
           {editions[3] && (
@@ -385,14 +366,12 @@ export default function HistoryTimeline() {
 
               <motion.h2
                 className="font-outfit font-bold leading-[0.9] tracking-tight mb-4"
-                style={{ fontSize: 'clamp(2rem, 5vw, 4rem)' }}
+                style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', color: '#ffffff' }}
                 initial={{ opacity: 0, y: 24 }}
                 animate={progress >= 0.97 ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
                 transition={{ duration: 0.7, delay: 0.35, ease: EASE }}
               >
-                <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent inline-block py-[0.15em] leading-[1.1]">
-                  {editions[3].title}
-                </span>
+                {editions[3].title}
               </motion.h2>
 
               <motion.p
@@ -420,7 +399,7 @@ export default function HistoryTimeline() {
                 transition={{ duration: 0.5, delay: 0.8 }}
               >
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
-                  style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }}>
+                  style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.12)' }}>
                   <span className="font-bold">{editions[3].attendees}</span>
                   <span className="opacity-70">{t('history.attendeesLabel')}</span>
                 </div>
@@ -435,7 +414,7 @@ export default function HistoryTimeline() {
 
           <div
             className="absolute bottom-0 left-0 right-0 h-px"
-            style={{ background: 'linear-gradient(to right, transparent, #06b6d4, #3b82f6, #8b5cf6, transparent)' }}
+            style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.12), transparent)' }}
           />
         </motion.div>
       </div>

@@ -174,16 +174,8 @@ function ResearcherCard({ student, index }: { student: AchievementStudent; index
 function SectionHeading({ label }: { label: string }) {
   return (
     <h2 className="font-outfit font-black mb-8"
-      style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', lineHeight: 1.2 }}>
-      <span style={{
-        background: 'linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        display: 'inline-block',
-        paddingBottom: '0.1em',
-      }}>
-        {label}
-      </span>
+      style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', lineHeight: 1.2, color: 'var(--text-primary)' }}>
+      {label}
     </h2>
   );
 }

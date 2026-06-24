@@ -14,10 +14,6 @@ const BG_GRADIENTS = [
   'linear-gradient(145deg, #030f0a 0%, #061a10 50%, #041209 100%)',
 ];
 
-const SITE_GRADIENT = 'linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6)';
-
-const GLOW_COLORS = ['#06b6d4', '#8b5cf6', '#10b981'];
-
 const COVER_IMAGES = [
   '/images/attends/1.jpg',
   '/images/gallery/DSC02581.jpg',
@@ -102,21 +98,8 @@ function EditionCard({
             }}
           />
 
-          {/* Glow orb */}
-          <motion.div
-            className="absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl"
-            style={{ background: GLOW_COLORS[index] }}
-            animate={{ opacity: hovered ? 0.28 : 0.12 }}
-            transition={{ duration: 0.4 }}
-          />
-
-          {/* Second orb bottom-left */}
-          <motion.div
-            className="absolute -bottom-16 -left-12 w-40 h-40 rounded-full blur-3xl"
-            style={{ background: GLOW_COLORS[index] }}
-            animate={{ opacity: hovered ? 0.18 : 0.06 }}
-            transition={{ duration: 0.4 }}
-          />
+          {/* Subtle top highlight */}
+          <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
 
           {/* Gradient overlays — ProfileCard style */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/20" />
@@ -134,15 +117,15 @@ function EditionCard({
             {/* Edition badge */}
             <motion.div variants={itemVariants} className="flex items-center gap-2">
               <span
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase text-white/75"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase text-white/60"
                 style={{
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.14)',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
                 }}
               >
                 <span
-                  className="w-[18px] h-[18px] rounded-full flex items-center justify-center text-[9px] font-black text-white"
-                  style={{ background: SITE_GRADIENT }}
+                  className="w-[18px] h-[18px] rounded-full flex items-center justify-center text-[9px] font-black"
+                  style={{ background: 'rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.75)' }}
                 >
                   {edition.number}
                 </span>
@@ -177,15 +160,11 @@ function EditionCard({
               <motion.span
                 className="flex items-center justify-center w-full py-2.5 rounded-2xl text-[13px] font-semibold text-white"
                 animate={{
-                  background: hovered
-                    ? SITE_GRADIENT
-                    : 'rgba(255,255,255,0.08)',
-                  borderColor: hovered
-                    ? 'transparent'
-                    : 'rgba(255,255,255,0.14)',
+                  background: hovered ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.07)',
+                  borderColor: hovered ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.12)',
                 }}
-                transition={{ duration: 0.3 }}
-                style={{ border: '1px solid rgba(255,255,255,0.14)' }}
+                transition={{ duration: 0.25 }}
+                style={{ border: '1px solid rgba(255,255,255,0.12)' }}
               >
                 {t('achievements.viewEdition')} ↗
               </motion.span>
@@ -215,17 +194,12 @@ export default function AchievementsPage() {
         className="px-5 md:px-8 mb-14 md:mb-18 text-center"
       >
         <h1
-          className="font-outfit font-black leading-[1.1] inline"
-          style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', color: 'var(--text-primary)' }}
+          className="font-outfit font-black leading-[1.1]"
+          style={{ fontSize: 'clamp(2rem, 5vw, 4rem)' }}
         >
-          {t('achievements.titleA')}{' '}
-          <span style={{
-            background: 'linear-gradient(to right, #06b6d4, #8b5cf6)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}>
-            {t('achievements.titleB')}
-          </span>
+          <span style={{ color: 'var(--text-primary)' }}>{t('achievements.titleA')}</span>
+          {' '}
+          <span style={{ color: 'var(--text-tertiary)' }}>{t('achievements.titleB')}</span>
         </h1>
       </motion.div>
 
