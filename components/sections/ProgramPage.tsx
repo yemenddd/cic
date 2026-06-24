@@ -18,19 +18,17 @@ type Session = {
   readonly color: string;
 };
 
-const COLLAPSED_OFFSETS = [
-  'top-6',
-  'top-[calc(1.5rem+0.75rem)]',
-  'top-[calc(1.5rem+1.5rem)]',
-  'top-[calc(1.5rem+3rem)]',
-];
+const CARD_H  = 144; // h-36 in px
+const CARD_GAP = 16; // gap between expanded cards
+const BASE_TOP = 24; // top-6 = 24px
 
-const EXPANDED_OFFSETS = [
-  'top-6',
-  'top-[calc(1.5rem+144px+1rem)]',
-  'top-[calc(1.5rem+288px+2rem)]',
-  'top-[calc(1.5rem+432px+3rem)]',
-];
+// Collapsed: doubling offsets so cards peek behind each other
+const COLLAPSED_TOPS = [0, 12, 24, 48].map(v => BASE_TOP + v);
+
+// Expanded: evenly spaced
+const expandedTop = (i: number) => BASE_TOP + i * (CARD_H + CARD_GAP);
+
+const SPRING = { type: 'spring' as const, stiffness: 260, damping: 28, mass: 0.8 };
 
 /* ─── Stacked day cards ─── */
 function DayStack({ day, sessions, label, date, collapseLabel }: {
@@ -41,7 +39,9 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
   collapseLabel: string;
 }) {
   const [isActive, setIsActive] = useState(false);
-  const expandedHeight = sessions.length * 144 + (sessions.length - 1) * 16 + 24 + 40;
+
+  const expandedH = BASE_TOP + sessions.length * CARD_H + (sessions.length - 1) * CARD_GAP + 44;
+  const collapsedH = 208; // 13rem
 
   return (
     <div className="flex flex-col">
@@ -58,21 +58,26 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
         <p className="text-base" style={{ color: 'var(--text-secondary)' }}>{date}</p>
       </motion.div>
 
-      <div
-        className="relative w-full cursor-pointer transition-all duration-1000 ease-[cubic-bezier(0.075,0.82,0.165,1)]"
-        style={{ height: isActive ? `${expandedHeight}px` : '13rem', overflow: isActive ? 'visible' : 'hidden' }}
+      {/* Container — height animates via spring */}
+      <motion.div
+        className="relative w-full cursor-pointer"
+        animate={{ height: isActive ? expandedH : collapsedH }}
+        transition={SPRING}
+        style={{ overflow: 'hidden' }}
         onClick={() => !isActive && setIsActive(true)}
       >
         {sessions.map((session, i) => (
-          <div
+          <motion.div
             key={i}
-            className={[
-              'absolute right-0 left-0',
-              'flex flex-row items-start gap-4',
-              'h-36 rounded-2xl px-4 sm:px-5 pt-4 pb-3 backdrop-blur-xl',
-              'transition-all duration-1000 ease-[cubic-bezier(0.075,0.82,0.165,1)]',
-              isActive ? EXPANDED_OFFSETS[i] : COLLAPSED_OFFSETS[i],
-            ].join(' ')}
+            className="absolute right-0 left-0 flex flex-row items-start gap-4 h-36 rounded-2xl px-4 sm:px-5 pt-4 pb-3 backdrop-blur-xl"
+            initial={{ top: COLLAPSED_TOPS[i] ?? BASE_TOP }}
+            animate={{ top: isActive ? expandedTop(i) : (COLLAPSED_TOPS[i] ?? BASE_TOP) }}
+            transition={{
+              ...SPRING,
+              delay: isActive
+                ? i * 0.055          // expand: top card first
+                : (sessions.length - 1 - i) * 0.04, // collapse: bottom card first
+            }}
             style={{
               background: 'var(--mat-liquid-bg)',
               border: '1px solid var(--mat-liquid-border)',
@@ -108,15 +113,16 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
                 className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
               />
             </div>
-          </div>
+          </motion.div>
         ))}
 
-        <div
-          className={[
-            'absolute right-0 transition-all duration-300 ease-in-out',
-            isActive ? 'pointer-events-auto visible opacity-100' : 'pointer-events-none invisible opacity-0',
-          ].join(' ')}
-          style={{ top: `${expandedHeight - 32}px` }}
+        {/* Collapse button */}
+        <motion.div
+          className="absolute right-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isActive ? 1 : 0, top: expandedH - 36 }}
+          transition={{ duration: 0.25, delay: isActive ? sessions.length * 0.055 + 0.15 : 0 }}
+          style={{ pointerEvents: isActive ? 'auto' : 'none' }}
           onClick={(e) => { e.stopPropagation(); setIsActive(false); }}
         >
           <button
@@ -127,8 +133,8 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
           >
             {collapseLabel}
           </button>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
