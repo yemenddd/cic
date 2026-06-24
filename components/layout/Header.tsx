@@ -169,20 +169,61 @@ export default function Header() {
           {/* ── Right controls ── */}
           <div className="flex items-center gap-2 shrink-0">
 
-            {/* Theme toggle */}
+            {/* Theme toggle — sun | pill | moon */}
             <button
               onClick={toggleTheme}
               aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
-              className="hidden md:flex w-8 h-8 items-center justify-center rounded-full transition-all duration-200"
-              style={{
-                background:           overDark ? 'rgba(255,255,255,0.10)' : 'var(--mat-liquid-bg)',
-                backdropFilter:       'blur(20px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                border:               overDark ? '1px solid rgba(255,255,255,0.18)' : '1px solid var(--mat-liquid-border)',
-                color:                overDark ? 'rgba(255,255,255,0.80)' : 'var(--text-secondary)',
-              }}
+              className="hidden md:flex items-center gap-1.5 select-none"
+              dir="ltr"
             >
-              {isLight ? <Moon size={13} /> : <Sun size={13} />}
+              <Sun
+                size={13}
+                style={{
+                  color:      overDark ? 'rgba(255,255,255,0.55)' : 'var(--text-tertiary)',
+                  transition: 'color 0.2s',
+                  flexShrink: 0,
+                }}
+              />
+              <div
+                style={{
+                  position:   'relative',
+                  width:       38,
+                  height:      21,
+                  borderRadius: 99,
+                  background:  overDark
+                    ? 'rgba(255,255,255,0.12)'
+                    : isLight ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.10)',
+                  border:      overDark
+                    ? '1px solid rgba(255,255,255,0.20)'
+                    : '1px solid var(--mat-liquid-border)',
+                  display:    'flex',
+                  alignItems: 'center',
+                  padding:    '2.5px',
+                  transition: 'background 0.25s ease, border-color 0.25s ease',
+                  cursor:     'pointer',
+                }}
+              >
+                <div
+                  style={{
+                    width:      15,
+                    height:     15,
+                    borderRadius: '50%',
+                    background: '#ffffff',
+                    boxShadow:  '0 1px 3px rgba(0,0,0,0.30)',
+                    transform:  `translateX(${isLight ? 0 : 18}px)`,
+                    transition: 'transform 0.25s cubic-bezier(0.16,1,0.3,1)',
+                    flexShrink: 0,
+                  }}
+                />
+              </div>
+              <Moon
+                size={13}
+                style={{
+                  color:      overDark ? 'rgba(255,255,255,0.55)' : 'var(--text-tertiary)',
+                  transition: 'color 0.2s',
+                  flexShrink: 0,
+                }}
+              />
             </button>
 
             {/* Language switcher */}

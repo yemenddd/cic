@@ -102,8 +102,8 @@ export default function CircularGallerySection() {
         {/* Ambient glow */}
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full opacity-15 blur-3xl"
-            style={{ background: 'radial-gradient(ellipse, #06b6d4 0%, #7c3aed 50%, transparent 70%)' }}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full opacity-[0.06] blur-3xl"
+            style={{ background: 'radial-gradient(ellipse, #ffffff 0%, transparent 70%)' }}
           />
         </div>
 
@@ -113,16 +113,9 @@ export default function CircularGallerySection() {
           className="absolute inset-x-0 top-28 md:top-44 z-20 text-center px-6 pointer-events-none"
           dir={isRtl ? 'rtl' : 'ltr'}
         >
-          <h2 className="text-4xl font-black text-white sm:text-5xl leading-tight">
-            {titleA}
-            <span style={{
-              background: 'linear-gradient(135deg, #06b6d4, #a78bfa)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>
-              {titleB}
-            </span>
+          <h2 className="text-4xl font-black sm:text-5xl leading-tight">
+            <span style={{ color: 'rgba(255,255,255,0.5)' }}>{titleA}</span>
+            <span style={{ color: '#ffffff' }}>{titleB}</span>
           </h2>
           <p className="mt-3 text-sm text-white/40 max-w-sm mx-auto">{subtitle}</p>
         </motion.div>

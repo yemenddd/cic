@@ -6,6 +6,7 @@ import { Lightbulb, FlaskConical, Users, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useLang } from '@/lib/i18n';
+import { useTheme } from '@/lib/theme-context';
 import CircularGallerySection from '@/components/sections/CircularGallerySection';
 
 /* ─── Animated counter ─── */
@@ -101,7 +102,6 @@ const Grid = () => (
 );
 
 const PILLAR_ICONS = [Lightbulb, FlaskConical, Users];
-const PILLAR_COLORS = ['#67e8f9', '#818cf8', '#a78bfa'];
 
 const STAT_META = [
   { target: 4,   suffix: '' },
@@ -171,8 +171,9 @@ function HeroSection() {
 ───────────────────────────────────────── */
 function MissionSection() {
   const { t, dir } = useLang();
+  const { theme } = useTheme();
   return (
-    <div className="relative" style={{ background: '#ffffff' }}>
+    <div className="relative" style={{ background: theme === 'light' ? '#ffffff' : 'var(--bg-base)' }}>
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute right-0 top-0 w-1/2 h-full"
           style={{ background: 'radial-gradient(ellipse 60% 50% at 80% 50%, rgba(59,130,246,0.07) 0%, transparent 70%)' }} />
@@ -202,26 +203,18 @@ function MissionSection() {
 
           {/* Text */}
           <div className="flex-1" dir={dir}>
-            <h2 className="font-outfit font-bold tracking-tight mb-10"
-              style={{ fontSize: 'clamp(2.2rem, 4.5vw, 4rem)' }}>
+            <h2 className="font-outfit font-black tracking-tight mb-10"
+              style={{ fontSize: 'clamp(2.2rem, 4.5vw, 4rem)', letterSpacing: '-0.02em' }}>
               <motion.span
                 className="block"
-                style={{
-                  lineHeight: 1,
-                  paddingTop: '0.15em',
-                  paddingBottom: '0.15em',
-                  background: 'var(--metallic-grad)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
+                style={{ lineHeight: 1, paddingTop: '0.15em', paddingBottom: '0.15em', color: 'var(--text-primary)' }}
                 {...inViewWord(0)}
               >
                 {t('about.missionTitleA')}
               </motion.span>
               <motion.span
-                className="block gradient-text"
-                style={{ lineHeight: 1.1, paddingTop: '0.1em', paddingBottom: '0.3em' }}
+                className="block"
+                style={{ lineHeight: 1.1, paddingTop: '0.1em', paddingBottom: '0.3em', color: 'var(--text-tertiary)' }}
                 {...inViewWord(0.1)}
               >
                 {t('about.missionTitleB')}
@@ -241,9 +234,10 @@ function MissionSection() {
               <Link
                 href="/history"
                 dir={dir}
-                className="inline-flex items-center gap-2.5 text-sm font-semibold gradient-text group"
+                className="inline-flex items-center gap-2.5 text-sm font-semibold group"
+                style={{ color: 'var(--text-secondary)' }}
               >
-                <ArrowLeft size={15} className="text-blue-400 transition-transform duration-200 group-hover:-translate-x-1" />
+                <ArrowLeft size={15} style={{ color: 'var(--text-tertiary)' }} className="transition-transform duration-200 group-hover:-translate-x-1" />
                 {t('about.missionLink')}
               </Link>
             </motion.div>
@@ -410,26 +404,18 @@ function StatsSection() {
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 w-full text-center" dir={dir}>
-        <h2 className="font-outfit font-bold tracking-tight mb-16"
-          style={{ fontSize: 'clamp(2.6rem, 5vw, 4.5rem)' }}>
+        <h2 className="font-outfit font-black tracking-tight mb-16"
+          style={{ fontSize: 'clamp(2.6rem, 5vw, 4.5rem)', letterSpacing: '-0.02em' }}>
           <motion.span
             className="block"
-            style={{
-              lineHeight: 1,
-              paddingTop: '0.15em',
-              paddingBottom: '0.3em',
-              background: 'var(--metallic-grad)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}
+            style={{ lineHeight: 1, paddingTop: '0.15em', paddingBottom: '0.15em', color: 'var(--text-primary)' }}
             {...inViewWord(0)}
           >
             {t('about.statsTitleA')}
           </motion.span>
           <motion.span
-            className="block gradient-text"
-            style={{ lineHeight: 1.1, paddingTop: '0.1em', paddingBottom: '0.45em' }}
+            className="block"
+            style={{ lineHeight: 1.1, paddingTop: '0.1em', paddingBottom: '0.45em', color: 'var(--text-tertiary)' }}
             {...inViewWord(0.1)}
           >
             {t('about.statsTitleB')}
@@ -473,90 +459,130 @@ function StatsSection() {
 ───────────────────────────────────────── */
 function ValuesSection() {
   const { t, tx, dir } = useLang();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+  const isRtl = dir === 'rtl';
 
   const pillarData = tx<{ title: string; body: string }[]>('about.pillars');
   const pillars = PILLAR_ICONS.map((Icon, i) => ({
     icon: Icon,
-    color: PILLAR_COLORS[i],
+    num: String(i + 1).padStart(2, '0'),
     title: pillarData?.[i]?.title ?? '',
-    body: pillarData?.[i]?.body ?? '',
+    body:  pillarData?.[i]?.body  ?? '',
   }));
 
   return (
-    <div className="relative py-20 md:py-32" style={{ background: 'var(--bg-base)' }}>
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[700px] h-[400px] rounded-full"
-          style={{ background: 'radial-gradient(ellipse, rgba(139,92,246,0.08) 0%, transparent 70%)', filter: 'blur(60px)' }} />
-        <div className="absolute right-0 top-1/4 w-[400px] h-[400px] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 70%)', filter: 'blur(80px)' }} />
-      </div>
-
+    <div
+      className="relative py-24 md:py-36"
+      style={{ background: isLight ? '#fafafa' : 'var(--bg-base)' }}
+    >
       <div className="relative z-10 max-w-7xl mx-auto px-6 w-full" dir={dir}>
-        <div className="text-center mb-10 lg:mb-14">
-          <h2 className="font-outfit font-bold tracking-tight"
-            style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)' }}>
-            <motion.span
-              className="block"
-              style={{
-                lineHeight: 1,
-                paddingTop: '0.15em',
-                paddingBottom: '0.15em',
-                background: 'var(--metallic-grad)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-              {...inViewWord(0)}
-            >
-              {t('about.valsTitleA')}
-            </motion.span>
-            <motion.span
-              className="block gradient-text"
-              style={{ lineHeight: 1.1, paddingTop: '0.1em', paddingBottom: '0.3em' }}
-              {...inViewWord(0.1)}
-            >
-              {t('about.valsTitleB')}
-            </motion.span>
-          </h2>
+
+        {/* ── Heading ── */}
+        <div className="mb-16 lg:mb-24 text-center">
+          <motion.h2
+            className="font-outfit font-black"
+            style={{
+              fontSize:      'clamp(2.8rem, 5.5vw, 5.5rem)',
+              lineHeight:    1.05,
+              color:         'var(--text-primary)',
+              letterSpacing: '-0.02em',
+            }}
+            {...inViewWord(0)}
+          >
+            {t('about.valsTitleA')}
+          </motion.h2>
+          <motion.h2
+            className="font-outfit font-black"
+            style={{
+              fontSize:      'clamp(2.8rem, 5.5vw, 5.5rem)',
+              lineHeight:    1.1,
+              color:         'var(--text-tertiary)',
+              letterSpacing: '-0.02em',
+            }}
+            {...inViewWord(0.08)}
+          >
+            {t('about.valsTitleB')}
+          </motion.h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-4 lg:gap-6">
+        {/* ── Pillar cards ── */}
+        <div className="grid md:grid-cols-3 gap-5 lg:gap-7">
           {pillars.map((pillar, i) => (
             <motion.div
               key={pillar.title}
-              {...inView(i * 0.1)}
-              className="relative rounded-2xl p-5 lg:p-8 flex flex-col transition-all duration-300 hover:-translate-y-1"
+              {...inView(i * 0.12)}
+              className="relative flex flex-col overflow-hidden"
               style={{
-                background:           'var(--mat-liquid-bg)',
-                backdropFilter:       'blur(20px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                border:               '1px solid var(--mat-liquid-border)',
-                boxShadow:            'var(--mat-liquid-shadow)',
+                borderRadius: 20,
+                background:   isLight ? '#ffffff' : 'rgba(255,255,255,0.03)',
+                border:       '1px solid var(--mat-liquid-border)',
+                padding:      'clamp(28px, 4vw, 44px)',
               }}
             >
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center mb-5 shrink-0"
+              {/* Faded giant number — decorative */}
+              <span
+                className="absolute select-none pointer-events-none font-black"
                 style={{
-                  background: `${pillar.color}15`,
-                  border: `1px solid ${pillar.color}30`,
-                  boxShadow: `0 0 20px ${pillar.color}20`,
+                  fontFamily: 'var(--font-outfit)',
+                  fontSize:   'clamp(6rem, 12vw, 10rem)',
+                  lineHeight: 1,
+                  color:      'var(--text-primary)',
+                  opacity:    0.035,
+                  bottom:     -8,
+                  ...(isRtl ? { left: 12 } : { right: 12 }),
                 }}
               >
-                <pillar.icon size={18} style={{ color: pillar.color }} />
-              </div>
-              <div
-                className="absolute top-0 inset-x-0 h-[1px] rounded-t-2xl"
-                style={{ background: `linear-gradient(90deg, transparent, ${pillar.color}40, transparent)` }}
+                {pillar.num}
+              </span>
+
+              {/* Small number tag */}
+              <span
+                className="font-black block mb-8"
+                style={{
+                  fontFamily:    'var(--font-outfit)',
+                  fontSize:      11,
+                  letterSpacing: '0.22em',
+                  color:         'var(--text-tertiary)',
+                }}
+              >
+                {pillar.num}
+              </span>
+
+              {/* Icon */}
+              <pillar.icon
+                size={20}
+                className="mb-6 shrink-0"
+                style={{ color: 'var(--text-secondary)', opacity: 0.7 }}
               />
-              <h3 className="font-outfit font-bold text-xl mb-3" style={{ color: 'var(--text-primary)' }}>
+
+              {/* Title */}
+              <h3
+                className="font-outfit font-black mb-3"
+                style={{
+                  fontSize:      'clamp(1.3rem, 2.2vw, 1.65rem)',
+                  color:         'var(--text-primary)',
+                  lineHeight:    1.2,
+                  letterSpacing: '-0.01em',
+                }}
+              >
                 {pillar.title}
               </h3>
-              <p className="text-[14px] leading-relaxed flex-1" style={{ color: 'var(--text-secondary)' }}>
+
+              {/* Body */}
+              <p
+                className="leading-relaxed"
+                style={{
+                  fontSize: 'clamp(13px, 1.4vw, 15px)',
+                  color:    'var(--text-secondary)',
+                }}
+              >
                 {pillar.body}
               </p>
             </motion.div>
           ))}
         </div>
+
       </div>
     </div>
   );
