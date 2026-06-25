@@ -267,7 +267,7 @@ export default function Header() {
                       backdropFilter:       'blur(80px) saturate(200%)',
                       WebkitBackdropFilter: 'blur(80px) saturate(200%)',
                       border:               '1px solid var(--header-glass-border)',
-                      boxShadow:            '0 8px 40px rgba(0,0,0,0.35)',
+                      boxShadow:            '0 2px 12px rgba(0,0,0,0.08)',
                     }}
                   >
                     {LANG_OPTIONS.map((opt, i) => {
