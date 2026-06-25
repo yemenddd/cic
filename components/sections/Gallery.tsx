@@ -50,19 +50,37 @@ const GALLERY_IMAGES = [
   "/images/gallery/نسخة من DSC09836.jpg",
 ];
 
+const MUSIC: Record<string, string> = {
+  ar: '/music/5abaya_final_ar.wav',
+  tr: '/music/Ymenddd_tr.mp3',
+  en: '/music/gallery_en.m4a',
+};
+
 export default function Gallery() {
-  const { t, dir } = useLang();
+  const { t, dir, lang } = useLang();
   const isRtl = dir === 'rtl';
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const src = MUSIC[lang] ?? MUSIC.en;
+
+  // When language changes, reload the audio at the same play state
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const wasPlaying = !audio.paused;
+    audio.pause();
+    audio.load();
+    audio.volume = 0.1;
+    if (wasPlaying) audio.play().catch(() => {});
+  }, [src]);
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = 0.1;
       audioRef.current.play()
         .then(() => setIsPlaying(true))
-        .catch(() => setIsPlaying(false)); // Browser autoplay policy might block this
+        .catch(() => setIsPlaying(false));
     }
   }, []);
 
@@ -80,7 +98,7 @@ export default function Gallery() {
   return (
     <section id="gallery" className="relative min-h-screen overflow-hidden" style={{ background: 'var(--bg-base)' }}>
       
-      <audio ref={audioRef} src="/music/gallery.m4a" loop />
+      <audio ref={audioRef} src={src} loop />
 
       {/* Audio Toggle Button */}
       <div className={`absolute top-28 z-30 ${isRtl ? 'left-6' : 'right-6'}`}>
