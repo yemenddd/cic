@@ -51,7 +51,7 @@ const GALLERY_IMAGES = [
 ];
 
 const MUSIC: Record<string, string> = {
-  ar: '/music/5abaya_final_ar.wav',
+  ar: '/music/5abaya_final_ar.mp3',
   tr: '/music/Ymenddd_tr.mp3',
   en: '/music/gallery_en.m4a',
 };
