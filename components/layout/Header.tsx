@@ -363,9 +363,7 @@ export default function Header() {
             transition={{ duration: 0.25 }}
             className="fixed inset-0 z-40 md:hidden flex flex-col"
             style={{
-              background:           'var(--mat-black-bg)',
-              backdropFilter:       'blur(40px) saturate(160%)',
-              WebkitBackdropFilter: 'blur(40px) saturate(160%)',
+              background: isLight ? '#f2f2f7' : '#0d0d12',
             }}
           >
 
@@ -373,7 +371,7 @@ export default function Header() {
             <div
               className="relative flex items-center justify-between px-6 h-14 shrink-0"
               dir={lang === 'ar' ? 'rtl' : 'ltr'}
-              style={{ borderBottom: '1px solid var(--mat-black-border)' }}
+              style={{ borderBottom: '1px solid var(--border-subtle)' }}
             >
               <Link
                 href="/"
