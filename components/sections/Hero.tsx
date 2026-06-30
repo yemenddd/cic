@@ -83,14 +83,23 @@ export default function Hero() {
             <h1 className={`mb-6 flex flex-col gap-0 ${lang === 'en' ? 'text-left' : 'text-right'}`}>
               {lang === 'ar' ? (
                 <>
-                  <span className="block w-full text-right -mb-10 md:-mb-20">
+                  <span className="block w-full text-right">
                     <motion.span className="inline-block" {...revealWord(0.1)}>
-                      <img
-                        src="/images/logos/من_العقل.svg"
-                        alt="من العقل"
-                        className="object-right translate-x-[4%] md:translate-x-[6%] w-[280px] sm:w-[400px] md:w-[500px] max-w-full h-auto"
-                        style={{ filter: isLight ? 'brightness(0)' : 'brightness(0) invert(1)' }}
-                      />
+                      <span
+                        dir="rtl"
+                        style={{
+                          fontFamily:   'var(--font-thmanyah)',
+                          fontWeight:   900,
+                          fontSize:     'clamp(4rem, 11vw, 7.5rem)',
+                          lineHeight:   1.05,
+                          display:      'inline-block',
+                          paddingTop:   '0.1em',
+                          paddingBottom:'0.2em',
+                          color:        'var(--text-primary)',
+                        }}
+                      >
+                        من العقل
+                      </span>
                     </motion.span>
                   </span>
                   <span className="block w-full text-right">
