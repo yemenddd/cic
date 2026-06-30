@@ -394,17 +394,33 @@ export default function Header() {
                 </span>
               </Link>
 
-              {/* Close button — same bare style as hamburger */}
-              <button
-                onClick={() => setMenuOpen(false)}
-                aria-label="Close menu"
-                className="w-8 h-8 flex flex-col items-center justify-center gap-[5px] shrink-0"
-              >
-                <span className="block h-[1.5px] w-[18px] rounded-full origin-center rotate-45 translate-y-[3.5px]"
-                  style={{ backgroundColor: isLight ? 'var(--text-primary)' : 'rgba(255,255,255,0.88)' }} />
-                <span className="block h-[1.5px] w-[18px] rounded-full origin-center -rotate-45 -translate-y-[3.5px]"
-                  style={{ backgroundColor: isLight ? 'var(--text-primary)' : 'rgba(255,255,255,0.88)' }} />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                {/* Theme toggle */}
+                <button
+                  onClick={toggleTheme}
+                  aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
+                  className="w-8 h-8 flex items-center justify-center rounded-full shrink-0"
+                  style={{
+                    background: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.10)',
+                    border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.12)',
+                    color: isLight ? 'var(--text-secondary)' : 'rgba(255,255,255,0.65)',
+                  }}
+                >
+                  {isLight ? <Moon size={13} /> : <Sun size={13} />}
+                </button>
+
+                {/* Close button */}
+                <button
+                  onClick={() => setMenuOpen(false)}
+                  aria-label="Close menu"
+                  className="w-8 h-8 flex flex-col items-center justify-center gap-[5px] shrink-0"
+                >
+                  <span className="block h-[1.5px] w-[18px] rounded-full origin-center rotate-45 translate-y-[3.5px]"
+                    style={{ backgroundColor: isLight ? 'var(--text-primary)' : 'rgba(255,255,255,0.88)' }} />
+                  <span className="block h-[1.5px] w-[18px] rounded-full origin-center -rotate-45 -translate-y-[3.5px]"
+                    style={{ backgroundColor: isLight ? 'var(--text-primary)' : 'rgba(255,255,255,0.88)' }} />
+                </button>
+              </div>
             </div>
 
             {/* Nav links */}
@@ -511,22 +527,6 @@ export default function Header() {
                   <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
                     {t('nav.date')}
                   </span>
-                  {/* Theme toggle */}
-                  <button
-                    onClick={toggleTheme}
-                    aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
-                    className="flex w-9 h-9 items-center justify-center rounded-full shrink-0"
-                    style={{
-                      background:           'var(--mat-liquid-bg)',
-                      backdropFilter:       'blur(20px)',
-                      WebkitBackdropFilter: 'blur(20px)',
-                      border:               '1px solid var(--mat-liquid-border)',
-                      color:                'var(--text-secondary)',
-                      boxShadow:            'inset 0 1px 0 var(--mat-liquid-inset)',
-                    }}
-                  >
-                    {isLight ? <Moon size={14} /> : <Sun size={14} />}
-                  </button>
                 </div>
                 <a
                   href="/register"
