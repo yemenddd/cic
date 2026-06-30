@@ -369,38 +369,41 @@ export default function Header() {
             }}
           >
 
-            {/* Top bar */}
+            {/* Top bar — identical layout to main header */}
             <div
-              className="relative flex items-center justify-between px-6 h-14 shrink-0"
-              dir={lang === 'ar' ? 'rtl' : 'ltr'}
-              style={{ borderBottom: '1px solid var(--mat-black-border)' }}
+              className="flex items-center justify-between px-5 h-14 shrink-0"
+              style={{ borderBottom: isLight ? '1px solid rgba(0,0,0,0.07)' : '1px solid rgba(255,255,255,0.07)' }}
             >
               <Link
                 href="/"
                 onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-3"
+                className="flex items-center gap-3 shrink-0"
               >
                 <Image
                   src={isLight ? "/images/logos/logo_colored.png" : "/images/logos/logo_white.png"}
                   alt="CICT"
                   width={32}
                   height={32}
-                  className="w-[32px] h-[32px] object-contain opacity-90 shrink-0"
+                  className="w-[32px] h-[32px] object-contain opacity-90"
                 />
-                <span className="font-outfit font-bold text-[13px]" style={{ color: isLight ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.88)' }}>{t('footer.copyright')}</span>
+                <span
+                  className="font-outfit font-bold text-[13px] tracking-tight"
+                  style={{ color: isLight ? 'var(--text-primary)' : 'rgba(255,255,255,0.88)' }}
+                >
+                  {t('footer.copyright')}
+                </span>
               </Link>
+
+              {/* Close button — same bare style as hamburger */}
               <button
                 onClick={() => setMenuOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-lg shrink-0"
-                style={{
-                  background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.08)',
-                  border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.10)',
-                }}
                 aria-label="Close menu"
+                className="w-8 h-8 flex flex-col items-center justify-center gap-[5px] shrink-0"
               >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M1 1L13 13M13 1L1 13" stroke={isLight ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)'} strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
+                <span className="block h-[1.5px] w-[18px] rounded-full origin-center rotate-45 translate-y-[3.5px]"
+                  style={{ backgroundColor: isLight ? 'var(--text-primary)' : 'rgba(255,255,255,0.88)' }} />
+                <span className="block h-[1.5px] w-[18px] rounded-full origin-center -rotate-45 -translate-y-[3.5px]"
+                  style={{ backgroundColor: isLight ? 'var(--text-primary)' : 'rgba(255,255,255,0.88)' }} />
               </button>
             </div>
 
