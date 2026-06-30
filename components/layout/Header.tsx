@@ -363,9 +363,9 @@ export default function Header() {
             transition={{ duration: 0.25 }}
             className="fixed inset-0 z-40 md:hidden flex flex-col"
             style={{
-              background:           isLight ? 'rgba(248,248,250,0.97)' : 'rgba(10,10,16,0.97)',
-              backdropFilter:       'blur(24px) saturate(160%)',
-              WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+              background:           isLight ? 'rgba(242,242,247,0.78)' : 'rgba(10,10,16,0.78)',
+              backdropFilter:       'blur(40px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(40px) saturate(180%)',
             }}
           >
 
