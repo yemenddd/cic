@@ -368,21 +368,6 @@ export default function Header() {
               WebkitBackdropFilter: 'blur(40px) saturate(160%)',
             }}
           >
-            {/* Ambient orbs — give depth to the dark panel */}
-            <div
-              className="pointer-events-none absolute -top-32 -left-24 w-72 h-72 rounded-full"
-              style={{
-                background: 'radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%)',
-                filter:     'blur(40px)',
-              }}
-            />
-            <div
-              className="pointer-events-none absolute -bottom-24 -right-16 w-80 h-80 rounded-full"
-              style={{
-                background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)',
-                filter:     'blur(50px)',
-              }}
-            />
 
             {/* Top bar */}
             <div
@@ -455,10 +440,7 @@ export default function Header() {
                       {active ? (
                         <span
                           className="w-2 h-2 rounded-full shrink-0"
-                          style={{
-                            background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-violet))',
-                            boxShadow:  '0 0 8px rgba(6,182,212,0.5)',
-                          }}
+                          style={{ background: 'var(--text-tertiary)', opacity: 0.7 }}
                         />
                       ) : (
                         <span
@@ -499,10 +481,8 @@ export default function Header() {
                       dir={opt.dir}
                       className="flex flex-col items-center gap-1 py-3 rounded-xl text-[11px] font-semibold active:scale-95"
                       style={{
-                        background:  isActive
-                          ? 'linear-gradient(135deg, rgba(6,182,212,0.16), rgba(139,92,246,0.16))'
-                          : 'var(--mat-liquid-bg)',
-                        border:      `1px solid ${isActive ? 'rgba(103,232,249,0.25)' : 'var(--mat-liquid-border)'}`,
+                        background:  isActive ? 'var(--nav-active-bg)' : 'var(--mat-liquid-bg)',
+                        border:      `1px solid ${isActive ? 'var(--border-strong)' : 'var(--mat-liquid-border)'}`,
                         color:       isActive ? 'var(--text-primary)' : 'var(--text-tertiary)',
                         backdropFilter: 'blur(20px)',
                         boxShadow:   isActive ? 'inset 0 1px 0 var(--mat-liquid-inset)' : 'none',
@@ -511,12 +491,12 @@ export default function Header() {
                     >
                       <span
                         className="text-[8.5px] font-black tracking-widest"
-                        style={{ color: isActive ? '#67e8f9' : 'var(--text-tertiary)' }}
+                        style={{ color: isActive ? 'var(--text-primary)' : 'var(--text-tertiary)' }}
                       >
                         {opt.code.toUpperCase()}
                       </span>
                       <span>{opt.label}</span>
-                      {isActive && <Check size={9} style={{ color: '#67e8f9' }} />}
+                      {isActive && <Check size={9} style={{ color: 'var(--text-secondary)' }} />}
                     </button>
                   );
                 })}
