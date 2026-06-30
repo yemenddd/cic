@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 import { useLang } from '@/lib/i18n';
+import { useTheme } from '@/lib/theme-context';
 import { ACHIEVEMENT_EDITIONS } from '@/lib/achievements-data';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -178,7 +179,10 @@ function EditionCard({
 
 export default function AchievementsPage() {
   const { t, lang } = useLang();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const isRtl = lang === 'ar';
+  const titleGrad = 'linear-gradient(to right, #4a98e8, #6c3ecc)';
 
   return (
     <section
@@ -200,9 +204,11 @@ export default function AchievementsPage() {
           <span style={{ color: 'var(--text-primary)' }}>{t('achievements.titleA')}</span>
           {' '}
           <span style={{
-            background: 'linear-gradient(to right, #72d6f3, #2b64be)',
+            background: titleGrad,
             WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
+            color: 'transparent',
             display: 'inline-block',
             paddingTop: '0.2em',
             paddingBottom: '0.5em',

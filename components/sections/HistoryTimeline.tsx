@@ -120,6 +120,7 @@ export default function HistoryTimeline() {
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const isRtl = dir === 'rtl';
+  const titleGrad = 'linear-gradient(to right, #4a98e8, #6c3ecc)';
   const editions = tx<Edition[]>('history.editions') || [];
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -165,9 +166,11 @@ export default function HistoryTimeline() {
             <motion.span
               className="block leading-[1.1]"
               style={{
-                background: 'linear-gradient(to right, #72d6f3, #2b64be)',
+                background: titleGrad,
                 WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
+                color: 'transparent',
                 paddingTop: '0.2em',
                 paddingBottom: '0.5em',
               }}

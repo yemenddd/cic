@@ -107,14 +107,18 @@ export default function Hero() {
                       <span
                         dir="rtl"
                         style={{
-                          fontFamily:   'var(--font-thmanyah)',
-                          fontWeight:   900,
-                          fontSize:     'clamp(4rem, 11vw, 7.5rem)',
-                          lineHeight:   1.05,
-                          display:      'inline-block',
-                          paddingTop:   '0.1em',
-                          paddingBottom:'0.2em',
-                          color:        'var(--text-primary)',
+                          fontFamily:          'var(--font-thmanyah)',
+                          fontWeight:          900,
+                          fontSize:            'clamp(4rem, 11vw, 7.5rem)',
+                          lineHeight:          1.05,
+                          display:             'inline-block',
+                          paddingTop:          '0.1em',
+                          paddingBottom:       '0.2em',
+                          background:          'linear-gradient(to right, #4a98e8, #6c3ecc)',
+                          WebkitBackgroundClip:'text',
+                          backgroundClip:      'text',
+                          WebkitTextFillColor: 'transparent',
+                          color:               'transparent',
                         }}
                       >
                         إلى الآلة

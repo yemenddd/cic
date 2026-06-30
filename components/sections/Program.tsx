@@ -73,8 +73,8 @@ export default function Program() {
                 {t('program.titleA')}
               </motion.span>
               <motion.span
-                className="block gradient-text py-[0.15em] leading-[1.1]"
-                style={{ fontSize: 'clamp(2.2rem, 4.5vw, 4.2rem)' }}
+                className="block py-[0.15em] leading-[1.1]"
+                style={{ fontSize: 'clamp(2.2rem, 4.5vw, 4.2rem)', color: 'var(--text-tertiary)' }}
                 {...inViewWord(0.16)}
               >
                 {t('program.titleB')}

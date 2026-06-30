@@ -3,11 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
-import { useTheme } from '@/lib/theme-context';
 import { dict } from '@/lib/dictionary';
-import dynamic from 'next/dynamic';
-
-const SparklesCore = dynamic(() => import('@/components/ui/sparkles').then(m => ({ default: m.SparklesCore })), { ssr: false });
 
 type Session = {
   readonly time: string;
@@ -142,8 +138,6 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
 /* ─── Main page ─── */
 export default function ProgramPage() {
   const { t, dir, lang } = useLang();
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
   const isRtl = dir === 'rtl';
 
   const scheduleData = dict[lang].schedule;
@@ -171,20 +165,7 @@ export default function ProgramPage() {
       {/* ── Hero ── */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
 
-        {/* Sparkles — dark mode only */}
-        {!isLight && (
-          <SparklesCore
-            className="absolute inset-0 w-full h-full"
-            background="transparent"
-            particleColor="#818cf8"
-            particleDensity={60}
-            minSize={0.4}
-            maxSize={1.2}
-            speed={1.5}
-          />
-        )}
-
-        <h1 className="font-outfit font-bold leading-[0.9] tracking-tight mb-6 relative z-10"
+<h1 className="font-outfit font-bold leading-[0.9] tracking-tight mb-6 relative z-10"
           style={{ fontSize: 'clamp(2.8rem, 6vw, 5.5rem)' }}>
           <motion.span
             className="block"
@@ -194,7 +175,8 @@ export default function ProgramPage() {
             {t('program.titleA')}
           </motion.span>
           <motion.span
-            className="block py-[0.2em] leading-[1.1] bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-500 bg-clip-text text-transparent"
+            className="block py-[0.2em] leading-[1.1]"
+            style={{ color: 'var(--text-tertiary)' }}
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}>
             {t('program.titleB')}

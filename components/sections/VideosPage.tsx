@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
 import { DynamicFrameLayout } from '@/components/ui/dynamic-frame-layout';
-import { X, Film, Tv, Sparkles } from 'lucide-react';
+import { X, Film, Tv, Play } from 'lucide-react';
 import UniversalPlayer from '@/components/ui/video-player';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -89,7 +89,7 @@ const MULHAMOON_SECTION: FlatSection = {
   labelAr: 'برنامج ملهمون',
   labelEn: 'Mulhamoon',
   labelTr: 'Mulhamoon',
-  icon: <Sparkles size={14} />,
+  icon: <Play size={14} />,
   videos: [
     { id: 'XMZ4htBi20s', titleAr: 'ملهمون — الحلقة الأولى',   titleEn: 'Mulhamoon — Episode 1', titleTr: 'Mulhamoon — Bölüm 1' },
     { id: 'REGcpGlNvC8', titleAr: 'ملهمون — الحلقة الثانية',  titleEn: 'Mulhamoon — Episode 2', titleTr: 'Mulhamoon — Bölüm 2' },
@@ -168,7 +168,7 @@ export default function VideosPage() {
   const sectionIcon = (key: SectionKey) => {
     if (key === 'films') return <Film size={14} />;
     if (key === 'tv') return <Tv size={14} />;
-    return <Sparkles size={14} />;
+    return <Play size={14} />;
   };
 
   return (
@@ -196,7 +196,8 @@ export default function VideosPage() {
               {t('videos.titleA')}
             </motion.span>
             <motion.span
-              className="block gradient-text py-[0.15em] leading-[1.1]"
+              className="block py-[0.15em] leading-[1.1]"
+              style={{ color: 'var(--text-tertiary)' }}
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25, duration: 0.7, ease: EASE }}>
               {t('videos.titleB')}
@@ -228,7 +229,7 @@ export default function VideosPage() {
                   background: 'var(--mat-liquid-bg)',
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
-                  border: '1px solid var(--accent-blue)',
+                  border: '1px solid var(--border-strong)',
                   color: 'var(--text-primary)',
                   boxShadow: 'var(--mat-liquid-shadow)',
                 } : {
@@ -261,9 +262,9 @@ export default function VideosPage() {
                     onClick={() => setActiveEdition(i)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] md:text-[12px] font-medium transition-all duration-200"
                     style={activeEdition === i ? {
-                      background: 'rgba(99,179,237,0.12)',
-                      border: '1px solid rgba(99,179,237,0.4)',
-                      color: '#60a5fa',
+                      background: 'var(--mat-liquid-bg)',
+                      border: '1px solid var(--border-strong)',
+                      color: 'var(--text-primary)',
                     } : {
                       background: 'var(--mat-liquid-bg)',
                       border: '1px solid var(--mat-liquid-border)',
