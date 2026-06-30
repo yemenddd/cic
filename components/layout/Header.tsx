@@ -399,14 +399,10 @@ export default function Header() {
                 <button
                   onClick={toggleTheme}
                   aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
-                  className="w-8 h-8 flex items-center justify-center rounded-full shrink-0"
-                  style={{
-                    background: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.10)',
-                    border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.12)',
-                    color: isLight ? 'var(--text-secondary)' : 'rgba(255,255,255,0.65)',
-                  }}
+                  className="w-8 h-8 flex items-center justify-center shrink-0"
+                  style={{ color: isLight ? 'var(--text-secondary)' : 'rgba(255,255,255,0.55)' }}
                 >
-                  {isLight ? <Moon size={13} /> : <Sun size={13} />}
+                  {isLight ? <Moon size={15} /> : <Sun size={15} />}
                 </button>
 
                 {/* Close button */}
