@@ -380,21 +380,13 @@ export default function Header() {
                 onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-3"
               >
-                <div
-                  className="w-[28px] h-[28px] flex items-center justify-center rounded-lg shrink-0"
-                  style={{
-                    background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.08)',
-                    border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.10)',
-                  }}
-                >
-                  <Image
-                    src={isLight ? "/images/logos/logo_colored.png" : "/images/logos/logo_white.png"}
-                    alt="CICT"
-                    width={18}
-                    height={18}
-                    className="w-[18px] h-[18px] object-contain"
-                  />
-                </div>
+                <Image
+                  src={isLight ? "/images/logos/logo_colored.png" : "/images/logos/logo_white.png"}
+                  alt="CICT"
+                  width={32}
+                  height={32}
+                  className="w-[32px] h-[32px] object-contain opacity-90 shrink-0"
+                />
                 <span className="font-outfit font-bold text-[13px]" style={{ color: isLight ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.88)' }}>{t('footer.copyright')}</span>
               </Link>
               <button
