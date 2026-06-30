@@ -521,13 +521,8 @@ export default function Header() {
                 })}
               </div>
 
-              {/* Theme + Register row */}
-              <div className="flex items-center justify-between pt-1 gap-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-                    {t('nav.date')}
-                  </span>
-                </div>
+              {/* Register row */}
+              <div className="flex items-center justify-end pt-1">
                 <a
                   href="/register"
                   onClick={() => setMenuOpen(false)}
