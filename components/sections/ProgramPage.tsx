@@ -176,7 +176,13 @@ export default function ProgramPage() {
           </motion.span>
           <motion.span
             className="block py-[0.2em] leading-[1.1]"
-            style={{ color: 'var(--text-tertiary)' }}
+            style={{
+              background:          'linear-gradient(to right, #4a98e8, #6c3ecc)',
+              WebkitBackgroundClip:'text',
+              backgroundClip:      'text',
+              WebkitTextFillColor: 'transparent',
+              color:               'transparent',
+            }}
             initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}>
             {t('program.titleB')}

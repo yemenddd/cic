@@ -114,7 +114,13 @@ export default function CircularGallerySection() {
           dir={isRtl ? 'rtl' : 'ltr'}
         >
           <h2 className="text-4xl font-black sm:text-5xl leading-tight">
-            <span style={{ color: 'rgba(255,255,255,0.5)' }}>{titleA}</span>
+            <span style={{
+              background: 'linear-gradient(to right, #4a98e8, #6c3ecc)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              color: 'transparent',
+            }}>{titleA}</span>
             <span style={{ color: '#ffffff' }}>{titleB}</span>
           </h2>
           <p className="mt-3 text-sm text-white/40 max-w-sm mx-auto">{subtitle}</p>

@@ -74,7 +74,14 @@ export default function Program() {
               </motion.span>
               <motion.span
                 className="block py-[0.15em] leading-[1.1]"
-                style={{ fontSize: 'clamp(2.2rem, 4.5vw, 4.2rem)', color: 'var(--text-tertiary)' }}
+                style={{
+                  fontSize:            'clamp(2.2rem, 4.5vw, 4.2rem)',
+                  background:          'linear-gradient(to right, #4a98e8, #6c3ecc)',
+                  WebkitBackgroundClip:'text',
+                  backgroundClip:      'text',
+                  WebkitTextFillColor: 'transparent',
+                  color:               'transparent',
+                }}
                 {...inViewWord(0.16)}
               >
                 {t('program.titleB')}

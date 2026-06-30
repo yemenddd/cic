@@ -214,7 +214,16 @@ function MissionSection() {
               </motion.span>
               <motion.span
                 className="block"
-                style={{ lineHeight: 1.1, paddingTop: '0.1em', paddingBottom: '0.3em', color: 'var(--text-tertiary)' }}
+                style={{
+                  lineHeight: 1.1,
+                  paddingTop: '0.1em',
+                  paddingBottom: '0.3em',
+                  background: 'linear-gradient(to right, #4a98e8, #6c3ecc)',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  color: 'transparent',
+                }}
                 {...inViewWord(0.1)}
               >
                 {t('about.missionTitleB')}
@@ -415,7 +424,16 @@ function StatsSection() {
           </motion.span>
           <motion.span
             className="block"
-            style={{ lineHeight: 1.1, paddingTop: '0.1em', paddingBottom: '0.45em', color: 'var(--text-tertiary)' }}
+            style={{
+              lineHeight: 1.1,
+              paddingTop: '0.1em',
+              paddingBottom: '0.45em',
+              background: 'linear-gradient(to right, #4a98e8, #6c3ecc)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              color: 'transparent',
+            }}
             {...inViewWord(0.1)}
           >
             {t('about.statsTitleB')}
@@ -495,10 +513,15 @@ function ValuesSection() {
           <motion.h2
             className="font-outfit font-black"
             style={{
-              fontSize:      'clamp(2.8rem, 5.5vw, 5.5rem)',
-              lineHeight:    1.1,
-              color:         'var(--text-tertiary)',
-              letterSpacing: '-0.02em',
+              fontSize:            'clamp(2.8rem, 5.5vw, 5.5rem)',
+              lineHeight:          1.1,
+              letterSpacing:       '-0.02em',
+              paddingBottom:       '0.15em',
+              background:          'linear-gradient(to right, #4a98e8, #6c3ecc)',
+              WebkitBackgroundClip:'text',
+              backgroundClip:      'text',
+              WebkitTextFillColor: 'transparent',
+              color:               'transparent',
             }}
             {...inViewWord(0.08)}
           >

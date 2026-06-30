@@ -197,7 +197,13 @@ export default function VideosPage() {
             </motion.span>
             <motion.span
               className="block py-[0.15em] leading-[1.1]"
-              style={{ color: 'var(--text-tertiary)' }}
+              style={{
+                background:          'linear-gradient(to right, #4a98e8, #6c3ecc)',
+                WebkitBackgroundClip:'text',
+                backgroundClip:      'text',
+                WebkitTextFillColor: 'transparent',
+                color:               'transparent',
+              }}
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25, duration: 0.7, ease: EASE }}>
               {t('videos.titleB')}
