@@ -85,9 +85,9 @@ export default function Header() {
       ══════════════════════════════════ */}
       <motion.header
         initial={{ y: -16, opacity: 0 }}
-        animate={{ y: 0,   opacity: 1 }}
-        transition={{ duration: 0.6, ease: EASE }}
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${menuOpen ? 'opacity-0 pointer-events-none' : ''}`}
+        animate={{ y: 0, opacity: menuOpen ? 0 : 1 }}
+        transition={{ duration: 0.3, ease: EASE }}
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${menuOpen ? 'pointer-events-none' : ''}`}
         style={showBg ? {
           background:           'var(--header-glass-bg)',
           backdropFilter:       'blur(20px) saturate(180%)',
