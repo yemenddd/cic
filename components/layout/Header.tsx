@@ -363,7 +363,9 @@ export default function Header() {
             transition={{ duration: 0.25 }}
             className="fixed inset-0 z-40 md:hidden flex flex-col"
             style={{
-              background: isLight ? '#f2f2f7' : '#0d0d12',
+              background:           isLight ? 'rgba(248,248,250,0.97)' : 'rgba(10,10,16,0.97)',
+              backdropFilter:       'blur(24px) saturate(160%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(160%)',
             }}
           >
 
@@ -371,7 +373,7 @@ export default function Header() {
             <div
               className="relative flex items-center justify-between px-6 h-14 shrink-0"
               dir={lang === 'ar' ? 'rtl' : 'ltr'}
-              style={{ borderBottom: '1px solid var(--border-subtle)' }}
+              style={{ borderBottom: '1px solid var(--mat-black-border)' }}
             >
               <Link
                 href="/"
@@ -380,26 +382,32 @@ export default function Header() {
               >
                 <div
                   className="w-[28px] h-[28px] flex items-center justify-center rounded-lg shrink-0"
-                  style={{ background: 'var(--nav-hover-bg)', border: '1px solid var(--mat-liquid-border)' }}
+                  style={{
+                    background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.08)',
+                    border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.10)',
+                  }}
                 >
                   <Image
-                    src={(overDark || !isLight) ? "/images/logos/logo_white.png" : "/images/logos/logo_colored.png"}
+                    src={isLight ? "/images/logos/logo_colored.png" : "/images/logos/logo_white.png"}
                     alt="CICT"
                     width={18}
                     height={18}
                     className="w-[18px] h-[18px] object-contain"
                   />
                 </div>
-                <span className="font-outfit font-bold text-[13px]" style={{ color: 'var(--text-primary)' }}>{t('footer.copyright')}</span>
+                <span className="font-outfit font-bold text-[13px]" style={{ color: isLight ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.88)' }}>{t('footer.copyright')}</span>
               </Link>
               <button
                 onClick={() => setMenuOpen(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-lg shrink-0"
-                style={{ background: 'var(--nav-hover-bg)', border: '1px solid var(--mat-liquid-border)' }}
+                style={{
+                  background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.08)',
+                  border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.10)',
+                }}
                 aria-label="Close menu"
               >
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M1 1L13 13M13 1L1 13" stroke="var(--text-secondary)" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M1 1L13 13M13 1L1 13" stroke={isLight ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)'} strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </button>
             </div>
@@ -423,13 +431,15 @@ export default function Header() {
                       href={link.href}
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center justify-between py-4 group"
-                      style={{ borderBottom: '1px solid var(--border-subtle)' }}
+                      style={{ borderBottom: isLight ? '1px solid rgba(0,0,0,0.07)' : '1px solid rgba(255,255,255,0.07)' }}
                     >
                       <span
                         className="font-outfit font-bold tracking-tight"
                         style={{
                           fontSize: 'clamp(1.55rem, 5.5vw, 2rem)',
-                          color:    active ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                          color: active
+                            ? (isLight ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.9)')
+                            : (isLight ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.35)'),
                           transition: 'color 0.2s ease',
                         }}
                       >
