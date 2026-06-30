@@ -6,6 +6,7 @@ import { useTheme } from '@/lib/theme-context';
 
 export default function ScrollToTop() {
   const [visible, setVisible] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
@@ -13,7 +14,6 @@ export default function ScrollToTop() {
     const onScroll = () => {
       const scrollY = window.scrollY;
       const isScrolledDown = scrollY > 400;
-      // Use a larger threshold (e.g. 400px) so it hides as soon as the footer comes into view
       const scrollHeight = Math.max(document.body.offsetHeight, document.documentElement.scrollHeight);
       const isAtBottom = (window.innerHeight + scrollY) >= scrollHeight - 400;
       setVisible(isScrolledDown && !isAtBottom);
@@ -22,12 +22,20 @@ export default function ScrollToTop() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setMenuOpen(document.body.classList.contains('menu-open'));
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
   const scrollUp = () =>
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
     <AnimatePresence>
-      {visible && (
+      {visible && !menuOpen && (
         <motion.button
           key="scroll-top"
           onClick={scrollUp}
