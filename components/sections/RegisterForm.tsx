@@ -10,34 +10,6 @@ import { cn } from '@/lib/utils';
 import ConferenceBadge from '@/components/ui/ConferenceBadge';
 import { downloadBadgePDF } from '@/lib/download-badge-pdf';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GOOGLE FORMS CONFIG
-//
-// HOW TO GET YOUR ENTRY IDs:
-//  1. Open your Google Form in a browser (forms.google.com)
-//  2. Click the 3-dot menu → "Get pre-filled link"
-//  3. Fill in dummy values in every field, click "Get link"
-//  4. The URL will look like:
-//     https://docs.google.com/forms/d/e/.../viewform?usp=pp_url
-//       &entry.123456789=dummy+name
-//       &entry.987654321=dummy%40email.com  ← these are your entry IDs
-//  5. Replace each REPLACE_X below with the matching entry.XXXXXXXXX value
-//  6. Set GOOGLE_FORM_ACTION to your form URL with "viewform" → "formResponse"
-// ─────────────────────────────────────────────────────────────────────────────
-const GOOGLE_FORM_ACTION =
-  'https://docs.google.com/forms/d/e/1FAIpQLSfWEUOR3VvSnodQfx7k3KwMl8-BwsQizEV2WXul5-Qo-pZtYQ/formResponse';
-
-const ENTRY = {
-  fullName:     'entry.162680631',   // الاسم الكامل / Full Name
-  email:        'entry.1271546915',  // البريد الإلكتروني / Email
-  phone:        'entry.1088912301',  // رقم الواتساب / WhatsApp
-  country:      'entry.692822831',   // الدولة / Country
-  organization: 'entry.2127532988',  // المؤسسة / Organization
-  category:     'entry.186138454',   // نوع المشاركة / Category
-  track:        'entry.200598670',   // المسار / Track
-};
-// ─────────────────────────────────────────────────────────────────────────────
-
 type Lang = 'ar' | 'en' | 'tr';
 
 interface LocalizedText {
@@ -94,16 +66,6 @@ const CATEGORY_ICONS: Record<string, typeof Award> = {
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-// ── Confirmation code: deterministic 6-char from name + timestamp ──────────
-function generateCode(name: string): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let h = Date.now();
-  for (let i = 0; i < name.length; i++) h = Math.imul(h ^ name.charCodeAt(i), 0x9e3779b9) >>> 0;
-  let code = '';
-  for (let i = 0; i < 6; i++) { code += chars[h % chars.length]; h = Math.imul(h, 0x5bd1e995) >>> 0; }
-  return `CICT-2026-${code}`;
-}
-
 export default function RegisterForm() {
   const { tx, lang, dir } = useLang();
   const { theme } = useTheme();
@@ -127,16 +89,14 @@ export default function RegisterForm() {
     e.preventDefault();
     setStatus('loading');
     try {
-      const body = new FormData();
-      body.append(ENTRY.fullName, fields.fullName);
-      body.append(ENTRY.email, fields.email);
-      body.append(ENTRY.phone, fields.phone);
-      body.append(ENTRY.country, fields.country);
-      body.append(ENTRY.organization, fields.organization);
-      body.append(ENTRY.category, selected);
-      body.append(ENTRY.track, track);
-      await fetch(GOOGLE_FORM_ACTION, { method: 'POST', body, mode: 'no-cors' });
-      setConfirmCode(generateCode(fields.fullName));
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...fields, category: selected, track }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error ?? 'Registration failed');
+      setConfirmCode(data.code);
       setStatus('success');
     } catch {
       setStatus('error');

@@ -4,15 +4,15 @@ const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline';
   style-src 'self' 'unsafe-inline';
-  img-src 'self' data: blob: https://img.youtube.com https://*.spline.design;
+  img-src 'self' data: blob: https://img.youtube.com https://*.spline.design https://cdn.sanity.io;
   frame-src https://www.youtube.com;
-  connect-src 'self' blob: https://prod.spline.design https://*.spline.design https://unpkg.com https://docs.google.com;
+  connect-src 'self' blob: https://prod.spline.design https://*.spline.design https://unpkg.com;
   worker-src 'self' blob:;
   media-src 'self' data: blob:;
   font-src 'self';
   object-src 'none';
   base-uri 'self';
-  form-action 'self' https://docs.google.com;
+  form-action 'self';
 `.replace(/\n/g, ' ').trim();
 
 const securityHeaders = [
@@ -27,17 +27,27 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   compress: true,
 
+  // Sanity Studio is a large browser-only SPA embedded via app/studio — it
+  // must never be walked by webpack's Server Components graph (which applies
+  // the "react-server" export condition and breaks React/swr internals that
+  // assume a full client React). Treating it as an external dependency makes
+  // Next `require()` it natively instead of bundling/analyzing it as RSC code.
+  serverExternalPackages: ['sanity', 'next-sanity', '@sanity/vision'],
+
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
     minimumCacheTTL: 31536000,
+    remotePatterns: [{ protocol: 'https', hostname: 'cdn.sanity.io' }],
   },
 
   async headers() {
     return [
       {
-        source: '/(.*)',
+        // Everything except /studio — the embedded Sanity Studio needs to talk
+        // to *.sanity.io (API, realtime, CDN) which this CSP would otherwise block.
+        source: '/((?!studio).*)',
         headers: securityHeaders,
       },
       {

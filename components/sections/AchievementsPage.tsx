@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { useLang } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme-context';
 import { ACHIEVEMENT_EDITIONS } from '@/lib/achievements-data';
+import type { AchievementEdition as SanityAchievementEdition } from '@/lib/sanity/queries';
+
+type LocalEdition = (typeof ACHIEVEMENT_EDITIONS)[number];
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -177,12 +180,23 @@ function EditionCard({
   );
 }
 
-export default function AchievementsPage() {
+export default function AchievementsPage({ data }: { data?: SanityAchievementEdition[] }) {
   const { t, lang } = useLang();
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const isRtl = lang === 'ar';
   const titleGrad = 'linear-gradient(to right, #4a98e8, #6c3ecc)';
+
+  // Sanity editions don't carry their students list yet, so innovator/researcher
+  // counts fall back to 0 for CMS-sourced editions until that's wired up.
+  const editions: LocalEdition[] = data?.length
+    ? data.map(ed => ({
+        slug: ed.slug,
+        number: ed.number as LocalEdition['number'],
+        year: (Number(ed.year) || 0) as LocalEdition['year'],
+        students: [] as LocalEdition['students'],
+      }))
+    : ACHIEVEMENT_EDITIONS;
 
   return (
     <section
@@ -219,7 +233,7 @@ export default function AchievementsPage() {
       <div className="w-full flex justify-center px-5 md:px-8">
         {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-5xl">
-          {ACHIEVEMENT_EDITIONS.map((edition, i) => (
+          {editions.map((edition, i) => (
             <motion.div
               key={edition.slug}
               initial={{ opacity: 0, y: 36 }}

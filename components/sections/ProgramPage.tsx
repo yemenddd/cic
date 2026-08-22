@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
 import { dict } from '@/lib/dictionary';
+import type { ProgramSession } from '@/lib/sanity/queries';
+import { urlFor } from '@/lib/sanity/image';
 
 type Session = {
   readonly time: string;
@@ -13,6 +15,9 @@ type Session = {
   readonly img: string;
   readonly color: string;
 };
+
+// Fallback accent colors when a Sanity session has no explicit `color` set.
+const SESSION_COLORS = ['#67e8f9', '#60a5fa', '#818cf8', '#a78bfa'];
 
 const CARD_H  = 144; // h-36 in px
 const CARD_GAP = 16; // gap between expanded cards
@@ -107,6 +112,7 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
                 loading="lazy"
                 decoding="async"
                 className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             </div>
           </motion.div>
@@ -136,11 +142,29 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
 }
 
 /* ─── Main page ─── */
-export default function ProgramPage() {
+export default function ProgramPage({ data }: { data?: { dayOne: ProgramSession[]; dayTwo: ProgramSession[] } }) {
   const { t, dir, lang } = useLang();
   const isRtl = dir === 'rtl';
 
   const scheduleData = dict[lang].schedule;
+
+  const hasSanityData = !!(data && (data.dayOne.length || data.dayTwo.length));
+
+  const toSession = (s: ProgramSession, i: number): Session => ({
+    time: s.time,
+    title: s.title[lang] || s.title.ar,
+    speaker: s.speakerName?.[lang] || s.speakerName?.ar || '',
+    role: s.speakerRole?.[lang] || s.speakerRole?.ar || s.track?.[lang] || s.track?.ar || '',
+    img: s.speakerPhoto ? urlFor(s.speakerPhoto).width(200).height(200).fit('crop').url() : '',
+    color: s.color || SESSION_COLORS[i % SESSION_COLORS.length],
+  });
+
+  const dayOneSessions: readonly Session[] = hasSanityData
+    ? data!.dayOne.map(toSession)
+    : scheduleData.dayOne;
+  const dayTwoSessions: readonly Session[] = hasSanityData
+    ? data!.dayTwo.map(toSession)
+    : scheduleData.dayTwo;
 
   return (
     <motion.div
@@ -203,14 +227,14 @@ export default function ProgramPage() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           <DayStack
             day={0}
-            sessions={scheduleData.dayOne}
+            sessions={dayOneSessions}
             label={scheduleData.dayOneLabel}
             date={scheduleData.dayOneDate}
             collapseLabel={scheduleData.collapse}
           />
           <DayStack
             day={1}
-            sessions={scheduleData.dayTwo}
+            sessions={dayTwoSessions}
             label={scheduleData.dayTwoLabel}
             date={scheduleData.dayTwoDate}
             collapseLabel={scheduleData.collapse}

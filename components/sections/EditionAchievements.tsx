@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { ArrowLeft, Users, Quote, User } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
 import { ACHIEVEMENT_EDITIONS, type AchievementStudent } from '@/lib/achievements-data';
+import type { AchievementStudent as SanityAchievementStudent } from '@/lib/sanity/queries';
+import { urlFor } from '@/lib/sanity/image';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -181,15 +183,36 @@ function SectionHeading({ label }: { label: string }) {
 }
 
 /* ── Page ── */
-export default function EditionAchievements({ slug }: { slug: string }) {
+export default function EditionAchievements({ slug, data }: { slug: string; data?: SanityAchievementStudent[] }) {
   const { t, lang } = useLang();
   const isRtl = lang === 'ar';
 
   const edition = ACHIEVEMENT_EDITIONS.find(e => e.slug === slug);
   if (!edition) return null;
 
-  const innovators  = edition.students.filter(s => s.role === 'innovator');
-  const researchers = edition.students.filter(s => s.role === 'participant');
+  const students: AchievementStudent[] = data?.length
+    ? data.map(s => {
+        const photos: [string, string, string] = [
+          s.photos?.[0] ? urlFor(s.photos[0]).width(600).url() : '',
+          s.photos?.[1] ? urlFor(s.photos[1]).width(600).url() : '',
+          s.photos?.[2] ? urlFor(s.photos[2]).width(600).url() : '',
+        ];
+        return {
+          id: s.studentId,
+          name: s.name,
+          members: s.members,
+          projectAr: s.projectTitle?.ar || '',
+          projectEn: s.projectTitle?.en || s.projectTitle?.ar || '',
+          role: s.role,
+          photos,
+          videoId: s.videoId || '',
+          color: s.color || '#0078D4',
+        };
+      })
+    : edition.students;
+
+  const innovators  = students.filter(s => s.role === 'innovator');
+  const researchers = students.filter(s => s.role === 'participant');
   const labelKey    = `achievements.edition${edition.number}Label`;
   const yearKey     = `achievements.edition${edition.number}Year`;
   const solo        = innovators.filter(s => !s.members);

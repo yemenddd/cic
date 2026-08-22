@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform, useMotionValueEvent, useSpring } from 
 import { useLang } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme-context';
 import dynamic from 'next/dynamic';
+import type { HistoryEdition } from '@/lib/sanity/queries';
 
 const SparklesCore = dynamic(() => import('@/components/ui/sparkles').then(m => ({ default: m.Sparkles })), { ssr: false });
 const Starfield    = dynamic(() => import('@/components/ui/starfield').then(m => ({ default: m.Starfield })), { ssr: false });
@@ -115,13 +116,22 @@ function Card({ edition, isRtl, t, visible, fromLeft }: {
 }
 
 /* ── Main export ── */
-export default function HistoryTimeline() {
-  const { t, tx, dir } = useLang();
+export default function HistoryTimeline({ data }: { data?: HistoryEdition[] }) {
+  const { t, tx, lang, dir } = useLang();
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const isRtl = dir === 'rtl';
   const titleGrad = 'linear-gradient(to right, #4a98e8, #6c3ecc)';
-  const editions = tx<Edition[]>('history.editions') || [];
+  const editions: Edition[] = data?.length
+    ? data.map((ed, i) => ({
+        year: ed.year,
+        title: ed.title?.[lang] || ed.title?.ar || '',
+        desc: ed.description?.[lang] || ed.description?.ar || '',
+        attendees: ed.attendees != null ? String(ed.attendees) : '',
+        speakers: ed.speakersCount != null ? String(ed.speakersCount) : '',
+        current: i === data.length - 1,
+      }))
+    : tx<Edition[]>('history.editions') || [];
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({

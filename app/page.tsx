@@ -8,10 +8,37 @@ import Program from "@/components/sections/Program";
 import ScrollGallery from "@/components/sections/ScrollGallery";
 import Partners from "@/components/sections/Partners";
 import RegisterCTA from "@/components/sections/RegisterCTA";
+import { getPartners, getSpeakers } from "@/lib/sanity/queries";
+import { siteUrl } from "@/lib/site";
 
-export default function Home() {
+const eventJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Event",
+  name: "مؤتمر الإبداع والابتكار 2026 (CICT 2026)",
+  startDate: "2026-08-15",
+  endDate: "2026-08-16",
+  eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+  eventStatus: "https://schema.org/EventScheduled",
+  location: {
+    "@type": "Place",
+    name: "إسطنبول، تركيا",
+    address: { "@type": "PostalAddress", addressLocality: "Istanbul", addressCountry: "TR" },
+  },
+  image: [`${siteUrl}/opengraph-image`],
+  description:
+    "انضم إلينا في مؤتمر الإبداع والابتكار الرابع يومي ١٥–١٦ أغسطس ٢٠٢٦. اكتشف مستقبل الابتكار.",
+  organizer: { "@type": "Organization", name: "CICT", url: siteUrl },
+};
+
+export default async function Home() {
+  const [partners, speakers] = await Promise.all([getPartners(), getSpeakers()]);
+
   return (
     <div className="overflow-x-clip bg-black">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }}
+      />
       {/* 01 · Full-screen image slider */}
       <HeroSlider />
 
@@ -28,7 +55,7 @@ export default function Home() {
       <HorizontalGallery />
 
       {/* 05 · Keynote speakers — dark, flip cards */}
-      <Speakers />
+      <Speakers data={speakers} />
 
       {/* 05 · Program streams — Fluent light */}
       <Program />
@@ -40,7 +67,7 @@ export default function Home() {
       <RegisterCTA />
 
       {/* 08 · Partners & sponsors */}
-      <Partners />
+      <Partners data={partners} />
     </div>
   );
 }

@@ -3,11 +3,10 @@ import { Inter, Outfit } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import StyletronWrapper from "@/components/layout/StyletronWrapper";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import SiteChrome from "@/components/layout/SiteChrome";
 import { LanguageProvider } from "@/lib/i18n";
-import ScrollToTop from "@/components/layout/ScrollToTop";
 import { ThemeProvider } from "@/lib/theme-context";
+import { siteUrl } from "@/lib/site";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -32,15 +31,32 @@ const thmanyah = localFont({
   ],
 });
 
+const title = "CICT 2026 | مؤتمر الإبداع والابتكار الرابع";
+const description =
+  "انضم إلينا في مؤتمر الإبداع والابتكار الرابع يومي ١٥–١٦ أغسطس ٢٠٢٦. اكتشف مستقبل الابتكار.";
+
 export const metadata: Metadata = {
-  title: "CICT 2026 | مؤتمر الإبداع والابتكار الرابع",
-  description:
-    "انضم إلينا في مؤتمر الإبداع والابتكار الرابع يومي ١٥–١٦ أغسطس ٢٠٢٦. اكتشف مستقبل الابتكار.",
+  metadataBase: new URL(siteUrl),
+  title: { default: title, template: "%s" },
+  description,
   icons: {
     icon: [
       { url: "/images/logos/logo_colored.png", media: "(prefers-color-scheme: light)" },
       { url: "/icon.png", media: "(prefers-color-scheme: dark)" },
     ],
+  },
+  openGraph: {
+    title,
+    description,
+    url: siteUrl,
+    siteName: "CICT 2026",
+    locale: "ar_AR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
   },
 };
 
@@ -61,10 +77,7 @@ export default function RootLayout({
         <ThemeProvider>
           <StyletronWrapper>
             <LanguageProvider>
-              <Header />
-              <main className="flex-grow">{children}</main>
-              <Footer />
-              <ScrollToTop />
+              <SiteChrome>{children}</SiteChrome>
             </LanguageProvider>
           </StyletronWrapper>
         </ThemeProvider>

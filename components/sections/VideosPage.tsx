@@ -6,6 +6,7 @@ import { useLang } from '@/lib/i18n';
 import { DynamicFrameLayout } from '@/components/ui/dynamic-frame-layout';
 import { X, Film, Tv, Play } from 'lucide-react';
 import UniversalPlayer from '@/components/ui/video-player';
+import type { Video as SanityVideo } from '@/lib/sanity/queries';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -102,6 +103,42 @@ type SectionKey = 'films' | 'tv' | 'mulhamoon';
 const SECTION_ORDER: SectionKey[] = ['films', 'tv', 'mulhamoon'];
 const GRID_COLS = 2;
 
+function toLocalVideo(v: SanityVideo): Video {
+  return {
+    id: v.videoId,
+    titleAr: v.title.ar,
+    titleEn: v.title.en || v.title.ar,
+    titleTr: v.title.tr || v.title.ar,
+  };
+}
+
+function buildFilmEditions(data: SanityVideo[]): Edition[] {
+  const editions: Edition[] = [];
+  const byKey = new Map<string, Edition>();
+  data.forEach((v, i) => {
+    const labelAr = v.editionLabel?.ar || '';
+    const key = labelAr || `edition-${i}`;
+    let ed = byKey.get(key);
+    if (!ed) {
+      ed = {
+        key,
+        labelAr,
+        labelEn: v.editionLabel?.en || labelAr,
+        labelTr: v.editionLabel?.tr || labelAr,
+        videos: [],
+      };
+      byKey.set(key, ed);
+      editions.push(ed);
+    }
+    ed.videos.push(toLocalVideo(v));
+  });
+  return editions;
+}
+
+function buildTvSection(data: SanityVideo[]): FlatSection {
+  return { ...TV_SECTION, videos: data.map(toLocalVideo) };
+}
+
 function videosToFrames(videos: Video[], lang: string) {
   const cols = GRID_COLS;
   const rows = Math.ceil(videos.length / cols);
@@ -128,9 +165,12 @@ function label(obj: { labelAr: string; labelEn: string; labelTr: string }, lang:
   return lang === 'ar' ? obj.labelAr : lang === 'tr' ? obj.labelTr : obj.labelEn;
 }
 
-export default function VideosPage() {
+export default function VideosPage({ filmData, tvData }: { filmData?: SanityVideo[]; tvData?: SanityVideo[] }) {
   const { dir, lang, t } = useLang();
   const isRtl = dir === 'rtl';
+
+  const filmEditions = filmData?.length ? buildFilmEditions(filmData) : FILM_EDITIONS;
+  const tvSection = tvData?.length ? buildTvSection(tvData) : TV_SECTION;
 
   const [activeSection, setActiveSection] = useState<SectionKey>('films');
   const [activeEdition, setActiveEdition] = useState(0);
@@ -141,14 +181,14 @@ export default function VideosPage() {
   let currentCount: number;
 
   if (activeSection === 'films') {
-    const ed = FILM_EDITIONS[activeEdition];
+    const ed = filmEditions[activeEdition] || filmEditions[0];
     currentVideos = ed.videos;
     currentLabel = label(ed, lang);
     currentCount = ed.videos.length;
   } else if (activeSection === 'tv') {
-    currentVideos = TV_SECTION.videos;
-    currentLabel = label(TV_SECTION, lang);
-    currentCount = TV_SECTION.videos.length;
+    currentVideos = tvSection.videos;
+    currentLabel = label(tvSection, lang);
+    currentCount = tvSection.videos.length;
   } else {
     currentVideos = MULHAMOON_SECTION.videos;
     currentLabel = label(MULHAMOON_SECTION, lang);
@@ -161,7 +201,7 @@ export default function VideosPage() {
 
   const sectionLabel = (key: SectionKey) => {
     if (key === 'films') return lang === 'ar' ? 'الأفلام' : lang === 'tr' ? 'Filmler' : 'Films';
-    if (key === 'tv') return label(TV_SECTION, lang);
+    if (key === 'tv') return label(tvSection, lang);
     return label(MULHAMOON_SECTION, lang);
   };
 
@@ -262,7 +302,7 @@ export default function VideosPage() {
                 exit={{ opacity: 0, y: -6, height: 0 }}
                 transition={{ duration: 0.25, ease: EASE }}
               >
-                {FILM_EDITIONS.map((ed, i) => (
+                {filmEditions.map((ed, i) => (
                   <button
                     key={ed.key}
                     onClick={() => setActiveEdition(i)}

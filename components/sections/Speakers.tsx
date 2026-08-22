@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
+import type { Speaker as SanitySpeaker } from '@/lib/sanity/queries';
+import { urlFor } from '@/lib/sanity/image';
 
 type Speaker = {
   name: string;
@@ -126,16 +128,26 @@ function SpeakerCard({ speaker, index }: { speaker: Speaker; index: number }) {
   );
 }
 
-export default function Speakers() {
-  const { t, tx, dir } = useLang();
+export default function Speakers({ data }: { data?: SanitySpeaker[] }) {
+  const { t, tx, lang, dir } = useLang();
 
-  const rawSpeakers = tx<Omit<Speaker, 'color' | 'initials' | 'image'>[]>('speakers.list') || [];
-  const speakers: Speaker[] = rawSpeakers.map((s, i) => ({
-    ...s,
-    color:    speakerAssets[i]?.color    || 'rgba(255,255,255,0.5)',
-    initials: speakerAssets[i]?.initials || '',
-    image:    speakerAssets[i]?.image    || '',
-  }));
+  const speakers: Speaker[] = data?.length
+    ? data.map((s, i) => ({
+        name:  s.name?.[lang] || s.name?.ar || '',
+        role:  s.role?.[lang] || s.role?.ar || '',
+        org:   s.organization?.[lang] || s.organization?.ar || '',
+        topic: s.topic?.[lang] || s.topic?.ar || '',
+        bio:   s.bio?.[lang] || s.bio?.ar || '',
+        color:    speakerAssets[i]?.color    || 'rgba(255,255,255,0.5)',
+        initials: speakerAssets[i]?.initials || '',
+        image:    s.photo ? urlFor(s.photo).width(400).height(500).fit('crop').url() : speakerAssets[i]?.image || '',
+      }))
+    : (tx<Omit<Speaker, 'color' | 'initials' | 'image'>[]>('speakers.list') || []).map((s, i) => ({
+        ...s,
+        color:    speakerAssets[i]?.color    || 'rgba(255,255,255,0.5)',
+        initials: speakerAssets[i]?.initials || '',
+        image:    speakerAssets[i]?.image    || '',
+      }));
 
   return (
     <div id="speakers" className="relative" style={{ background: 'var(--bg-base)' }}>

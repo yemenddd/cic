@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
+import type { GalleryImage } from '@/lib/sanity/queries';
+import { urlFor } from '@/lib/sanity/image';
 
 // Lazy-load the heavy 3D WebGL gallery — only fetched when this page is visited
 const InfiniteGallery = dynamic(() => import('@/components/ui/infinite-gallery'), {
@@ -56,9 +58,13 @@ const MUSIC: Record<string, string> = {
   en: '/music/gallery_en.m4a',
 };
 
-export default function Gallery() {
+export default function Gallery({ data }: { data?: GalleryImage[] }) {
   const { t, dir, lang } = useLang();
   const isRtl = dir === 'rtl';
+
+  const galleryImages = data?.length
+    ? data.map(item => urlFor(item.image).width(1600).url())
+    : GALLERY_IMAGES;
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -159,7 +165,7 @@ export default function Gallery() {
 
       {/* 3D infinite gallery */}
       <InfiniteGallery
-        images={GALLERY_IMAGES}
+        images={galleryImages}
         className="w-full h-screen"
         speed={1}
         visibleCount={8}
