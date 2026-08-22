@@ -20,6 +20,12 @@ import { join } from 'node:path';
 
 // Node has no built-in .env loader in this project's Node version — parse
 // .env.local by hand so SANITY_API_TOKEN etc. are available below.
+//
+// This MUST happen before lib/sanity/client (and sanity/env, which reads
+// process.env at module-evaluation time) is imported. Static `import`
+// statements are hoisted above this code by the ES module spec regardless of
+// where they're written, so those modules are loaded dynamically further
+// down instead — that's not a style choice, it's required for correctness.
 for (const file of ['.env.local', '.env']) {
   const path = join(process.cwd(), file);
   if (!existsSync(path)) continue;
@@ -32,17 +38,15 @@ for (const file of ['.env.local', '.env']) {
   }
 }
 
-import { getWriteClient } from '../lib/sanity/client';
-import { dict } from '../lib/dictionary';
-import { ACHIEVEMENT_EDITIONS } from '../lib/achievements-data';
-
-const client = getWriteClient();
+type WriteClient = Awaited<ReturnType<typeof import('../lib/sanity/client').getWriteClient>>;
+type Dict = typeof import('../lib/dictionary').dict;
+type AchievementEditions = typeof import('../lib/achievements-data').ACHIEVEMENT_EDITIONS;
 
 function locale(en: string, ar: string, tr: string) {
   return { ar, en, tr };
 }
 
-async function migrateSpeakers() {
+async function migrateSpeakers(client: WriteClient, dict: Dict) {
   const en = dict.en.speakers.list;
   const ar = dict.ar.speakers.list;
   const tr = dict.tr.speakers.list;
@@ -61,7 +65,7 @@ async function migrateSpeakers() {
   console.log(`✓ Migrated ${ar.length} speakers`);
 }
 
-async function migrateHistoryEditions() {
+async function migrateHistoryEditions(client: WriteClient, dict: Dict) {
   const en = dict.en.history.editions;
   const ar = dict.ar.history.editions;
   const tr = dict.tr.history.editions;
@@ -80,7 +84,7 @@ async function migrateHistoryEditions() {
   console.log(`✓ Migrated ${ar.length} history editions`);
 }
 
-async function migrateProgramSessions() {
+async function migrateProgramSessions(client: WriteClient, dict: Dict) {
   const days: Array<'dayOne' | 'dayTwo'> = ['dayOne', 'dayTwo'];
   let count = 0;
 
@@ -108,7 +112,7 @@ async function migrateProgramSessions() {
   console.log(`✓ Migrated ${count} program sessions (add speaker photos in the Studio)`);
 }
 
-async function migrateAchievements() {
+async function migrateAchievements(client: WriteClient, ACHIEVEMENT_EDITIONS: AchievementEditions) {
   let studentCount = 0;
 
   for (const edition of ACHIEVEMENT_EDITIONS) {
@@ -142,11 +146,20 @@ async function migrateAchievements() {
 }
 
 async function main() {
+  // Loaded dynamically (not statically at the top of the file) so the
+  // .env.local values parsed above are already in process.env by the time
+  // sanity/env.ts reads them.
+  const { getWriteClient } = await import('../lib/sanity/client');
+  const { dict } = await import('../lib/dictionary');
+  const { ACHIEVEMENT_EDITIONS } = await import('../lib/achievements-data');
+
+  const client = getWriteClient();
+
   console.log('Starting migration…\n');
-  await migrateSpeakers();
-  await migrateHistoryEditions();
-  await migrateProgramSessions();
-  await migrateAchievements();
+  await migrateSpeakers(client, dict);
+  await migrateHistoryEditions(client, dict);
+  await migrateProgramSessions(client, dict);
+  await migrateAchievements(client, ACHIEVEMENT_EDITIONS);
   console.log('\nDone. Open /studio to review, then upload the remaining images (speaker/session/student photos, partner logos, gallery photos, videos) directly in the Studio UI.');
 }
 
