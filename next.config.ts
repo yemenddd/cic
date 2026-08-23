@@ -27,12 +27,6 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   compress: true,
 
-  // Sanity Studio is a large browser-only SPA embedded via app/studio — it
-  // must never be walked by webpack's Server Components graph (which applies
-  // the "react-server" export condition and breaks React/swr internals that
-  // assume a full client React). Treating it as an external dependency makes
-  // Next `require()` it natively instead of bundling/analyzing it as RSC code.
-  serverExternalPackages: ['sanity', 'next-sanity', '@sanity/vision'],
 
   images: {
     formats: ['image/avif', 'image/webp'],
