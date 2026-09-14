@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform, useMotionValueEvent, useSpring } from 
 import { useLang } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme-context';
 import dynamic from 'next/dynamic';
-import type { HistoryEdition } from '@/lib/sanity/queries';
+import type { HistoryEdition } from '@/lib/db/queries';
 
 const SparklesCore = dynamic(() => import('@/components/ui/sparkles').then(m => ({ default: m.Sparkles })), { ssr: false });
 const Starfield    = dynamic(() => import('@/components/ui/starfield').then(m => ({ default: m.Starfield })), { ssr: false });

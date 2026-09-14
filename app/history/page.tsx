@@ -1,5 +1,5 @@
 import HistoryTimeline from '@/components/sections/HistoryTimeline';
-import { getHistoryEditions } from '@/lib/sanity/queries';
+import { getHistoryEditions } from '@/lib/db/queries';
 import { pageMetadata } from '@/lib/page-metadata';
 
 export const metadata = pageMetadata({

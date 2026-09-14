@@ -6,7 +6,7 @@ import { useLang } from '@/lib/i18n';
 import { DynamicFrameLayout } from '@/components/ui/dynamic-frame-layout';
 import { X, Film, Tv, Play } from 'lucide-react';
 import UniversalPlayer from '@/components/ui/video-player';
-import type { Video as SanityVideo } from '@/lib/sanity/queries';
+import type { Video as DbVideo } from '@/lib/db/queries';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -103,7 +103,7 @@ type SectionKey = 'films' | 'tv' | 'mulhamoon';
 const SECTION_ORDER: SectionKey[] = ['films', 'tv', 'mulhamoon'];
 const GRID_COLS = 2;
 
-function toLocalVideo(v: SanityVideo): Video {
+function toLocalVideo(v: DbVideo): Video {
   return {
     id: v.videoId,
     titleAr: v.title.ar,
@@ -112,7 +112,7 @@ function toLocalVideo(v: SanityVideo): Video {
   };
 }
 
-function buildFilmEditions(data: SanityVideo[]): Edition[] {
+function buildFilmEditions(data: DbVideo[]): Edition[] {
   const editions: Edition[] = [];
   const byKey = new Map<string, Edition>();
   data.forEach((v, i) => {
@@ -135,7 +135,7 @@ function buildFilmEditions(data: SanityVideo[]): Edition[] {
   return editions;
 }
 
-function buildTvSection(data: SanityVideo[]): FlatSection {
+function buildTvSection(data: DbVideo[]): FlatSection {
   return { ...TV_SECTION, videos: data.map(toLocalVideo) };
 }
 
@@ -165,7 +165,7 @@ function label(obj: { labelAr: string; labelEn: string; labelTr: string }, lang:
   return lang === 'ar' ? obj.labelAr : lang === 'tr' ? obj.labelTr : obj.labelEn;
 }
 
-export default function VideosPage({ filmData, tvData }: { filmData?: SanityVideo[]; tvData?: SanityVideo[] }) {
+export default function VideosPage({ filmData, tvData }: { filmData?: DbVideo[]; tvData?: DbVideo[] }) {
   const { dir, lang, t } = useLang();
   const isRtl = dir === 'rtl';
 

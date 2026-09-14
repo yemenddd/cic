@@ -4,8 +4,7 @@ import { motion } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
-import type { GalleryImage } from '@/lib/sanity/queries';
-import { urlFor } from '@/lib/sanity/image';
+import type { GalleryImage } from '@/lib/db/queries';
 
 // Lazy-load the heavy 3D WebGL gallery — only fetched when this page is visited
 const InfiniteGallery = dynamic(() => import('@/components/ui/infinite-gallery'), {
@@ -63,7 +62,7 @@ export default function Gallery({ data }: { data?: GalleryImage[] }) {
   const isRtl = dir === 'rtl';
 
   const galleryImages = data?.length
-    ? data.map(item => urlFor(item.image).width(1600).url())
+    ? data.map(item => item.imageUrl)
     : GALLERY_IMAGES;
 
   const audioRef = useRef<HTMLAudioElement>(null);

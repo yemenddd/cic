@@ -8,7 +8,7 @@ import Program from "@/components/sections/Program";
 import ScrollGallery from "@/components/sections/ScrollGallery";
 import Partners from "@/components/sections/Partners";
 import RegisterCTA from "@/components/sections/RegisterCTA";
-import { getPartners, getSpeakers } from "@/lib/sanity/queries";
+import { getPartners, getSpeakers } from "@/lib/db/queries";
 import { siteUrl } from "@/lib/site";
 
 const eventJsonLd = {

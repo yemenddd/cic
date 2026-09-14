@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // Map whatever connection strings Vercel's Postgres integration gives you
+  // to these two names in .env.local (pooled for the app, direct for migrations).
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+}
+
+// Every localized text field is stored as 3 columns (Ar/En/Tr) rather than
+// JSON — Postgres is relational, and this keeps queries/forms straightforward.
+model Speaker {
+  id             String   @id @default(cuid())
+  nameAr         String
+  nameEn         String?
+  nameTr         String?
+  roleAr         String
+  roleEn         String?
+  roleTr         String?
+  organizationAr String?
+  organizationEn String?
+  organizationTr String?
+  topicAr        String?
+  topicEn        String?
+  topicTr        String?
+  bioAr          String?
+  bioEn          String?
+  bioTr          String?
+  photoUrl       String?
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([order])
+}
+
+model ProgramSession {
+  id              String   @id @default(cuid())
+  day             String // 'dayOne' | 'dayTwo'
+  time            String
+  titleAr         String
+  titleEn         String?
+  titleTr         String?
+  speakerNameAr   String?
+  speakerNameEn   String?
+  speakerNameTr   String?
+  speakerRoleAr   String?
+  speakerRoleEn   String?
+  speakerRoleTr   String?
+  speakerPhotoUrl String?
+  trackAr         String?
+  trackEn         String?
+  trackTr         String?
+  color           String?
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([day, order])
+}
+
+model GalleryImage {
+  id        String   @id @default(cuid())
+  imageUrl  String
+  captionAr String?
+  captionEn String?
+  captionTr String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([order])
+}
+
+model Partner {
+  id        String   @id @default(cuid())
+  name      String
+  logoUrl   String
+  url       String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([order])
+}
+
+model HistoryEdition {
+  id            String   @id @default(cuid())
+  year          String
+  titleAr       String
+  titleEn       String?
+  titleTr       String?
+  descriptionAr String?
+  descriptionEn String?
+  descriptionTr String?
+  attendees     String? // display text, e.g. "+5,000"
+  speakersCount String?
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([order])
+}
+
+model AchievementEdition {
+  id       String               @id @default(cuid())
+  slug     String               @unique
+  number   Int
+  year     String
+  titleAr  String?
+  titleEn  String?
+  titleTr  String?
+  order    Int                  @default(0)
+  students AchievementStudent[]
+
+  @@index([order])
+}
+
+model AchievementStudent {
+  id             String             @id @default(cuid())
+  editionId      String
+  edition        AchievementEdition @relation(fields: [editionId], references: [id], onDelete: Cascade)
+  studentId      String
+  name           String
+  members        String[] // team members, empty for solo entries
+  projectTitleAr String?
+  projectTitleEn String?
+  projectTitleTr String?
+  role           String // 'innovator' | 'participant'
+  photoUrls      String[]
+  videoId        String?
+  color          String?
+  order          Int                @default(0)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([editionId, order])
+}
+
+model Video {
+  id             String   @id @default(cuid())
+  section        String // 'film' | 'tv'
+  editionLabelAr String?
+  editionLabelEn String?
+  editionLabelTr String?
+  titleAr        String
+  titleEn        String?
+  titleTr        String?
+  videoId        String
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([section, order])
+}
+
+model Registration {
+  id               String   @id @default(cuid())
+  fullName         String
+  email            String
+  phone            String?
+  country          String?
+  organization      String?
+  category         String
+  track            String?
+  confirmationCode String?
+  submittedAt      DateTime @default(now())
+
+  @@index([submittedAt])
+}

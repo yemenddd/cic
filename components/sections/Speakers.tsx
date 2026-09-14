@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
-import type { Speaker as SanitySpeaker } from '@/lib/sanity/queries';
-import { urlFor } from '@/lib/sanity/image';
+import type { Speaker as DbSpeaker } from '@/lib/db/queries';
 
 type Speaker = {
   name: string;
@@ -128,7 +127,7 @@ function SpeakerCard({ speaker, index }: { speaker: Speaker; index: number }) {
   );
 }
 
-export default function Speakers({ data }: { data?: SanitySpeaker[] }) {
+export default function Speakers({ data }: { data?: DbSpeaker[] }) {
   const { t, tx, lang, dir } = useLang();
 
   const speakers: Speaker[] = data?.length
@@ -140,7 +139,7 @@ export default function Speakers({ data }: { data?: SanitySpeaker[] }) {
         bio:   s.bio?.[lang] || s.bio?.ar || '',
         color:    speakerAssets[i]?.color    || 'rgba(255,255,255,0.5)',
         initials: speakerAssets[i]?.initials || '',
-        image:    s.photo ? urlFor(s.photo).width(400).height(500).fit('crop').url() : speakerAssets[i]?.image || '',
+        image:    s.photoUrl || speakerAssets[i]?.image || '',
       }))
     : (tx<Omit<Speaker, 'color' | 'initials' | 'image'>[]>('speakers.list') || []).map((s, i) => ({
         ...s,

@@ -6,8 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Users, Quote, User } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
 import { ACHIEVEMENT_EDITIONS, type AchievementStudent } from '@/lib/achievements-data';
-import type { AchievementStudent as SanityAchievementStudent } from '@/lib/sanity/queries';
-import { urlFor } from '@/lib/sanity/image';
+import type { AchievementStudent as DbAchievementStudent } from '@/lib/db/queries';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -183,7 +182,7 @@ function SectionHeading({ label }: { label: string }) {
 }
 
 /* ── Page ── */
-export default function EditionAchievements({ slug, data }: { slug: string; data?: SanityAchievementStudent[] }) {
+export default function EditionAchievements({ slug, data }: { slug: string; data?: DbAchievementStudent[] }) {
   const { t, lang } = useLang();
   const isRtl = lang === 'ar';
 
@@ -193,9 +192,9 @@ export default function EditionAchievements({ slug, data }: { slug: string; data
   const students: AchievementStudent[] = data?.length
     ? data.map(s => {
         const photos: [string, string, string] = [
-          s.photos?.[0] ? urlFor(s.photos[0]).width(600).url() : '',
-          s.photos?.[1] ? urlFor(s.photos[1]).width(600).url() : '',
-          s.photos?.[2] ? urlFor(s.photos[2]).width(600).url() : '',
+          s.photoUrls?.[0] || '',
+          s.photoUrls?.[1] || '',
+          s.photoUrls?.[2] || '',
         ];
         return {
           id: s.studentId,

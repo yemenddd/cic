@@ -1,5 +1,5 @@
 import VideosPage from '@/components/sections/VideosPage';
-import { getVideos } from '@/lib/sanity/queries';
+import { getVideos } from '@/lib/db/queries';
 import { pageMetadata } from '@/lib/page-metadata';
 
 export const metadata = pageMetadata({

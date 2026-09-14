@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
 import { dict } from '@/lib/dictionary';
-import type { ProgramSession } from '@/lib/sanity/queries';
-import { urlFor } from '@/lib/sanity/image';
+import type { ProgramSession } from '@/lib/db/queries';
 
 type Session = {
   readonly time: string;
@@ -16,7 +15,7 @@ type Session = {
   readonly color: string;
 };
 
-// Fallback accent colors when a Sanity session has no explicit `color` set.
+// Fallback accent colors when a session has no explicit `color` set.
 const SESSION_COLORS = ['#67e8f9', '#60a5fa', '#818cf8', '#a78bfa'];
 
 const CARD_H  = 144; // h-36 in px
@@ -148,21 +147,21 @@ export default function ProgramPage({ data }: { data?: { dayOne: ProgramSession[
 
   const scheduleData = dict[lang].schedule;
 
-  const hasSanityData = !!(data && (data.dayOne.length || data.dayTwo.length));
+  const hasDbData = !!(data && (data.dayOne.length || data.dayTwo.length));
 
   const toSession = (s: ProgramSession, i: number): Session => ({
     time: s.time,
     title: s.title[lang] || s.title.ar,
     speaker: s.speakerName?.[lang] || s.speakerName?.ar || '',
     role: s.speakerRole?.[lang] || s.speakerRole?.ar || s.track?.[lang] || s.track?.ar || '',
-    img: s.speakerPhoto ? urlFor(s.speakerPhoto).width(200).height(200).fit('crop').url() : '',
+    img: s.speakerPhotoUrl || '',
     color: s.color || SESSION_COLORS[i % SESSION_COLORS.length],
   });
 
-  const dayOneSessions: readonly Session[] = hasSanityData
+  const dayOneSessions: readonly Session[] = hasDbData
     ? data!.dayOne.map(toSession)
     : scheduleData.dayOne;
-  const dayTwoSessions: readonly Session[] = hasSanityData
+  const dayTwoSessions: readonly Session[] = hasDbData
     ? data!.dayTwo.map(toSession)
     : scheduleData.dayTwo;
 

@@ -1,5 +1,5 @@
 import Gallery from "@/components/sections/Gallery";
-import { getGalleryImages } from "@/lib/sanity/queries";
+import { getGalleryImages } from "@/lib/db/queries";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata = pageMetadata({

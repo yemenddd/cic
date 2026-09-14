@@ -1,5 +1,5 @@
 import ProgramPage from '@/components/sections/ProgramPage';
-import { getProgramSessions } from '@/lib/sanity/queries';
+import { getProgramSessions } from '@/lib/db/queries';
 import { pageMetadata } from '@/lib/page-metadata';
 
 export const metadata = pageMetadata({

@@ -3,8 +3,7 @@
 import { motion } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
 import { ProgressiveBlur } from '@/components/ui/progressive-blur';
-import type { Partner as SanityPartner } from '@/lib/sanity/queries';
-import { urlFor } from '@/lib/sanity/image';
+import type { Partner as DbPartner } from '@/lib/db/queries';
 
 const FALLBACK_PARTNERS = [
   { src: '/images/sponsors/1.png',  alt: 'Sponsor 1' },
@@ -19,12 +18,12 @@ const FALLBACK_PARTNERS = [
   { src: '/images/sponsors/10.png', alt: 'Sponsor 10' },
 ];
 
-export default function Partners({ data }: { data?: SanityPartner[] }) {
+export default function Partners({ data }: { data?: DbPartner[] }) {
   const { t, dir } = useLang();
   const isRtl = dir === 'rtl';
 
   const partners = data?.length
-    ? data.map(p => ({ src: urlFor(p.logo).width(240).fit('max').url(), alt: p.name }))
+    ? data.map(p => ({ src: p.logoUrl, alt: p.name }))
     : FALLBACK_PARTNERS;
   const track = [...partners, ...partners];
 

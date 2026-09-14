@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { siteUrl } from '@/lib/site';
-import { getAchievementEditions } from '@/lib/sanity/queries';
+import { getAchievementEditions } from '@/lib/db/queries';
 import { ACHIEVEMENT_EDITIONS } from '@/lib/achievements-data';
 
 const STATIC_ROUTES = ['', '/about', '/history', '/program', '/gallery', '/videos', '/achievements', '/register', '/privacy'];

@@ -5,13 +5,13 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ScrollToTop from '@/components/layout/ScrollToTop';
 
-// The embedded Sanity Studio (/studio) needs the full viewport and manages
-// its own chrome — the marketing site's header/footer would only get in the way.
+// The admin panel (/admin) has its own layout/chrome — the marketing site's
+// header/footer would only get in the way there.
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isStudio = pathname?.startsWith('/studio');
+  const isAdmin = pathname?.startsWith('/admin');
 
-  if (isStudio) return <>{children}</>;
+  if (isAdmin) return <>{children}</>;
 
   return (
     <>

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getWriteClient } from '@/lib/sanity/client';
+import { prisma } from '@/lib/db/client';
 
 const RegistrationSchema = z.object({
   fullName: z.string().trim().min(1).max(200),
@@ -38,11 +38,8 @@ export async function POST(req: Request) {
   const confirmationCode = generateCode(fields.fullName);
 
   try {
-    await getWriteClient().create({
-      _type: 'registration',
-      ...fields,
-      confirmationCode,
-      submittedAt: new Date().toISOString(),
+    await prisma.registration.create({
+      data: { ...fields, confirmationCode },
     });
   } catch (err) {
     console.error('Failed to store registration:', err);

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import EditionAchievements from '@/components/sections/EditionAchievements';
 import { ACHIEVEMENT_EDITIONS } from '@/lib/achievements-data';
-import { getAchievementEditions, getAchievementStudents } from '@/lib/sanity/queries';
+import { getAchievementEditions, getAchievementStudents } from '@/lib/db/queries';
 import { pageMetadata } from '@/lib/page-metadata';
 
 interface Props {
@@ -19,8 +19,8 @@ export async function generateStaticParams() {
 
 async function findEdition(slug: string): Promise<{ number: number; year: number | string } | null> {
   const editions = await getAchievementEditions();
-  const sanityEd = editions.find(e => e.slug === slug);
-  if (sanityEd) return { number: sanityEd.number, year: sanityEd.year };
+  const dbEd = editions.find(e => e.slug === slug);
+  if (dbEd) return { number: dbEd.number, year: dbEd.year };
   const localEd = ACHIEVEMENT_EDITIONS.find(e => e.slug === slug);
   if (localEd) return { number: localEd.number, year: localEd.year };
   return null;

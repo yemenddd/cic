@@ -1,5 +1,5 @@
 import AchievementsPage from '@/components/sections/AchievementsPage';
-import { getAchievementEditions } from '@/lib/sanity/queries';
+import { getAchievementEditions } from '@/lib/db/queries';
 import { pageMetadata } from '@/lib/page-metadata';
 
 export const metadata = pageMetadata({
