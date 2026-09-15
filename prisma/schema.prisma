@@ -3,11 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  // Map whatever connection strings Vercel's Postgres integration gives you
-  // to these two names in .env.local (pooled for the app, direct for migrations).
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model AdminUser {
