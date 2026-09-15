@@ -3,6 +3,7 @@ import { Pencil } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
 import { ListPageHeader, ListTable, EmptyRow } from '@/components/admin/ListPage';
 import DeleteButton from '@/components/admin/DeleteButton';
+import ReorderButtons from '@/components/admin/ReorderButtons';
 import { deleteVideo } from './actions';
 
 const SECTION_LABELS: Record<string, string> = {
@@ -29,9 +30,18 @@ export default async function AdminVideosPage() {
           </h2>
           <ListTable>
             <tbody>
-              {rows.length === 0 && <EmptyRow colSpan={3} />}
-              {rows.map((v) => (
+              {rows.length === 0 && <EmptyRow colSpan={4} />}
+              {rows.map((v, i) => (
                 <tr key={v.id} style={{ borderTop: '1px solid var(--mat-liquid-border)' }}>
+                  <td className="ps-3 w-8">
+                    {/* Reordering is scoped to the section, so first/last are relative to this section's rows. */}
+                    <ReorderButtons
+                      model="video"
+                      id={v.id}
+                      isFirst={i === 0}
+                      isLast={i === rows.length - 1}
+                    />
+                  </td>
                   <td className="p-3" style={{ color: 'var(--text-primary)' }}>{v.titleAr}</td>
                   <td className="p-3 w-48" dir="ltr">
                     <a

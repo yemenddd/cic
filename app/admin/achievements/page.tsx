@@ -3,6 +3,7 @@ import { Pencil, Users } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
 import { ListPageHeader, ListTable, EmptyRow } from '@/components/admin/ListPage';
 import DeleteButton from '@/components/admin/DeleteButton';
+import ReorderButtons from '@/components/admin/ReorderButtons';
 import { deleteEdition } from './actions';
 
 export default async function AdminAchievementsPage() {
@@ -16,9 +17,17 @@ export default async function AdminAchievementsPage() {
       <ListPageHeader title="الإنجازات" addHref="/admin/achievements/new" />
       <ListTable>
         <tbody>
-          {editions.length === 0 && <EmptyRow colSpan={5} />}
-          {editions.map((ed) => (
+          {editions.length === 0 && <EmptyRow colSpan={6} />}
+          {editions.map((ed, i) => (
             <tr key={ed.id} style={{ borderTop: '1px solid var(--mat-liquid-border)' }}>
+              <td className="ps-3 w-8">
+                <ReorderButtons
+                  model="achievementEdition"
+                  id={ed.id}
+                  isFirst={i === 0}
+                  isLast={i === editions.length - 1}
+                />
+              </td>
               <td className="p-3 w-16" style={{ color: 'var(--text-tertiary)' }}>{ed.year}</td>
               <td className="p-3" style={{ color: 'var(--text-primary)' }}>
                 {ed.titleAr || `الدورة ${ed.number}`}

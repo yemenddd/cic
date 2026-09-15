@@ -25,7 +25,7 @@ export default async function AdminHomePage() {
             key={href}
             href={href}
             className="rounded-2xl p-5"
-            style={{ background: '#161618', border: '1px solid var(--mat-liquid-border)' }}
+            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
           >
             <Icon className="h-5 w-5 mb-4" style={{ color: 'var(--text-tertiary)' }} />
             <p className="font-outfit font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>{counts[i]}</p>

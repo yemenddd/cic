@@ -46,7 +46,7 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
         <a
           href="/admin/registrations/export"
           className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[13.5px] font-semibold whitespace-nowrap"
-          style={{ background: 'rgba(255,255,255,0.92)', color: '#0d0d0f' }}
+          style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
         >
           تصدير CSV
         </a>

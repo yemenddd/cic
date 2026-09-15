@@ -3,6 +3,7 @@ import { Pencil } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
 import { ListPageHeader, ListTable, EmptyRow } from '@/components/admin/ListPage';
 import DeleteButton from '@/components/admin/DeleteButton';
+import ReorderButtons from '@/components/admin/ReorderButtons';
 import { deleteEdition } from './actions';
 
 export default async function AdminHistoryPage() {
@@ -13,9 +14,17 @@ export default async function AdminHistoryPage() {
       <ListPageHeader title="رحلتنا" addHref="/admin/history/new" />
       <ListTable>
         <tbody>
-          {editions.length === 0 && <EmptyRow colSpan={4} />}
-          {editions.map((e) => (
+          {editions.length === 0 && <EmptyRow colSpan={5} />}
+          {editions.map((e, i) => (
             <tr key={e.id} style={{ borderTop: '1px solid var(--mat-liquid-border)' }}>
+              <td className="ps-3 w-8">
+                <ReorderButtons
+                  model="historyEdition"
+                  id={e.id}
+                  isFirst={i === 0}
+                  isLast={i === editions.length - 1}
+                />
+              </td>
               <td className="p-3 w-20" style={{ color: 'var(--text-primary)' }}>{e.year}</td>
               <td className="p-3" style={{ color: 'var(--text-primary)' }}>{e.titleAr}</td>
               <td className="p-3" style={{ color: 'var(--text-secondary)' }}>{e.attendees}</td>

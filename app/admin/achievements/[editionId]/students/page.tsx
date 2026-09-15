@@ -5,6 +5,7 @@ import { ArrowRight, Pencil } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
 import { ListPageHeader, ListTable, EmptyRow } from '@/components/admin/ListPage';
 import DeleteButton from '@/components/admin/DeleteButton';
+import ReorderButtons from '@/components/admin/ReorderButtons';
 import { deleteStudent } from './actions';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -39,9 +40,17 @@ export default async function AdminAchievementStudentsPage({
       <ListPageHeader title="طلاب الدورة" addHref={`/admin/achievements/${editionId}/students/new`} />
       <ListTable>
         <tbody>
-          {students.length === 0 && <EmptyRow colSpan={5} />}
-          {students.map((s) => (
+          {students.length === 0 && <EmptyRow colSpan={6} />}
+          {students.map((s, i) => (
             <tr key={s.id} style={{ borderTop: '1px solid var(--mat-liquid-border)' }}>
+              <td className="ps-3 w-8">
+                <ReorderButtons
+                  model="achievementStudent"
+                  id={s.id}
+                  isFirst={i === 0}
+                  isLast={i === students.length - 1}
+                />
+              </td>
               <td className="p-3 w-16">
                 <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center" style={{ background: 'var(--mat-liquid-bg)' }}>
                   {s.photoUrls[0] && (

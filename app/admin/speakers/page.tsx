@@ -4,6 +4,7 @@ import { Pencil, User } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
 import { ListPageHeader, ListTable, EmptyRow } from '@/components/admin/ListPage';
 import DeleteButton from '@/components/admin/DeleteButton';
+import ReorderButtons from '@/components/admin/ReorderButtons';
 import { deleteSpeaker } from './actions';
 
 export default async function AdminSpeakersPage() {
@@ -14,9 +15,17 @@ export default async function AdminSpeakersPage() {
       <ListPageHeader title="المتحدثون" addHref="/admin/speakers/new" />
       <ListTable>
         <tbody>
-          {speakers.length === 0 && <EmptyRow colSpan={4} />}
-          {speakers.map((s) => (
+          {speakers.length === 0 && <EmptyRow colSpan={5} />}
+          {speakers.map((s, i) => (
             <tr key={s.id} style={{ borderTop: '1px solid var(--mat-liquid-border)' }}>
+              <td className="ps-3 w-8">
+                <ReorderButtons
+                  model="speaker"
+                  id={s.id}
+                  isFirst={i === 0}
+                  isLast={i === speakers.length - 1}
+                />
+              </td>
               <td className="p-3 w-16">
                 <div
                   className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center"

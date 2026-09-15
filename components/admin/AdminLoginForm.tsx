@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { Lock, Loader2 } from 'lucide-react';
+import { Lock, Loader2, Sun, Moon } from 'lucide-react';
 import CICTLogo from '@/components/ui/CICTLogo';
+import { useTheme } from '@/lib/theme-context';
 
 export default function AdminLoginForm() {
   const router = useRouter();
+  const { theme, toggle } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
@@ -30,7 +32,21 @@ export default function AdminLoginForm() {
       style={{ background: 'var(--bg-base)' }}
       dir="rtl"
     >
-      {/* Subtle grid background, matching the site's dark surfaces */}
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'}
+        className="fixed top-5 end-5 p-2.5 rounded-xl transition-colors"
+        style={{
+          background: 'var(--mat-liquid-bg)',
+          border: '1px solid var(--mat-liquid-border)',
+          color: 'var(--text-secondary)',
+        }}
+      >
+        {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      </button>
+
+      {/* Subtle grid background */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div
           className="absolute inset-0"
@@ -46,9 +62,9 @@ export default function AdminLoginForm() {
       <div
         className="w-full max-w-sm rounded-3xl p-8"
         style={{
-          background: '#161618',
+          background: 'var(--bg-elevated)',
           border: '1px solid var(--mat-liquid-border)',
-          boxShadow: '0 4px 48px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
+          boxShadow: 'var(--shadow-lg)',
           backdropFilter: 'blur(24px)',
         }}
       >
@@ -102,7 +118,7 @@ export default function AdminLoginForm() {
             type="submit"
             disabled={status === 'loading'}
             className="w-full inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-[14px] font-semibold transition-opacity disabled:opacity-60"
-            style={{ background: 'rgba(255,255,255,0.92)', color: '#0d0d0f' }}
+            style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
           >
             {status === 'loading' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
             دخول

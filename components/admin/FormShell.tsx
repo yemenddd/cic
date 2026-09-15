@@ -12,24 +12,26 @@ function SubmitButton({ label = 'حفظ' }: { label?: string }) {
       type="submit"
       disabled={pending}
       className="rounded-xl px-6 py-2.5 text-[14px] font-semibold transition-opacity disabled:opacity-60"
-      style={{ background: 'rgba(255,255,255,0.92)', color: '#0d0d0f' }}
+      style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
     >
       {pending ? '...جارٍ الحفظ' : label}
     </button>
   );
 }
 
-type ActionResult = { error?: string } | void;
+type ActionResult = { error?: string; success?: string } | void;
 
 export default function FormShell({
   title,
   backHref,
   action,
+  submitLabel,
   children,
 }: {
   title: string;
   backHref: string;
   action: (state: ActionResult, formData: FormData) => Promise<ActionResult>;
+  submitLabel?: string;
   children: React.ReactNode;
 }) {
   const [state, formAction] = useActionState(action, undefined);
@@ -46,16 +48,19 @@ export default function FormShell({
       <form
         action={formAction}
         className="rounded-2xl p-6 space-y-5"
-        style={{ background: '#161618', border: '1px solid var(--mat-liquid-border)' }}
+        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
       >
         {children}
 
         {state?.error && (
           <p className="text-[13px]" style={{ color: '#ef4444' }}>{state.error}</p>
         )}
+        {state?.success && (
+          <p className="text-[13px]" style={{ color: '#22c55e' }}>{state.success}</p>
+        )}
 
         <div className="pt-2 flex items-center gap-3" style={{ borderTop: '1px solid var(--mat-liquid-border)' }}>
-          <SubmitButton />
+          <SubmitButton label={submitLabel} />
         </div>
       </form>
     </div>
