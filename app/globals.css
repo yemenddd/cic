@@ -807,3 +807,13 @@ html[dir="rtl"] ::-webkit-scrollbar {
   transition-duration: 200ms;
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* ── Platform type ───────────────────────────────────────────────
+   The admin panel and attendee dashboard use IBM Plex Sans Arabic,
+   which reads better for dense UI than the display faces the public
+   marketing site uses. Applied at the shell root, so it also overrides
+   the .font-outfit headings inside the panels. */
+.font-platform,
+.font-platform .font-outfit {
+  font-family: var(--font-ibm), 'IBM Plex Sans Arabic', system-ui, sans-serif;
+}

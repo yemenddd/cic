@@ -114,7 +114,7 @@ export default function AdminShell({ email, children }: { email?: string | null;
   }, [menuOpen]);
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--bg-base)' }} dir="rtl">
+    <div className="font-platform flex min-h-screen" style={{ background: 'var(--bg-base)' }} dir="rtl">
       {/* Desktop sidebar */}
       <aside
         className="hidden md:flex w-64 shrink-0 flex-col p-5"

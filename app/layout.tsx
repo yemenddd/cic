@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Inter, Outfit, IBM_Plex_Sans_Arabic } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import StyletronWrapper from "@/components/layout/StyletronWrapper";
@@ -16,6 +16,15 @@ const inter = Inter({
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
+});
+
+// Used only by the platform surfaces (/admin, /dashboard, login screens) via
+// the .font-platform utility — the public marketing site keeps its own type.
+const ibmPlexArabic = IBM_Plex_Sans_Arabic({
+  variable: "--font-ibm",
+  subsets: ["arabic", "latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
 // Arabic typeface — Thmanyah Serif Display, self-hosted, used across the site when the language is Arabic
@@ -70,7 +79,7 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      className={`${inter.variable} ${outfit.variable} ${thmanyah.variable} h-full antialiased`}
+      className={`${inter.variable} ${outfit.variable} ${thmanyah.variable} ${ibmPlexArabic.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-inter" style={{ background: 'var(--bg-base)', color: 'var(--text-primary)' }}>

@@ -29,7 +29,7 @@ export default function LoginForm() {
 
   return (
     <div
-      className="flex min-h-screen items-center justify-center px-4"
+      className="font-platform flex min-h-screen items-center justify-center px-4"
       style={{ background: 'var(--bg-base)' }}
       dir="rtl"
     >
