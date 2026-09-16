@@ -5,24 +5,18 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
-  LayoutDashboard, Mic2, CalendarDays, Images, Handshake,
-  History, Trophy, Clapperboard, ClipboardList, Lightbulb, LogOut,
-  Menu, X, Sun, Moon, KeyRound, ExternalLink,
+  LayoutDashboard, IdCard, CalendarDays, Lightbulb, UserRound,
+  LogOut, Menu, X, Sun, Moon, ExternalLink,
 } from 'lucide-react';
 import CICTLogo from '@/components/ui/CICTLogo';
 import { useTheme } from '@/lib/theme-context';
 
 const NAV = [
-  { href: '/admin', label: 'نظرة عامة', icon: LayoutDashboard, exact: true },
-  { href: '/admin/speakers', label: 'المتحدثون', icon: Mic2 },
-  { href: '/admin/program', label: 'البرنامج', icon: CalendarDays },
-  { href: '/admin/gallery', label: 'المعرض', icon: Images },
-  { href: '/admin/partners', label: 'الشركاء', icon: Handshake },
-  { href: '/admin/history', label: 'رحلة المؤتمر', icon: History },
-  { href: '/admin/achievements', label: 'الإنجازات', icon: Trophy },
-  { href: '/admin/videos', label: 'الفيديوهات', icon: Clapperboard },
-  { href: '/admin/registrations', label: 'التسجيلات', icon: ClipboardList },
-  { href: '/admin/submissions', label: 'الابتكارات المقدَّمة', icon: Lightbulb },
+  { href: '/dashboard', label: 'نظرة عامة', icon: LayoutDashboard, exact: true },
+  { href: '/dashboard/badge', label: 'بطاقتي', icon: IdCard },
+  { href: '/dashboard/agenda', label: 'جدولي', icon: CalendarDays },
+  { href: '/dashboard/innovations', label: 'ابتكاراتي', icon: Lightbulb },
+  { href: '/dashboard/account', label: 'حسابي', icon: UserRound },
 ];
 
 function NavLinks({ pathname, onNavigate }: { pathname: string | null; onNavigate?: () => void }) {
@@ -50,15 +44,24 @@ function NavLinks({ pathname, onNavigate }: { pathname: string | null; onNavigat
   );
 }
 
-function SidebarFooter({ email, onNavigate }: { email?: string | null; onNavigate?: () => void }) {
+function SidebarFooter({ name, email }: { name?: string | null; email?: string | null }) {
   const { theme, toggle } = useTheme();
 
   return (
     <div className="pt-4 mt-4 space-y-1" style={{ borderTop: '1px solid var(--mat-liquid-border)' }}>
-      {email && (
-        <p className="px-3 mb-2 text-[11px] truncate" style={{ color: 'var(--text-tertiary)' }} dir="ltr">
-          {email}
-        </p>
+      {(name || email) && (
+        <div className="px-3 mb-2">
+          {name && (
+            <p className="text-[12.5px] font-semibold truncate" style={{ color: 'var(--text-secondary)' }}>
+              {name}
+            </p>
+          )}
+          {email && (
+            <p className="text-[11px] truncate" style={{ color: 'var(--text-tertiary)' }} dir="ltr">
+              {email}
+            </p>
+          )}
+        </div>
       )}
 
       <button
@@ -71,16 +74,6 @@ function SidebarFooter({ email, onNavigate }: { email?: string | null; onNavigat
       </button>
 
       <Link
-        href="/admin/account"
-        onClick={onNavigate}
-        className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-colors"
-        style={{ color: 'var(--text-secondary)' }}
-      >
-        <KeyRound className="h-4 w-4" />
-        تغيير كلمة المرور
-      </Link>
-
-      <Link
         href="/"
         target="_blank"
         className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-colors"
@@ -91,7 +84,7 @@ function SidebarFooter({ email, onNavigate }: { email?: string | null; onNavigat
       </Link>
 
       <button
-        onClick={() => signOut({ callbackUrl: '/admin/login' })}
+        onClick={() => signOut({ callbackUrl: '/' })}
         className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-colors"
         style={{ color: 'var(--text-secondary)' }}
       >
@@ -102,7 +95,15 @@ function SidebarFooter({ email, onNavigate }: { email?: string | null; onNavigat
   );
 }
 
-export default function AdminShell({ email, children }: { email?: string | null; children: React.ReactNode }) {
+export default function DashboardShell({
+  name,
+  email,
+  children,
+}: {
+  name?: string | null;
+  email?: string | null;
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -123,11 +124,11 @@ export default function AdminShell({ email, children }: { email?: string | null;
         <div className="flex items-center gap-2 mb-8 px-1">
           <CICTLogo height={30} />
           <span className="font-outfit font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
-            لوحة CICT
+            حسابي في CICT
           </span>
         </div>
         <NavLinks pathname={pathname} />
-        <SidebarFooter email={email} />
+        <SidebarFooter name={name} email={email} />
       </aside>
 
       {/* Mobile drawer */}
@@ -146,7 +147,7 @@ export default function AdminShell({ email, children }: { email?: string | null;
               <div className="flex items-center gap-2">
                 <CICTLogo height={28} />
                 <span className="font-outfit font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
-                  لوحة CICT
+                  حسابي في CICT
                 </span>
               </div>
               <button onClick={() => setMenuOpen(false)} aria-label="إغلاق القائمة" style={{ color: 'var(--text-secondary)' }}>
@@ -154,7 +155,7 @@ export default function AdminShell({ email, children }: { email?: string | null;
               </button>
             </div>
             <NavLinks pathname={pathname} onNavigate={() => setMenuOpen(false)} />
-            <SidebarFooter email={email} onNavigate={() => setMenuOpen(false)} />
+            <SidebarFooter name={name} email={email} />
           </aside>
         </>
       )}
@@ -173,7 +174,7 @@ export default function AdminShell({ email, children }: { email?: string | null;
             <Menu className="h-5 w-5" />
           </button>
           <span className="font-outfit font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
-            لوحة CICT
+            حسابي في CICT
           </span>
         </header>
 

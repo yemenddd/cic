@@ -9,54 +9,9 @@ import { useTheme } from '@/lib/theme-context';
 import { cn } from '@/lib/utils';
 import ConferenceBadge from '@/components/ui/ConferenceBadge';
 import { downloadBadgePDF } from '@/lib/download-badge-pdf';
-
-type Lang = 'ar' | 'en' | 'tr';
-
-interface LocalizedText {
-  ar: string;
-  en: string;
-  tr: string;
-}
-
-interface Category {
-  id: string;
-  recommended: boolean;
-  labels: LocalizedText;
-  features: { ar: string[]; en: string[]; tr: string[] };
-}
-
-const CATEGORIES: Category[] = [
-  {
-    id: 'visitor',
-    recommended: false,
-    labels: { ar: 'زائر', en: 'Visitor', tr: 'Ziyaretçi' },
-    features: {
-      ar: ['حضور جميع الجلسات العامة', 'استكشاف المعرض التقني', 'التواصل مع الخبراء', 'شهادة مشاركة رسمية'],
-      en: ['Access to all public sessions', 'Explore the innovation exhibition', 'Network with experts', 'Official participation certificate'],
-      tr: ['Tüm genel oturumlara erişim', 'İnovasyon sergisini keşfedin', 'Uzmanlarla ağ kurma', 'Resmi katılım sertifikası'],
-    },
-  },
-  {
-    id: 'participant',
-    recommended: true,
-    labels: { ar: 'مشارك', en: 'Participant', tr: 'Katılımcı' },
-    features: {
-      ar: ['كل مميزات الزائر', 'المشاركة في ورشات العمل', 'عرض بحث أو مشروع', 'الأولوية في جلسات التواصل'],
-      en: ['All Visitor benefits', 'Join workshops & competitions', 'Present a research or project', 'Priority networking sessions'],
-      tr: ['Tüm Ziyaretçi hakları', 'Atölye ve yarışmalara katılım', 'Araştırma veya proje sunumu', 'Öncelikli ağ kurma oturumları'],
-    },
-  },
-  {
-    id: 'volunteer',
-    recommended: false,
-    labels: { ar: 'متطوع', en: 'Volunteer', tr: 'Gönüllü' },
-    features: {
-      ar: ['المساهمة في تنظيم المؤتمر', 'خبرة إدارية وتنظيمية عملية', 'شهادة تطوع معتمدة', 'اجتماعات مع الفريق التنظيمي'],
-      en: ['Contribute to conference organization', 'Hands-on management experience', 'Certified volunteering certificate', 'Meetings with the organizing team'],
-      tr: ['Konferans organizasyonuna katkı', 'Uygulamalı yönetim deneyimi', 'Onaylı gönüllülük sertifikası', 'Organizasyon ekibiyle toplantılar'],
-    },
-  },
-];
+import { CATEGORIES, type Lang } from '@/lib/categories';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 const CATEGORY_ICONS: Record<string, typeof Award> = {
   visitor:     Eye,
@@ -76,7 +31,11 @@ export default function RegisterForm() {
   const [selected, setSelected] = useState(CATEGORIES[0].id);
   const [track, setTrack] = useState('');
   const [fields, setFields] = useState({ fullName: '', email: '', phone: '', country: '', organization: '' });
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+  const router = useRouter();
   const [confirmCode, setConfirmCode] = useState('');
   const [copied, setCopied] = useState(false);
 
@@ -87,18 +46,40 @@ export default function RegisterForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (password.length < 8) {
+      setErrorMsg(p.pwTooShort ?? 'كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+      setStatus('error');
+      return;
+    }
+    if (password !== passwordConfirm) {
+      setErrorMsg(p.pwMismatch ?? 'كلمتا المرور غير متطابقتين');
+      setStatus('error');
+      return;
+    }
+
     setStatus('loading');
+    setErrorMsg('');
     try {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...fields, category: selected, track }),
+        body: JSON.stringify({ ...fields, category: selected, track, password }),
       });
       const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error ?? 'Registration failed');
+      if (!res.ok || !data.ok) {
+        setErrorMsg(data.error ?? p.errorMsg);
+        setStatus('error');
+        return;
+      }
       setConfirmCode(data.code);
       setStatus('success');
+      // Registration creates the account, so sign them straight in — the
+      // badge they're about to see is now permanently in their dashboard.
+      await signIn('credentials', { email: fields.email, password, redirect: false });
+      router.refresh();
     } catch {
+      setErrorMsg(p.errorMsg);
       setStatus('error');
     }
   };
@@ -120,7 +101,7 @@ export default function RegisterForm() {
   if (status === 'success') {
     const cat = CATEGORIES.find(c => c.id === selected)!;
     return (
-      <div className="flex min-h-screen items-center justify-center px-4 py-16" style={{ background: 'var(--bg-base)' }}>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-16" style={{ background: 'var(--bg-base)' }}>
         <ConferenceBadge
           name={fields.fullName}
           categoryId={selected}
@@ -135,6 +116,14 @@ export default function RegisterForm() {
           onCopyLink={handleCopyLink}
           copied={copied}
         />
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-[14px] font-semibold"
+          style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+        >
+          {p.goToDashboard ?? 'الذهاب إلى لوحتي'}
+          <ArrowRight className={cn('h-4 w-4', isRtl && 'rotate-180')} />
+        </Link>
       </div>
     );
   }
@@ -295,6 +284,43 @@ export default function RegisterForm() {
                   />
                 </div>
               </div>
+
+              {/* Password — registering creates the attendee's account */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    {p.fieldPassword ?? 'كلمة المرور'} <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <input
+                    required
+                    type="password"
+                    minLength={8}
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className="input-glass"
+                    dir="ltr"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    {p.fieldPasswordConfirm ?? 'تأكيد كلمة المرور'} <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <input
+                    required
+                    type="password"
+                    minLength={8}
+                    autoComplete="new-password"
+                    value={passwordConfirm}
+                    onChange={e => setPasswordConfirm(e.target.value)}
+                    className="input-glass"
+                    dir="ltr"
+                  />
+                </div>
+              </div>
+              <p className="text-[12px] -mt-1" style={{ color: 'var(--text-tertiary)' }}>
+                {p.passwordNote ?? 'ينشئ التسجيل حسابك في المنصة — 8 أحرف على الأقل.'}
+              </p>
 
               {/* Track */}
               <div>
@@ -530,7 +556,7 @@ export default function RegisterForm() {
           <div className="h-px mb-8" style={{ background: 'var(--mat-liquid-border)' }} />
 
           {status === 'error' && (
-            <p className="mb-4 text-center text-sm text-red-400">{p.errorMsg}</p>
+            <p className="mb-4 text-center text-sm text-red-400">{errorMsg || p.errorMsg}</p>
           )}
 
           {/* Submit button — full width for formality */}

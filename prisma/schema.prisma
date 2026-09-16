@@ -7,12 +7,96 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Superseded by `User` — kept until the admin row is verified migrated, so
+// the switch never depends on a destructive drop of the only admin account.
 model AdminUser {
   id           String   @id @default(cuid())
   email        String   @unique
   passwordHash String
   name         String?
   createdAt    DateTime @default(now())
+}
+
+enum UserRole {
+  ADMIN
+  ATTENDEE
+}
+
+enum SubmissionStatus {
+  DRAFT
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         UserRole @default(ATTENDEE)
+
+  // Profile — mirrors what the public registration form collects.
+  phone            String?
+  country          String?
+  organization     String?
+  category         String? // visitor | participant | volunteer
+  track            String?
+  confirmationCode String? // the code printed on their conference badge
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  registrations Registration[]
+  savedSessions SavedSession[]
+  submissions   ProjectSubmission[]
+
+  @@index([role])
+}
+
+// A session an attendee bookmarked into their personal agenda.
+model SavedSession {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String
+  session   ProgramSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+
+  @@unique([userId, sessionId])
+  @@index([userId])
+}
+
+// An innovation project an attendee submits for the review committee.
+// Deliberately separate from AchievementStudent: that model is a curated
+// public showcase with no owner and no status, so mixing unreviewed
+// submissions into it would put user content one missed filter away from
+// the public site.
+model ProjectSubmission {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  titleAr       String
+  titleEn       String?
+  summaryAr     String // one-line pitch
+  descriptionAr String?
+  track         String?
+  teamMembers   String[]
+  coverImageUrl String?
+  videoId       String? // YouTube id
+
+  status      SubmissionStatus @default(DRAFT)
+  reviewNote  String? // committee feedback, shown to the owner
+  reviewedAt  DateTime?
+  submittedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }
 
 // Every localized text field is stored as 3 columns (Ar/En/Tr) rather than
@@ -63,6 +147,8 @@ model ProgramSession {
   order           Int      @default(0)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  savedBy SavedSession[]
 
   @@index([day, order])
 }
@@ -166,11 +252,16 @@ model Registration {
   email            String
   phone            String?
   country          String?
-  organization      String?
+  organization     String?
   category         String
   track            String?
   confirmationCode String?
   submittedAt      DateTime @default(now())
 
+  // Optional: registrations made before accounts existed have no owner.
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   @@index([submittedAt])
+  @@index([userId])
 }

@@ -5,13 +5,15 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ScrollToTop from '@/components/layout/ScrollToTop';
 
-// The admin panel (/admin) has its own layout/chrome — the marketing site's
-// header/footer would only get in the way there.
+// The panels (/admin, /dashboard) and the login screen carry their own
+// chrome — the marketing site's header/footer would only get in the way.
+const BARE_ROUTES = ['/admin', '/dashboard', '/login'];
+
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAdmin = pathname?.startsWith('/admin');
+  const isBare = BARE_ROUTES.some((r) => pathname?.startsWith(r));
 
-  if (isAdmin) return <>{children}</>;
+  if (isBare) return <>{children}</>;
 
   return (
     <>

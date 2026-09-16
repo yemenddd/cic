@@ -322,8 +322,17 @@ export default function Header() {
               </AnimatePresence>
             </div>
 
-            {/* Register CTA — desktop */}
-            <div className="hidden md:flex">
+            {/* Account + Register CTA — desktop */}
+            <div className="hidden md:flex items-center gap-3">
+              <Link
+                href="/dashboard"
+                className="text-[13px] font-medium transition-colors"
+                style={{ color: 'var(--text-secondary)' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+              >
+                {t('nav.account')}
+              </Link>
               <ShinyButton href="/register">
                 {t('nav.register')}
               </ShinyButton>

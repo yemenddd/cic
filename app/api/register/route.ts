@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db/client';
 
 const RegistrationSchema = z.object({
@@ -10,6 +11,7 @@ const RegistrationSchema = z.object({
   organization: z.string().trim().max(200).optional().default(''),
   category: z.enum(['visitor', 'participant', 'volunteer']),
   track: z.string().trim().max(200),
+  password: z.string().min(8).max(200),
 });
 
 function generateCode(name: string): string {
@@ -31,19 +33,47 @@ export async function POST(req: Request) {
 
   const parsed = RegistrationSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ ok: false, error: 'Invalid registration data' }, { status: 400 });
+    return NextResponse.json({ ok: false, error: 'بيانات التسجيل غير صالحة' }, { status: 400 });
   }
 
-  const fields = parsed.data;
+  const { password, ...fields } = parsed.data;
+  const email = fields.email.toLowerCase();
   const confirmationCode = generateCode(fields.fullName);
 
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    return NextResponse.json(
+      { ok: false, error: 'هذا البريد مسجَّل بالفعل — سجّل الدخول بدلاً من ذلك' },
+      { status: 409 },
+    );
+  }
+
   try {
-    await prisma.registration.create({
-      data: { ...fields, confirmationCode },
+    // The account and its registration record are created together: a user
+    // without a registration (or the reverse) would be a broken half-signup.
+    await prisma.user.create({
+      data: {
+        email,
+        passwordHash: await bcrypt.hash(password, 12),
+        name: fields.fullName,
+        role: 'ATTENDEE',
+        phone: fields.phone,
+        country: fields.country,
+        organization: fields.organization || null,
+        category: fields.category,
+        track: fields.track,
+        confirmationCode,
+        registrations: {
+          create: { ...fields, email, confirmationCode },
+        },
+      },
     });
   } catch (err) {
     console.error('Failed to store registration:', err);
-    return NextResponse.json({ ok: false, error: 'Could not save registration, please try again' }, { status: 502 });
+    return NextResponse.json(
+      { ok: false, error: 'تعذّر حفظ التسجيل، حاول مرة أخرى' },
+      { status: 502 },
+    );
   }
 
   return NextResponse.json({ ok: true, code: confirmationCode });
