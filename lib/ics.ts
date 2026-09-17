@@ -128,6 +128,48 @@ function parseTimes(raw: string): { hour: number; minute: number }[] {
   return out;
 }
 
+/** A session resolved to a real UTC interval. */
+export type SessionInterval = { start: Date; end: Date };
+
+/**
+ * Resolve a session's `day` + free-text `time` into a real UTC interval, using
+ * the exact same DAY_DATES table, time parser, Istanbul offset and
+ * DEFAULT_DURATION_MINUTES fallback the .ics export uses.
+ *
+ * Returns null when the day is unknown or the time can't be parsed at all —
+ * i.e. exactly the cases where the .ics falls back to an all-day event or drops
+ * the session. Callers must treat null as "unknown time" and never guess: the
+ * clash detector in lib/agenda.ts depends on that to avoid false alarms.
+ *
+ * Exported so the calendar export and the agenda clash detector can never
+ * disagree about when a session starts.
+ */
+export function resolveSessionInterval(session: {
+  day: string;
+  time?: string | null;
+}): SessionInterval | null {
+  const date = DAY_DATES[session.day];
+  if (!date) return null;
+
+  const times = parseTimes(session.time ?? '');
+  if (times.length === 0) return null;
+
+  // Local Istanbul wall-clock → UTC by subtracting the fixed +03:00 offset.
+  const start = new Date(
+    Date.UTC(date.y, date.m - 1, date.d, times[0].hour - ISTANBUL_UTC_OFFSET_HOURS, times[0].minute),
+  );
+
+  let end = new Date(start.getTime() + DEFAULT_DURATION_MINUTES * 60 * 1000);
+  if (times.length > 1) {
+    const candidate = new Date(
+      Date.UTC(date.y, date.m - 1, date.d, times[1].hour - ISTANBUL_UTC_OFFSET_HOURS, times[1].minute),
+    );
+    if (candidate.getTime() > start.getTime()) end = candidate;
+  }
+
+  return { start, end };
+}
+
 function buildDescription(session: IcsSession): string {
   const lines: string[] = [];
 
@@ -156,9 +198,11 @@ function eventLines(session: IcsSession, dtstamp: string): string[] {
   lines.push(`UID:${escapeText(session.id)}@cict2026`);
   lines.push(`DTSTAMP:${dtstamp}`);
 
-  const times = parseTimes(session.time ?? '');
+  // `date` is known here, so a null interval means only one thing: the time
+  // itself was unparseable.
+  const interval = resolveSessionInterval(session);
 
-  if (times.length === 0) {
+  if (!interval) {
     // Unparseable time: an honest all-day event on the right date beats a
     // guessed clock time or a malformed DTSTART. DTEND is exclusive, so it is
     // the following day.
@@ -169,21 +213,8 @@ function eventLines(session: IcsSession, dtstamp: string): string[] {
       `DTEND;VALUE=DATE:${formatDateOnly(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate())}`,
     );
   } else {
-    // Local Istanbul wall-clock → UTC by subtracting the fixed +03:00 offset.
-    const start = new Date(
-      Date.UTC(date.y, date.m - 1, date.d, times[0].hour - ISTANBUL_UTC_OFFSET_HOURS, times[0].minute),
-    );
-
-    let end = new Date(start.getTime() + DEFAULT_DURATION_MINUTES * 60 * 1000);
-    if (times.length > 1) {
-      const candidate = new Date(
-        Date.UTC(date.y, date.m - 1, date.d, times[1].hour - ISTANBUL_UTC_OFFSET_HOURS, times[1].minute),
-      );
-      if (candidate.getTime() > start.getTime()) end = candidate;
-    }
-
-    lines.push(`DTSTART:${formatUtcStamp(start)}`);
-    lines.push(`DTEND:${formatUtcStamp(end)}`);
+    lines.push(`DTSTART:${formatUtcStamp(interval.start)}`);
+    lines.push(`DTEND:${formatUtcStamp(interval.end)}`);
   }
 
   lines.push(`SUMMARY:${escapeText(session.titleAr || 'جلسة')}`);

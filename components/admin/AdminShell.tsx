@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, Mic2, CalendarDays, Images, Handshake,
-  History, Trophy, Clapperboard, ClipboardList, Lightbulb, Users, LogOut,
+  History, Trophy, Clapperboard, ClipboardList, Lightbulb, Users, BarChart3, LogOut,
   Menu, X, Sun, Moon, KeyRound, ExternalLink,
 } from 'lucide-react';
 import CICTLogo from '@/components/ui/CICTLogo';
@@ -24,6 +24,7 @@ const NAV = [
   { href: '/admin/registrations', label: 'التسجيلات', icon: ClipboardList },
   { href: '/admin/submissions', label: 'الابتكارات المقدَّمة', icon: Lightbulb },
   { href: '/admin/users', label: 'المستخدمون', icon: Users },
+  { href: '/admin/insights', label: 'الإحصاءات', icon: BarChart3 },
 ];
 
 function NavLinks({ pathname, onNavigate }: { pathname: string | null; onNavigate?: () => void }) {
