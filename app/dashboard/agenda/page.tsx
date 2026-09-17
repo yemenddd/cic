@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { CalendarPlus } from 'lucide-react';
+import { CalendarPlus, Download } from 'lucide-react';
 import type { ProgramSession } from '@prisma/client';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
@@ -108,13 +108,28 @@ export default async function AgendaPage() {
   return (
     <div className="max-w-3xl">
       <section className="mb-10">
-        <div className="mb-4 flex items-baseline justify-between gap-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h1 className="font-outfit text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
             جدولي
           </h1>
-          <span className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
-            {mine.length} جلسة
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
+              {mine.length} جلسة
+            </span>
+            {mine.length > 0 && (
+              // Plain <a download>, not <Link>: this is a Route Handler serving a
+              // file, so it must leave the client router and hit the network.
+              <a
+                href="/dashboard/agenda/export"
+                download="cict-2026-agenda.ics"
+                className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[13px] font-semibold"
+                style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+              >
+                <Download className="h-3.5 w-3.5" />
+                تصدير إلى التقويم
+              </a>
+            )}
+          </div>
         </div>
 
         {mine.length === 0 ? (

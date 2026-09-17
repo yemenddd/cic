@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import {
-  IdCard, CalendarDays, Lightbulb, ArrowLeft, CircleCheck, Clock, FileText,
+  IdCard, CalendarDays, Lightbulb, ArrowLeft, CircleCheck, Clock, FileText, Bell,
 } from 'lucide-react';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
@@ -48,6 +48,14 @@ export default async function DashboardHomePage() {
   });
 
   if (!user) redirect('/login');
+
+  // The latest few unread notifications, so a committee decision shows up on the
+  // overview instead of waiting to be discovered on the notifications page.
+  const unreadNotifications = await prisma.notification.findMany({
+    where: { userId: session.user.id, read: false },
+    orderBy: { createdAt: 'desc' },
+    take: 3,
+  });
 
   const firstName = (user.name ?? '').trim().split(/\s+/)[0] || 'بك';
   const category = categoryLabel(user.category, 'ar');
@@ -125,6 +133,68 @@ export default async function DashboardHomePage() {
           </div>
         )}
       </section>
+
+      {/* Unread notifications — only when there is something new to read */}
+      {unreadNotifications.length > 0 && (
+        <section
+          className="rounded-2xl p-5 md:p-6 mb-6"
+          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <h2
+              className="font-outfit font-bold text-[15px] flex items-center gap-2"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              <Bell className="h-4 w-4" style={{ color: 'var(--primary)' }} />
+              إشعارات جديدة
+            </h2>
+            <Link
+              href="/dashboard/notifications"
+              className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              كل الإشعارات
+              <ArrowLeft className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="space-y-2">
+            {unreadNotifications.map((n) => (
+              <Link
+                key={n.id}
+                href={n.link ?? '/dashboard/notifications'}
+                className="flex items-start gap-3 rounded-xl p-3.5"
+                style={{
+                  background: 'var(--mat-liquid-bg)',
+                  border: '1px solid var(--mat-liquid-border)',
+                }}
+              >
+                <span
+                  className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+                  style={{ background: 'var(--primary)' }}
+                  aria-label="غير مقروء"
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[13.5px] font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    {n.title}
+                  </span>
+                  {n.body && (
+                    <span
+                      className="mt-1 block text-[12.5px] leading-relaxed line-clamp-2"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
+                      {n.body}
+                    </span>
+                  )}
+                  <span className="mt-1.5 block text-[11.5px]" style={{ color: 'var(--text-tertiary)' }}>
+                    {new Date(n.createdAt).toLocaleDateString('ar')}
+                  </span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">

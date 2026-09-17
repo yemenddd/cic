@@ -51,8 +51,27 @@ model User {
   registrations Registration[]
   savedSessions SavedSession[]
   submissions   ProjectSubmission[]
+  notifications Notification[]
 
   @@index([role])
+}
+
+// In-platform notification. The committee's decision on a submission would
+// otherwise only reach the attendee if they happened to log in and check.
+model Notification {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title String
+  body  String?
+  link  String? // where clicking it should take them
+  read  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
 }
 
 // A session an attendee bookmarked into their personal agenda.

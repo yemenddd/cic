@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, IdCard, CalendarDays, Lightbulb, UserRound,
-  LogOut, Menu, X, Sun, Moon, ExternalLink,
+  LogOut, Menu, X, Sun, Moon, ExternalLink, Bell, Award,
 } from 'lucide-react';
 import CICTLogo from '@/components/ui/CICTLogo';
 import { useTheme } from '@/lib/theme-context';
@@ -15,15 +15,26 @@ const NAV = [
   { href: '/dashboard', label: 'نظرة عامة', icon: LayoutDashboard, exact: true },
   { href: '/dashboard/badge', label: 'بطاقتي', icon: IdCard },
   { href: '/dashboard/agenda', label: 'جدولي', icon: CalendarDays },
+  { href: '/dashboard/certificate', label: 'شهادتي', icon: Award },
   { href: '/dashboard/innovations', label: 'ابتكاراتي', icon: Lightbulb },
+  { href: '/dashboard/notifications', label: 'الإشعارات', icon: Bell },
   { href: '/dashboard/account', label: 'حسابي', icon: UserRound },
 ];
 
-function NavLinks({ pathname, onNavigate }: { pathname: string | null; onNavigate?: () => void }) {
+function NavLinks({
+  pathname,
+  unreadCount = 0,
+  onNavigate,
+}: {
+  pathname: string | null;
+  unreadCount?: number;
+  onNavigate?: () => void;
+}) {
   return (
     <nav className="flex-1 space-y-1">
       {NAV.map(({ href, label, icon: Icon, exact }) => {
         const active = exact ? pathname === href : pathname?.startsWith(href);
+        const badge = href === '/dashboard/notifications' ? unreadCount : 0;
         return (
           <Link
             key={href}
@@ -37,6 +48,15 @@ function NavLinks({ pathname, onNavigate }: { pathname: string | null; onNavigat
           >
             <Icon className="h-4 w-4 shrink-0" />
             {label}
+            {badge > 0 && (
+              <span
+                className="ms-auto inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-bold leading-none"
+                style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                aria-label={`${badge} إشعار غير مقروء`}
+              >
+                {badge > 99 ? '+99' : badge}
+              </span>
+            )}
           </Link>
         );
       })}
@@ -98,10 +118,13 @@ function SidebarFooter({ name, email }: { name?: string | null; email?: string |
 export default function DashboardShell({
   name,
   email,
+  unreadCount = 0,
   children,
 }: {
   name?: string | null;
   email?: string | null;
+  // Fetched by the Server Component layout — this client shell never queries.
+  unreadCount?: number;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -127,7 +150,7 @@ export default function DashboardShell({
             حسابي في CICT
           </span>
         </div>
-        <NavLinks pathname={pathname} />
+        <NavLinks pathname={pathname} unreadCount={unreadCount} />
         <SidebarFooter name={name} email={email} />
       </aside>
 
@@ -154,7 +177,7 @@ export default function DashboardShell({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <NavLinks pathname={pathname} onNavigate={() => setMenuOpen(false)} />
+            <NavLinks pathname={pathname} unreadCount={unreadCount} onNavigate={() => setMenuOpen(false)} />
             <SidebarFooter name={name} email={email} />
           </aside>
         </>

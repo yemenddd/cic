@@ -3,9 +3,42 @@
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
-import { REVIEW_STATUSES, isSubmissionStatus } from '@/lib/submissions';
+import { REVIEW_STATUSES, SUBMISSION_STATUS_LABELS, isSubmissionStatus } from '@/lib/submissions';
+import type { SubmissionStatus } from '@prisma/client';
 
 type ActionResult = { error?: string; success?: string } | void;
+
+// The attendee-facing wording of a decision. Reuses SUBMISSION_STATUS_LABELS so
+// the notification never names a status differently from the chip on the card.
+function decisionNotification(
+  status: SubmissionStatus,
+  projectTitle: string,
+  reviewNote: string
+): { title: string; body: string } {
+  const headline =
+    status === 'APPROVED'
+      ? 'تم قبول مشروعك 🎉'
+      : status === 'REJECTED'
+        ? 'قرار اللجنة: لم يُقبل مشروعك'
+        : 'مشروعك قيد المراجعة';
+
+  const lead =
+    status === 'APPROVED'
+      ? `تهانينا! قبلت لجنة التحكيم مشروع «${projectTitle}».`
+      : status === 'REJECTED'
+        ? `بعد المراجعة، لم تقبل اللجنة مشروع «${projectTitle}» هذه المرة.`
+        : `بدأت لجنة التحكيم مراجعة مشروع «${projectTitle}».`;
+
+  const body = [
+    lead,
+    `الحالة الآن: ${SUBMISSION_STATUS_LABELS[status]}.`,
+    reviewNote ? `ملاحظات اللجنة: ${reviewNote}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  return { title: headline, body };
+}
 
 // A Server Action is a POST to whatever route it is used on — proxy.ts guards
 // the /admin page, but the action itself is the security boundary and must
@@ -33,15 +66,36 @@ export async function reviewSubmission(
     return { error: 'يرجى كتابة سبب الرفض ليظهر لصاحب المشروع' };
   }
 
-  const { count } = await prisma.projectSubmission.updateMany({
-    where: { id },
-    data: { status, reviewNote: reviewNote || null, reviewedAt: new Date() },
+  // One transaction: the decision and the attendee's notification either both
+  // land or neither does — never a saved decision the owner is never told about,
+  // and never a notification announcing a decision that failed to save.
+  const saved = await prisma.$transaction(async (tx) => {
+    const submission = await tx.projectSubmission.findUnique({
+      where: { id },
+      select: { userId: true, titleAr: true },
+    });
+    if (!submission) return false;
+
+    await tx.projectSubmission.update({
+      where: { id },
+      data: { status, reviewNote: reviewNote || null, reviewedAt: new Date() },
+    });
+
+    const { title, body } = decisionNotification(status, submission.titleAr, reviewNote);
+    await tx.notification.create({
+      data: { userId: submission.userId, title, body, link: '/dashboard/innovations' },
+    });
+
+    return true;
   });
-  if (count === 0) return { error: 'المشروع غير موجود' };
+
+  if (!saved) return { error: 'المشروع غير موجود' };
 
   revalidatePath('/admin/submissions');
   revalidatePath(`/admin/submissions/${id}`);
   revalidatePath('/dashboard/innovations');
+  revalidatePath('/dashboard/notifications');
+  revalidatePath('/dashboard');
 
   return { success: 'تم حفظ قرار اللجنة' };
 }

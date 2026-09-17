@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, Mic2, CalendarDays, Images, Handshake,
-  History, Trophy, Clapperboard, ClipboardList, Lightbulb, LogOut,
+  History, Trophy, Clapperboard, ClipboardList, Lightbulb, Users, LogOut,
   Menu, X, Sun, Moon, KeyRound, ExternalLink,
 } from 'lucide-react';
 import CICTLogo from '@/components/ui/CICTLogo';
@@ -23,6 +23,7 @@ const NAV = [
   { href: '/admin/videos', label: 'الفيديوهات', icon: Clapperboard },
   { href: '/admin/registrations', label: 'التسجيلات', icon: ClipboardList },
   { href: '/admin/submissions', label: 'الابتكارات المقدَّمة', icon: Lightbulb },
+  { href: '/admin/users', label: 'المستخدمون', icon: Users },
 ];
 
 function NavLinks({ pathname, onNavigate }: { pathname: string | null; onNavigate?: () => void }) {
