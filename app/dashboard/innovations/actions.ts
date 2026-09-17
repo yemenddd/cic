@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
 import { uploadImage } from '@/lib/blob';
+import { canSubmitInnovations } from '@/lib/categories';
 
 type ActionResult = { error?: string; success?: string } | void;
 
@@ -17,9 +18,27 @@ async function currentUserId(): Promise<string | null> {
   return session?.user?.id ?? null;
 }
 
+// Presenting a project is a `participant` benefit (see lib/categories.ts).
+// Hiding the nav link only tidies the UI — a server action is a public POST
+// endpoint, so entitlement is re-checked here on every write. The category is
+// read from the database rather than the JWT, so an admin changing someone's
+// category takes effect immediately instead of when their token happens to
+// refresh.
+async function entitledUserId(): Promise<{ id: string } | { error: string }> {
+  const id = await currentUserId();
+  if (!id) return { error: SESSION_EXPIRED };
+
+  const user = await prisma.user.findUnique({ where: { id }, select: { category: true } });
+  if (!user) return { error: SESSION_EXPIRED };
+  if (!canSubmitInnovations(user.category)) return { error: NOT_ENTITLED };
+
+  return { id };
+}
+
 const SESSION_EXPIRED = 'انتهت الجلسة، سجّل الدخول مرة أخرى';
 const NOT_FOUND = 'المشروع غير موجود';
 const LOCKED = 'لا يمكن تعديل المشروع بعد إرساله إلى لجنة المراجعة';
+const NOT_ENTITLED = 'تقديم الابتكارات متاح لفئة "مشارك" فقط';
 
 // One name per line — same shape as the admin achievement students form.
 function parseTeamMembers(formData: FormData): string[] {
@@ -53,8 +72,9 @@ function revalidate() {
 }
 
 export async function createSubmission(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  const userId = await currentUserId();
-  if (!userId) return { error: SESSION_EXPIRED };
+  const me = await entitledUserId();
+  if ('error' in me) return { error: me.error };
+  const userId = me.id;
 
   const fields = readFields(formData);
   if (!fields.titleAr) return { error: 'عنوان المشروع مطلوب' };
@@ -81,8 +101,9 @@ export async function createSubmission(_prev: ActionResult, formData: FormData):
 }
 
 export async function updateSubmission(id: string, _prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  const userId = await currentUserId();
-  if (!userId) return { error: SESSION_EXPIRED };
+  const me = await entitledUserId();
+  if ('error' in me) return { error: me.error };
+  const userId = me.id;
 
   const fields = readFields(formData);
   if (!fields.titleAr) return { error: 'عنوان المشروع مطلوب' };
@@ -118,8 +139,9 @@ export async function updateSubmission(id: string, _prev: ActionResult, formData
 }
 
 export async function deleteSubmission(id: string): Promise<void> {
-  const userId = await currentUserId();
-  if (!userId) return;
+  const me = await entitledUserId();
+  if ('error' in me) return;
+  const userId = me.id;
 
   // deleteMany scoped to both ids: deletes nothing when the row belongs to
   // another attendee, and never throws when the row is already gone.
@@ -129,8 +151,9 @@ export async function deleteSubmission(id: string): Promise<void> {
 }
 
 export async function submitForReview(id: string): Promise<ActionResult> {
-  const userId = await currentUserId();
-  if (!userId) return { error: SESSION_EXPIRED };
+  const me = await entitledUserId();
+  if ('error' in me) return { error: me.error };
+  const userId = me.id;
 
   // DRAFT is part of the WHERE clause, so re-submitting an already-sent
   // project (double click, stale tab) is a no-op rather than a reset of

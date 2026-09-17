@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
-import { categoryLabel } from '@/lib/categories';
+import { categoryLabel, categoryFeatures, abilitiesFor } from '@/lib/categories';
 
 const NEXT_STEPS = [
   {
@@ -25,6 +25,7 @@ const NEXT_STEPS = [
     icon: Lightbulb,
     title: 'شارك ابتكارك',
     desc: 'أرسل مشروعك إلى لجنة التحكيم وتابع حالة المراجعة أولًا بأول.',
+    requires: 'submitInnovations' as const,
   },
 ];
 
@@ -59,6 +60,11 @@ export default async function DashboardHomePage() {
 
   const firstName = (user.name ?? '').trim().split(/\s+/)[0] || 'بك';
   const category = categoryLabel(user.category, 'ar');
+  // Each category's dashboard shows only what that category is entitled to,
+  // and the benefit list is the same one advertised at registration.
+  const abilities = abilitiesFor(user.category);
+  const benefits = categoryFeatures(user.category, 'ar');
+  const nextSteps = NEXT_STEPS.filter((s) => !s.requires || abilities[s.requires]);
   const approved = user.submissions.filter((s) => s.status === 'APPROVED').length;
   const inReview = user.submissions.filter(
     (s) => s.status === 'PENDING' || s.status === 'UNDER_REVIEW',
@@ -81,13 +87,15 @@ export default async function DashboardHomePage() {
       value: String(user._count.savedSessions),
       hint: user._count.savedSessions ? 'اعرض جدولك' : 'لم تحفظ أي جلسة بعد',
     },
-    {
-      href: '/dashboard/innovations',
-      icon: Lightbulb,
-      label: 'ابتكاراتك',
-      value: String(user._count.submissions),
-      hint: user._count.submissions ? 'تابع حالة مشاريعك' : 'لم ترسل أي مشروع بعد',
-    },
+    ...(abilities.submitInnovations
+      ? [{
+          href: '/dashboard/innovations',
+          icon: Lightbulb,
+          label: 'ابتكاراتك',
+          value: String(user._count.submissions),
+          hint: user._count.submissions ? 'تابع حالة مشاريعك' : 'لم ترسل أي مشروع بعد',
+        }]
+      : []),
   ];
 
   const submissionChips = [
@@ -244,12 +252,32 @@ export default async function DashboardHomePage() {
         </div>
       )}
 
+      {/* What this attendee's category actually includes */}
+      {benefits.length > 0 && (
+        <>
+          <h2 className="font-outfit font-bold text-lg mb-4" style={{ color: 'var(--text-primary)' }}>
+            {category ? `مزايا فئتك · ${category}` : 'مزاياك'}
+          </h2>
+          <ul
+            className="mb-8 rounded-2xl p-5 space-y-2.5"
+            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
+          >
+            {benefits.map((b) => (
+              <li key={b} className="flex items-start gap-2.5 text-[13.5px]" style={{ color: 'var(--text-secondary)' }}>
+                <CircleCheck className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--text-tertiary)' }} />
+                {b}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
       {/* Next steps */}
       <h2 className="font-outfit font-bold text-lg mb-4" style={{ color: 'var(--text-primary)' }}>
         الخطوات التالية
       </h2>
       <div className="space-y-3">
-        {NEXT_STEPS.map(({ href, icon: Icon, title, desc }) => (
+        {nextSteps.map(({ href, icon: Icon, title, desc }) => (
           <Link
             key={href}
             href={href}

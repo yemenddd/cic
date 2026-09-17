@@ -18,12 +18,22 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   // The shell is a client component, so the unread count is counted here (in a
   // Server Component) and passed down as a prop.
-  const unreadCount = session.user.id
-    ? await prisma.notification.count({ where: { userId: session.user.id, read: false } })
-    : 0;
+  const [unreadCount, profile] = await Promise.all([
+    session.user.id
+      ? prisma.notification.count({ where: { userId: session.user.id, read: false } })
+      : Promise.resolve(0),
+    session.user.id
+      ? prisma.user.findUnique({ where: { id: session.user.id }, select: { category: true } })
+      : Promise.resolve(null),
+  ]);
 
   return (
-    <DashboardShell name={session.user.name} email={session.user.email} unreadCount={unreadCount}>
+    <DashboardShell
+      name={session.user.name}
+      email={session.user.email}
+      unreadCount={unreadCount}
+      category={profile?.category ?? null}
+    >
       {children}
     </DashboardShell>
   );

@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation';
 import type { UserRole } from '@prisma/client';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
+import { CATEGORIES, categoryLabel } from '@/lib/categories';
 
 type ActionResult = { error?: string; success?: string };
 // resetUserPassword is the one action that hands something back: the generated
@@ -89,6 +90,30 @@ export async function setUserRole(userId: string, role: UserRole): Promise<Actio
   revalidatePath(`/admin/users/${userId}`);
 
   return { success: role === 'ADMIN' ? 'تمت ترقية المستخدم إلى مدير' : 'تم تحويل المستخدم إلى مشارك' };
+}
+
+/**
+ * Change which benefit tier an attendee belongs to.
+ *
+ * Presenting a project is participant-only, and the category is fixed at
+ * registration — so without this, someone who picked the wrong tier at signup
+ * would have no way back. An admin is that way back.
+ */
+export async function setUserCategory(userId: string, category: string): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: 'غير مصرح لك بإدارة المستخدمين' };
+
+  // Validate against the shared list rather than trusting the posted value —
+  // an unknown category would silently strip every benefit.
+  if (!CATEGORIES.some((c) => c.id === category)) return { error: 'الفئة غير صالحة' };
+
+  const { count } = await prisma.user.updateMany({ where: { id: userId }, data: { category } });
+  if (count === 0) return { error: 'المستخدم غير موجود' };
+
+  revalidatePath('/admin/users');
+  revalidatePath(`/admin/users/${userId}`);
+  revalidatePath('/dashboard');
+
+  return { success: `تم تغيير الفئة إلى «${categoryLabel(category, 'ar')}»` };
 }
 
 export async function deleteUser(userId: string): Promise<ActionResult> {

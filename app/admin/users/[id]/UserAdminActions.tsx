@@ -3,7 +3,8 @@
 import { useState, useTransition } from 'react';
 import { Check, Copy, KeyRound, ShieldCheck, ShieldOff, Trash2 } from 'lucide-react';
 import type { UserRole } from '@prisma/client';
-import { deleteUser, resetUserPassword, setUserRole } from '../actions';
+import { deleteUser, resetUserPassword, setUserRole, setUserCategory } from '../actions';
+import { CATEGORIES } from '@/lib/categories';
 
 function Notice({ text, tone }: { text: string; tone: 'error' | 'success' }) {
   return (
@@ -73,10 +74,12 @@ function GeneratedPassword({ password }: { password: string }) {
 export default function UserAdminActions({
   userId,
   role,
+  category,
   isSelf,
 }: {
   userId: string;
   role: UserRole;
+  category: string | null;
   isSelf: boolean;
 }) {
   const [pending, startTransition] = useTransition();
@@ -108,6 +111,36 @@ export default function UserAdminActions({
       <h2 className="font-outfit font-bold text-[15px]" style={{ color: 'var(--text-primary)' }}>
         إجراءات الإدارة
       </h2>
+
+      <div>
+        <label className="block text-[12.5px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+          فئة المشاركة
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {CATEGORIES.map((c) => {
+            const active = c.id === category;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                disabled={pending || active}
+                onClick={() => run(() => setUserCategory(userId, c.id))}
+                className="rounded-xl px-3.5 py-2 text-[12.5px] font-semibold transition-opacity disabled:opacity-60"
+                style={{
+                  background: active ? 'var(--primary)' : 'var(--mat-liquid-bg)',
+                  color: active ? 'var(--primary-foreground)' : 'var(--text-primary)',
+                  border: '1px solid var(--mat-liquid-border)',
+                }}
+              >
+                {c.labels.ar}
+              </button>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-[11.5px]" style={{ color: 'var(--text-tertiary)' }}>
+          تقديم الابتكارات متاح لفئة «مشارك» فقط — غيّر الفئة هنا لمن اختار الفئة الخطأ عند التسجيل.
+        </p>
+      </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <button

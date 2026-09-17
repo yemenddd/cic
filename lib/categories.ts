@@ -52,3 +52,38 @@ export const CATEGORIES: Category[] = [
 export function categoryLabel(categoryId: string | null | undefined, lang: Lang): string {
   return CATEGORIES.find((c) => c.id === categoryId)?.labels[lang] ?? '';
 }
+
+export function categoryFeatures(categoryId: string | null | undefined, lang: Lang): string[] {
+  return CATEGORIES.find((c) => c.id === categoryId)?.features[lang] ?? [];
+}
+
+/**
+ * What each category is actually entitled to inside the platform.
+ *
+ * This mirrors the benefits advertised in CATEGORIES above rather than
+ * inventing a second, parallel rulebook: "عرض بحث أو مشروع" is listed only
+ * under `participant`, so only participants can submit an innovation.
+ *
+ * Read this as data, never by comparing category strings at call sites — a
+ * stray `category === 'participant'` somewhere is how these two lists drift
+ * apart.
+ */
+export interface CategoryAbilities {
+  submitInnovations: boolean;
+}
+
+const ABILITIES: Record<string, CategoryAbilities> = {
+  visitor: { submitInnovations: false },
+  participant: { submitInnovations: true },
+  volunteer: { submitInnovations: false },
+};
+
+const NO_ABILITIES: CategoryAbilities = { submitInnovations: false };
+
+export function abilitiesFor(categoryId: string | null | undefined): CategoryAbilities {
+  return (categoryId && ABILITIES[categoryId]) || NO_ABILITIES;
+}
+
+export function canSubmitInnovations(categoryId: string | null | undefined): boolean {
+  return abilitiesFor(categoryId).submitInnovations;
+}

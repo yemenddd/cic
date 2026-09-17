@@ -10,13 +10,17 @@ import {
 } from 'lucide-react';
 import CICTLogo from '@/components/ui/CICTLogo';
 import { useTheme } from '@/lib/theme-context';
+import { abilitiesFor } from '@/lib/categories';
 
 const NAV = [
   { href: '/dashboard', label: 'نظرة عامة', icon: LayoutDashboard, exact: true },
   { href: '/dashboard/badge', label: 'بطاقتي', icon: IdCard },
   { href: '/dashboard/agenda', label: 'جدولي', icon: CalendarDays },
   { href: '/dashboard/certificate', label: 'شهادتي', icon: Award },
-  { href: '/dashboard/innovations', label: 'ابتكاراتي', icon: Lightbulb },
+  // Only participants may present a project — see abilitiesFor() in
+  // lib/categories.ts. Hiding the link is cosmetic; the pages and the server
+  // actions enforce it.
+  { href: '/dashboard/innovations', label: 'ابتكاراتي', icon: Lightbulb, requires: 'submitInnovations' as const },
   { href: '/dashboard/notifications', label: 'الإشعارات', icon: Bell },
   { href: '/dashboard/account', label: 'حسابي', icon: UserRound },
 ];
@@ -24,15 +28,20 @@ const NAV = [
 function NavLinks({
   pathname,
   unreadCount = 0,
+  category,
   onNavigate,
 }: {
   pathname: string | null;
   unreadCount?: number;
+  category?: string | null;
   onNavigate?: () => void;
 }) {
+  const abilities = abilitiesFor(category);
+  const items = NAV.filter((item) => !item.requires || abilities[item.requires]);
+
   return (
     <nav className="flex-1 space-y-1">
-      {NAV.map(({ href, label, icon: Icon, exact }) => {
+      {items.map(({ href, label, icon: Icon, exact }) => {
         const active = exact ? pathname === href : pathname?.startsWith(href);
         const badge = href === '/dashboard/notifications' ? unreadCount : 0;
         return (
@@ -119,12 +128,14 @@ export default function DashboardShell({
   name,
   email,
   unreadCount = 0,
+  category,
   children,
 }: {
   name?: string | null;
   email?: string | null;
   // Fetched by the Server Component layout — this client shell never queries.
   unreadCount?: number;
+  category?: string | null;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -150,7 +161,7 @@ export default function DashboardShell({
             حسابي في CICT
           </span>
         </div>
-        <NavLinks pathname={pathname} unreadCount={unreadCount} />
+        <NavLinks pathname={pathname} unreadCount={unreadCount} category={category} />
         <SidebarFooter name={name} email={email} />
       </aside>
 
@@ -177,7 +188,7 @@ export default function DashboardShell({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <NavLinks pathname={pathname} unreadCount={unreadCount} onNavigate={() => setMenuOpen(false)} />
+            <NavLinks pathname={pathname} unreadCount={unreadCount} category={category} onNavigate={() => setMenuOpen(false)} />
             <SidebarFooter name={name} email={email} />
           </aside>
         </>

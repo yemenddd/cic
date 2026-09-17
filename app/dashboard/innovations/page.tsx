@@ -1,22 +1,19 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import { Lightbulb, MessageSquareQuote, Pencil, Plus } from 'lucide-react';
-import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
 import StatusChip from '@/components/submissions/StatusChip';
 import DeleteButton from '@/components/admin/DeleteButton';
 import SubmitForReviewButton from './SubmitForReviewButton';
 import { deleteSubmission } from './actions';
+import { innovationAccess, NotEntitled } from './access';
 
 export default async function DashboardInnovationsPage() {
-  const session = await auth();
-  // The layout guards this too, but a page must never render attendee data on
-  // the assumption that something upstream ran.
-  if (!session?.user?.id) redirect('/login');
+  const access = await innovationAccess();
+  if (access.userId === null) return <NotEntitled category={access.category} />;
 
   const submissions = await prisma.projectSubmission.findMany({
-    where: { userId: session.user.id },
+    where: { userId: access.userId },
     orderBy: { updatedAt: 'desc' },
   });
 

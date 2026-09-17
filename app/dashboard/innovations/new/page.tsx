@@ -1,8 +1,12 @@
 import FormShell from '@/components/admin/FormShell';
 import SubmissionFields from '../SubmissionFields';
 import { createSubmission } from '../actions';
+import { innovationAccess, NotEntitled } from '../access';
 
-export default function NewSubmissionPage() {
+export default async function NewSubmissionPage() {
+  const access = await innovationAccess();
+  if (access.userId === null) return <NotEntitled category={access.category} />;
+
   return (
     <FormShell
       title="تقديم ابتكار"

@@ -106,7 +106,12 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
         )}
       </div>
 
-      <UserAdminActions userId={user.id} role={user.role} isSelf={session?.user?.id === user.id} />
+      <UserAdminActions
+        userId={user.id}
+        role={user.role}
+        category={user.category}
+        isSelf={session?.user?.id === user.id}
+      />
     </div>
   );
 }
