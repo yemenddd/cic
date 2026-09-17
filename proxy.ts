@@ -5,26 +5,30 @@ import { auth } from '@/auth';
 // Proxy defaults to the Node.js runtime here, so `auth()` works without an
 // Edge split.
 //
-// Note this checks the ROLE, not just "is there a session": now that attendees
-// can sign in too, `!!req.auth` alone would let any attendee into /admin.
+// This is a *redirect* layer, not the security boundary. Everything it knows
+// comes from the JWT, which is written once at sign-in and carried for up to
+// 30 days — so the role it reads can be out of date. The real checks are the
+// DB-backed guards in lib/auth-guards.ts, used by the panel layouts and by
+// every server action.
+//
+// It deliberately does NOT bounce signed-in visitors away from the login
+// pages. It can't tell a current admin from a demoted one, and a stale token
+// pointing someone at a panel the layout will push them straight back out of
+// is how you build a redirect loop. The login pages decide that themselves,
+// from the database.
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   const user = req.auth?.user;
-  const isAdmin = user?.role === 'ADMIN';
 
-  const isAdminLogin = pathname === '/admin/login';
-  const isUserLogin = pathname === '/login';
+  // Has to stay reachable while signed out — and while signed in as someone
+  // who just lost their admin rights and needs a way back to a login form.
+  if (pathname === '/admin/login') return;
 
-  // Already signed in and sitting on a login page → send them home.
-  if (user && (isAdminLogin || isUserLogin)) {
-    return NextResponse.redirect(new URL(isAdmin ? '/admin' : '/dashboard', req.nextUrl));
-  }
-
-  if (pathname.startsWith('/admin') && !isAdminLogin) {
+  if (pathname.startsWith('/admin')) {
     if (!user) return NextResponse.redirect(new URL('/admin/login', req.nextUrl));
     // Signed in, but as an attendee — send them to their own dashboard
     // rather than a login page they've already passed.
-    if (!isAdmin) return NextResponse.redirect(new URL('/dashboard', req.nextUrl));
+    if (user.role !== 'ADMIN') return NextResponse.redirect(new URL('/dashboard', req.nextUrl));
   }
 
   if (pathname.startsWith('/dashboard') && !user) {
@@ -33,5 +37,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ['/admin/:path*', '/dashboard/:path*', '/login'],
+  matcher: ['/admin/:path*', '/dashboard/:path*'],
 };

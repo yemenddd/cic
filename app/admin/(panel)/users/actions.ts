@@ -5,8 +5,8 @@ import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { UserRole } from '@prisma/client';
-import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
+import { requireAdmin } from '@/lib/auth-guards';
 import { CATEGORIES, categoryLabel } from '@/lib/categories';
 
 type ActionResult = { error?: string; success?: string };
@@ -14,14 +14,10 @@ type ActionResult = { error?: string; success?: string };
 // password only ever exists in this response, never in the database.
 type ResetResult = ActionResult & { password?: string };
 
-// A Server Action is a POST to whatever route it shipped with — proxy.ts
-// guards the /admin pages, but the action itself is the security boundary and
-// must re-check the role on every call. Returns the session so the callers
-// that need the acting admin's own id (deleteUser) can use it.
-async function requireAdmin() {
-  const session = await auth();
-  return session?.user?.role === 'ADMIN' ? session : null;
-}
+// A Server Action is a POST to whatever route it shipped with — the panel
+// layout guards the /admin pages, but the action itself is a separate entry
+// point and must re-check on every call. `requireAdmin` resolves the role from
+// the database rather than the (stale) JWT; see lib/auth-guards.ts.
 
 // Demoting or deleting the only ADMIN would leave the platform with nobody
 // able to sign in to /admin, and no in-app way back — there is no self-serve
@@ -117,10 +113,10 @@ export async function setUserCategory(userId: string, category: string): Promise
 }
 
 export async function deleteUser(userId: string): Promise<ActionResult> {
-  const session = await requireAdmin();
-  if (!session) return { error: 'غير مصرح لك بإدارة المستخدمين' };
+  const admin = await requireAdmin();
+  if (!admin) return { error: 'غير مصرح لك بإدارة المستخدمين' };
 
-  if (session.user?.id === userId) {
+  if (admin.id === userId) {
     return { error: 'لا يمكنك حذف حسابك الحالي وأنت مسجّل الدخول به' };
   }
 

@@ -1,15 +1,18 @@
 'use server';
 
 import bcrypt from 'bcryptjs';
-import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
+import { currentUser } from '@/lib/auth-guards';
 
 type ActionResult = { error?: string; success?: string } | void;
 
 export async function changePassword(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  const session = await auth();
-  const email = session?.user?.email;
-  if (!email) return { error: 'انتهت الجلسة، سجّل الدخول مرة أخرى' };
+  // Resolved from the database, so a token belonging to a deleted account
+  // can't reach the update below. No role check: this only ever touches the
+  // caller's own password, and it still has to prove the current one.
+  const account = await currentUser();
+  if (!account) return { error: 'انتهت الجلسة، سجّل الدخول مرة أخرى' };
+  const email = account.email;
 
   const current = String(formData.get('current') || '');
   const next = String(formData.get('next') || '');

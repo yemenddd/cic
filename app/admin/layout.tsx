@@ -1,18 +1,14 @@
 import type { Metadata } from 'next';
-import { auth } from '@/auth';
-import AdminShell from '@/components/admin/AdminShell';
 
 export const metadata: Metadata = {
   title: 'لوحة تحكم CICT',
   robots: { index: false, follow: false },
 };
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth();
-
-  // /admin/login renders its own full-screen layout — proxy.ts already
-  // handles the redirect logic, this just skips wrapping it in the shell.
-  if (!session) return children;
-
-  return <AdminShell email={session.user?.email}>{children}</AdminShell>;
+// Deliberately does no auth work: /admin/login has to render for someone who
+// is *not* signed in, and a guard here could only redirect them to that same
+// page — a loop. The guard lives one level down, in (panel)/layout.tsx, which
+// wraps every admin route except the login page.
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return children;
 }

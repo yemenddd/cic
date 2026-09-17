@@ -1,8 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
+import { requireAdmin } from '@/lib/auth-guards';
 import { REVIEW_STATUSES, SUBMISSION_STATUS_LABELS, isSubmissionStatus } from '@/lib/submissions';
 import type { SubmissionStatus } from '@prisma/client';
 
@@ -43,9 +43,9 @@ function decisionNotification(
 // A Server Action is a POST to whatever route it is used on — proxy.ts guards
 // the /admin page, but the action itself is the security boundary and must
 // re-check the role on every call rather than trust the route it shipped with.
-async function requireAdmin(): Promise<boolean> {
-  const session = await auth();
-  return session?.user?.role === 'ADMIN';
+async function isAdmin(): Promise<boolean> {
+  // Database-backed, not the JWT — see lib/auth-guards.ts for why.
+  return (await requireAdmin()) !== null;
 }
 
 export async function reviewSubmission(
@@ -53,7 +53,7 @@ export async function reviewSubmission(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  if (!(await requireAdmin())) return { error: 'غير مصرح لك بمراجعة الابتكارات' };
+  if (!(await isAdmin())) return { error: 'غير مصرح لك بمراجعة الابتكارات' };
 
   const status = String(formData.get('status') || '');
   // The attendee-owned statuses (DRAFT/PENDING) are not reachable from here.

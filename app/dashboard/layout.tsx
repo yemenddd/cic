@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
+import { currentUser } from '@/lib/auth-guards';
 import DashboardShell from '@/components/dashboard/DashboardShell';
 
 export const metadata: Metadata = {
@@ -10,29 +10,24 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth();
-
-  // proxy.ts already guards /dashboard/*, but a page must never render
-  // attendee data on the assumption that it ran.
-  if (!session?.user) redirect('/login');
+  // Read from the database, not from the session: a deleted account still
+  // carries a perfectly valid token, and the category shown in the nav can
+  // have been changed by an admin since sign-in.
+  const user = await currentUser();
+  if (!user) redirect('/login');
 
   // The shell is a client component, so the unread count is counted here (in a
   // Server Component) and passed down as a prop.
-  const [unreadCount, profile] = await Promise.all([
-    session.user.id
-      ? prisma.notification.count({ where: { userId: session.user.id, read: false } })
-      : Promise.resolve(0),
-    session.user.id
-      ? prisma.user.findUnique({ where: { id: session.user.id }, select: { category: true } })
-      : Promise.resolve(null),
-  ]);
+  const unreadCount = await prisma.notification.count({
+    where: { userId: user.id, read: false },
+  });
 
   return (
     <DashboardShell
-      name={session.user.name}
-      email={session.user.email}
+      name={user.name}
+      email={user.email}
       unreadCount={unreadCount}
-      category={profile?.category ?? null}
+      category={user.category}
     >
       {children}
     </DashboardShell>
