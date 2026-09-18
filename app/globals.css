@@ -52,9 +52,13 @@
 
   /* The glow behind the dashboard welcome card. Defined per theme because the
      same alpha that reads as a soft wash on white disappears entirely on the
-     dark canvas. */
-  --hero-wash: radial-gradient(circle,
-                 color-mix(in srgb, var(--accent-violet) 38%, transparent), transparent 70%);
+     dark canvas.
+
+     Written as rgba of --accent-violet (#8b5cf6) rather than color-mix: the
+     build emits a no-color-mix fallback that simply drops the percentage, so
+     an older browser rendered this as a solid violet blob instead of a wash.
+     An explicit alpha has no fallback to get wrong. */
+  --hero-wash: radial-gradient(circle, rgba(139, 92, 246, 0.38), transparent 70%);
 
   --hero-bg:            #000000;
 
@@ -183,8 +187,7 @@
   --nav-active-tint:    rgba(139, 92, 246, 0.10);
   --nav-active-ring:    rgba(139, 92, 246, 0.20);
 
-  --hero-wash: radial-gradient(circle,
-                 color-mix(in srgb, var(--accent-violet) 16%, transparent), transparent 70%);
+  --hero-wash: radial-gradient(circle, rgba(139, 92, 246, 0.16), transparent 70%);
 
   --hero-bg:            #f2f2f7;
 
