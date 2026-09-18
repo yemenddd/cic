@@ -25,6 +25,7 @@ export const MINUTE: ArabicUnit = { one: 'دقيقة', two: 'دقيقتين', fe
 export const HOUR: ArabicUnit = { one: 'ساعة', two: 'ساعتين', few: 'ساعات', many: 'ساعة' };
 export const DAY: ArabicUnit = { one: 'يوم', two: 'يومين', few: 'أيام', many: 'يوماً' };
 export const SESSION: ArabicUnit = { one: 'جلسة', two: 'جلستين', few: 'جلسات', many: 'جلسة' };
+export const CLASH: ArabicUnit = { one: 'تعارض', two: 'تعارضين', few: 'تعارضات', many: 'تعارضاً' };
 export const PROJECT: ArabicUnit = { one: 'مشروع', two: 'مشروعين', few: 'مشاريع', many: 'مشروعاً' };
 
 /**

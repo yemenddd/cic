@@ -60,6 +60,12 @@
      An explicit alpha has no fallback to get wrong. */
   --hero-wash: radial-gradient(circle, rgba(139, 92, 246, 0.38), transparent 70%);
 
+  /* A session the attendee has added to their agenda. Solid values per theme
+     rather than a color-mix over --bg-elevated: on the light theme an unsaved
+     card is pure white, so a translucent "tint" made the *chosen* sessions
+     look fainter than the ones they had not picked. */
+  --agenda-saved-bg: #1d1826;
+
   --hero-bg:            #000000;
 
   --metallic-grad:      linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%);
@@ -188,6 +194,8 @@
   --nav-active-ring:    rgba(139, 92, 246, 0.20);
 
   --hero-wash: radial-gradient(circle, rgba(139, 92, 246, 0.16), transparent 70%);
+
+  --agenda-saved-bg: #f0ebff;
 
   --hero-bg:            #f2f2f7;
 
