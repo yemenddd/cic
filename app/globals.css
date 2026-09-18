@@ -50,11 +50,12 @@
   --nav-active-tint:    rgba(139, 92, 246, 0.18);
   --nav-active-ring:    rgba(139, 92, 246, 0.26);
 
-  /* A session the attendee has added to their agenda. Solid values per theme
-     rather than a color-mix over --bg-elevated: on the light theme an unsaved
-     card is pure white, so a translucent "tint" made the *chosen* sessions
-     look fainter than the ones they had not picked. */
-  --agenda-saved-bg: #1d1826;
+  /* A card that stands out from its neighbours because it belongs to the
+     reader: a session they saved, a notification they have not read. Solid
+     values per theme rather than a color-mix over --bg-elevated — on the light
+     theme a plain card is pure white, so a translucent "tint" made the
+     highlighted ones look fainter than the rest. */
+  --surface-highlight: #1d1826;
 
   --hero-bg:            #000000;
 
@@ -183,7 +184,7 @@
   --nav-active-tint:    rgba(139, 92, 246, 0.10);
   --nav-active-ring:    rgba(139, 92, 246, 0.20);
 
-  --agenda-saved-bg: #f0ebff;
+  --surface-highlight: #f0ebff;
 
   --hero-bg:            #f2f2f7;
 

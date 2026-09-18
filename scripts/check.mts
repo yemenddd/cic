@@ -32,6 +32,9 @@ const { validateAnnouncement, deliverAnnouncement } = await import(
   '../app/admin/(panel)/announcements/send'
 );
 const { prisma } = await import('../lib/db/client');
+const { isInternalPath, openAndResolveTarget, NOTIFICATIONS_PATH } = await import(
+  '../app/dashboard/notifications/open'
+);
 const { canSubmitInnovations } = await import('../lib/categories');
 const { isTrackAllowed } = await import('../lib/submissions');
 const { lockSeconds, LOGIN_BY_EMAIL, LOGIN_BY_IP, REGISTER_BY_IP } = await import(
@@ -163,6 +166,50 @@ check(
   recipients.every((r) => r.role === 'ATTENDEE' && r.category === 'visitor'),
   true,
 );
+
+// --- opening a notification, which decides a redirect target -----------------
+
+check('an internal path is internal', isInternalPath('/dashboard/innovations'), true);
+check('a protocol-relative URL is not', isInternalPath('//evil.example'), false);
+check('a backslash trick is not', isInternalPath('/\\evil.example'), false);
+check('an absolute URL is not', isInternalPath('https://evil.example'), false);
+check('a missing link is not', isInternalPath(null), false);
+
+const owner = await prisma.user.findFirst({ where: { role: 'ATTENDEE' }, select: { id: true } });
+const other = await prisma.user.findFirst({
+  where: { role: 'ATTENDEE', id: { not: owner?.id ?? '' } },
+  select: { id: true },
+});
+
+if (owner && other) {
+  const mine = await prisma.notification.create({
+    data: { userId: owner.id, title: '[check] open', body: 'x', link: '/dashboard/innovations' },
+  });
+  const external = await prisma.notification.create({
+    data: { userId: owner.id, title: '[check] external', body: 'x', link: 'https://evil.example' },
+  });
+
+  // The outsider goes first, so "still unread" afterwards proves their attempt
+  // wrote nothing — run second, the owner's own open would have masked it.
+  check(
+    "somebody else's notification resolves to the feed",
+    await openAndResolveTarget(other.id, mine.id),
+    NOTIFICATIONS_PATH,
+  );
+  check(
+    'and their attempt marks nothing read',
+    (await prisma.notification.findUnique({ where: { id: mine.id } }))?.read,
+    false,
+  );
+
+  check('opening returns the stored link', await openAndResolveTarget(owner.id, mine.id), '/dashboard/innovations');
+  check('and marks it read', (await prisma.notification.findUnique({ where: { id: mine.id } }))?.read, true);
+
+  check('an external stored link is refused', await openAndResolveTarget(owner.id, external.id), NOTIFICATIONS_PATH);
+
+  await prisma.notification.deleteMany({ where: { title: { startsWith: '[check] ' } } });
+  check('open-test rows removed', await prisma.notification.count({ where: { title: { startsWith: '[check] ' } } }), 0);
+}
 
 // --- undo --------------------------------------------------------------------
 

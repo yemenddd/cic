@@ -77,7 +77,13 @@ export async function deliverAnnouncement(
   // the record would have no audit trail at all.
   await prisma.$transaction([
     prisma.notification.createMany({
-      data: recipients.map((r) => ({ userId: r.id, title: input.title, body: input.body, link })),
+      data: recipients.map((r) => ({
+        userId: r.id,
+        title: input.title,
+        body: input.body,
+        link,
+        kind: 'ANNOUNCEMENT' as const,
+      })),
     }),
     prisma.announcement.create({
       data: {

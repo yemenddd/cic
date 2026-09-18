@@ -114,7 +114,7 @@ function TimelineRow({
         style={{
           // A saved session is the attendee's own choice, so it carries the
           // accent; an unsaved one stays quiet so the agenda reads first.
-          background: saved ? 'var(--agenda-saved-bg)' : 'var(--bg-elevated)',
+          background: saved ? 'var(--surface-highlight)' : 'var(--bg-elevated)',
           border: '1px solid var(--mat-liquid-border)',
           borderInlineStartWidth: saved ? '3px' : '1px',
           borderInlineStartColor: saved

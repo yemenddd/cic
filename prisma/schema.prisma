@@ -99,6 +99,16 @@ model Announcement {
   @@index([createdAt])
 }
 
+// What produced a notification. Stored rather than inferred from the `link`,
+// which was the alternative — a committee decision and a venue announcement
+// are different things to the person reading them, and guessing that from a
+// URL breaks the moment a link changes or is absent.
+enum NotificationKind {
+  GENERAL
+  ANNOUNCEMENT
+  SUBMISSION
+}
+
 // In-platform notification. The committee's decision on a submission would
 // otherwise only reach the attendee if they happened to log in and check.
 model Notification {
@@ -110,6 +120,8 @@ model Notification {
   body  String?
   link  String? // where clicking it should take them
   read  Boolean @default(false)
+  // Defaults to GENERAL so rows written before this column keep working.
+  kind  NotificationKind @default(GENERAL)
 
   createdAt DateTime @default(now())
 

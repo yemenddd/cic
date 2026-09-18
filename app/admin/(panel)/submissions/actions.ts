@@ -83,7 +83,13 @@ export async function reviewSubmission(
 
     const { title, body } = decisionNotification(status, submission.titleAr, reviewNote);
     await tx.notification.create({
-      data: { userId: submission.userId, title, body, link: '/dashboard/innovations' },
+      data: {
+        userId: submission.userId,
+        title,
+        body,
+        link: '/dashboard/innovations',
+        kind: 'SUBMISSION',
+      },
     });
 
     return true;
