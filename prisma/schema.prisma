@@ -43,7 +43,10 @@ model User {
   organization     String?
   category         String? // visitor | participant | volunteer
   track            String?
-  confirmationCode String? // the code printed on their conference badge
+  // The code printed on their badge and certificate. Unique because two
+  // attendees holding the same one makes both documents ambiguous at the
+  // door; the registration route retries on the (very rare) collision.
+  confirmationCode String? @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -52,8 +55,48 @@ model User {
   savedSessions SavedSession[]
   submissions   ProjectSubmission[]
   notifications Notification[]
+  announcements Announcement[]
 
   @@index([role])
+}
+
+// Counts failed sign-ins and registration attempts so they can be slowed down.
+//
+// This has to live in the database rather than in memory: every request runs
+// in its own short-lived serverless instance, so an in-process counter would
+// be reset by the next cold start and shared by nobody.
+model AuthThrottle {
+  id          String    @id @default(cuid())
+  scope       String // which limit this row belongs to
+  key         String // the email or IP being counted
+  failures    Int       @default(0)
+  windowStart DateTime  @default(now())
+  lockedUntil DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([scope, key])
+  @@index([updatedAt])
+}
+
+// A message the organizers push to attendees' notification feeds.
+//
+// The Notification rows are what attendees actually read; this is the record
+// of what was sent, to whom and by whom — without it an announcement would be
+// unauditable and impossible to review after the fact.
+model Announcement {
+  id         String  @id @default(cuid())
+  title      String
+  body       String
+  link       String?
+  audience   String // 'all' | a category id from lib/categories.ts
+  recipients Int // how many feeds it actually landed in
+
+  sentById String?
+  sentBy   User?   @relation(fields: [sentById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 // In-platform notification. The committee's decision on a submission would

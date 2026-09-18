@@ -6,6 +6,7 @@ import { signIn } from 'next-auth/react';
 import { Lock, Loader2, Sun, Moon } from 'lucide-react';
 import CICTLogo from '@/components/ui/CICTLogo';
 import { useTheme } from '@/lib/theme-context';
+import { loginErrorMessage } from '@/lib/login-error';
 
 export default function AdminLoginForm() {
   const router = useRouter();
@@ -13,12 +14,15 @@ export default function AdminLoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('loading');
     const res = await signIn('credentials', { email, password, redirect: false });
     if (res?.error) {
+      // `code` carries the reason — repeated failures are a wait, not a typo.
+      setErrorMsg(loginErrorMessage(res.code));
       setStatus('error');
       return;
     }
@@ -109,8 +113,8 @@ export default function AdminLoginForm() {
           </div>
 
           {status === 'error' && (
-            <p className="text-[13px] text-center" style={{ color: '#ef4444' }}>
-              بيانات الدخول غير صحيحة
+            <p className="text-[13px] text-center leading-relaxed" style={{ color: '#ef4444' }}>
+              {errorMsg}
             </p>
           )}
 

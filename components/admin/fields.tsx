@@ -71,12 +71,24 @@ export function LocaleTextField({
 }
 
 export function SelectField({
-  name, label, defaultValue, options, required,
-}: { name: string; label: string; defaultValue?: string; options: { value: string; label: string }[]; required?: boolean }) {
+  name, label, defaultValue, options, required, onChange,
+}: {
+  name: string; label: string; defaultValue?: string; options: { value: string; label: string }[];
+  required?: boolean;
+  // Optional: most forms only read the value on submit, but a form that
+  // previews the consequence of the choice needs it as it changes.
+  onChange?: (value: string) => void;
+}) {
   return (
     <div className={fieldWrapper}>
       <label className={labelClass} style={labelStyle}>{label}</label>
-      <select name={name} defaultValue={defaultValue} required={required} className="input-glass">
+      <select
+        name={name}
+        defaultValue={defaultValue}
+        required={required}
+        onChange={onChange && ((e) => onChange(e.target.value))}
+        className="input-glass"
+      >
         {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </div>
