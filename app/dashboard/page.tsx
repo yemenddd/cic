@@ -1,33 +1,51 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import {
-  IdCard, CalendarDays, Lightbulb, ArrowLeft, CircleCheck, Clock, FileText, Bell,
+  IdCard, CalendarDays, Lightbulb, ArrowLeft, CircleCheck, Bell, UserCheck, Sparkles, Clock,
 } from 'lucide-react';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
 import { categoryLabel, categoryFeatures, abilitiesFor } from '@/lib/categories';
+import { resolveSessionInterval } from '@/lib/ics';
+import { relativeArabicDate } from '@/lib/relative-time';
+import { arabicCountBare, SESSION, PROJECT } from '@/lib/arabic-plural';
+import { SUBMISSION_STATUS_COLORS, SUBMISSION_STATUS_LABELS } from '@/lib/submissions';
+import WelcomeHero from './WelcomeHero';
+import Readiness, { type ReadinessStep } from './Readiness';
 
-const NEXT_STEPS = [
-  {
-    href: '/dashboard/badge',
-    icon: IdCard,
-    title: 'حمّل بطاقة المؤتمر',
-    desc: 'بطاقتك الدائمة برمز التأكيد — احملها معك يوم الحضور.',
-  },
-  {
-    href: '/dashboard/agenda',
-    icon: CalendarDays,
-    title: 'ابنِ جدولك الخاص',
-    desc: 'احفظ الجلسات التي تهمّك من البرنامج لتجدها كلها في مكان واحد.',
-  },
-  {
-    href: '/dashboard/innovations',
-    icon: Lightbulb,
-    title: 'شارك ابتكارك',
-    desc: 'أرسل مشروعك إلى لجنة التحكيم وتابع حالة المراجعة أولًا بأول.',
-    requires: 'submitInnovations' as const,
-  },
-];
+const DAY_LABELS: Record<string, string> = {
+  dayOne: 'اليوم الأول',
+  dayTwo: 'اليوم الثاني',
+};
+
+function Card({ children }: { children: React.ReactNode }) {
+  return (
+    <section
+      className="rounded-2xl p-5"
+      style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
+    >
+      {children}
+    </section>
+  );
+}
+
+function CardHeading({ title, href, linkLabel }: { title: string; href: string; linkLabel: string }) {
+  return (
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <h2 className="font-outfit font-bold text-[14.5px]" style={{ color: 'var(--text-primary)' }}>
+        {title}
+      </h2>
+      <Link
+        href={href}
+        className="inline-flex items-center gap-1 text-[12px] font-semibold"
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        {linkLabel}
+        <ArrowLeft className="h-3.5 w-3.5" />
+      </Link>
+    </div>
+  );
+}
 
 export default async function DashboardHomePage() {
   const session = await auth();
@@ -35,28 +53,33 @@ export default async function DashboardHomePage() {
 
   // Deliberately un-wrapped by safe(): this is the attendee's own data, and a
   // DB outage must surface as an error rather than an empty "you have nothing".
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      name: true,
-      category: true,
-      track: true,
-      organization: true,
-      confirmationCode: true,
-      _count: { select: { savedSessions: true, submissions: true } },
-      submissions: { select: { status: true } },
-    },
-  });
+  const [user, unreadNotifications, saved] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        name: true,
+        category: true,
+        confirmationCode: true,
+        _count: { select: { savedSessions: true, submissions: true } },
+        submissions: { select: { status: true } },
+      },
+    }),
+    prisma.notification.findMany({
+      where: { userId: session.user.id, read: false },
+      orderBy: { createdAt: 'desc' },
+      take: 3,
+    }),
+    prisma.savedSession.findMany({
+      where: { userId: session.user.id },
+      select: {
+        session: {
+          select: { id: true, day: true, time: true, titleAr: true, speakerNameAr: true, trackAr: true },
+        },
+      },
+    }),
+  ]);
 
   if (!user) redirect('/login');
-
-  // The latest few unread notifications, so a committee decision shows up on the
-  // overview instead of waiting to be discovered on the notifications page.
-  const unreadNotifications = await prisma.notification.findMany({
-    where: { userId: session.user.id, read: false },
-    orderBy: { createdAt: 'desc' },
-    take: 3,
-  });
 
   const firstName = (user.name ?? '').trim().split(/\s+/)[0] || 'بك';
   const category = categoryLabel(user.category, 'ar');
@@ -64,244 +87,250 @@ export default async function DashboardHomePage() {
   // and the benefit list is the same one advertised at registration.
   const abilities = abilitiesFor(user.category);
   const benefits = categoryFeatures(user.category, 'ar');
-  const nextSteps = NEXT_STEPS.filter((s) => !s.requires || abilities[s.requires]);
-  const approved = user.submissions.filter((s) => s.status === 'APPROVED').length;
-  const inReview = user.submissions.filter(
-    (s) => s.status === 'PENDING' || s.status === 'UNDER_REVIEW',
-  ).length;
-  const drafts = user.submissions.filter((s) => s.status === 'DRAFT').length;
 
-  const stats = [
+  const savedCount = user._count.savedSessions;
+  const submissionCount = user._count.submissions;
+
+  // The soonest saved session, by the same resolver the .ics export uses — so
+  // "next" here and the downloaded calendar can never disagree. Sessions whose
+  // free-text time can't be parsed sort last rather than being guessed at.
+  const upcoming = saved
+    .map(({ session: s }) => ({ session: s, interval: resolveSessionInterval(s) }))
+    .filter((row) => row.interval !== null)
+    .sort((a, b) => a.interval!.start.getTime() - b.interval!.start.getTime())[0];
+
+  const steps: ReadinessStep[] = [
     {
+      key: 'account',
+      title: 'أنشأت حسابك',
+      desc: 'تم تأكيد تسجيلك في المنصة',
+      href: '/dashboard/account',
+      icon: UserCheck,
+      done: true,
+    },
+    {
+      key: 'badge',
+      title: 'بطاقتك جاهزة',
+      desc: user.confirmationCode ? 'حمّلها قبل يوم الحضور' : 'ستصدر بعد تأكيد التسجيل',
       href: '/dashboard/badge',
       icon: IdCard,
-      label: 'رمز بطاقتك',
-      value: user.confirmationCode ?? '—',
-      hint: user.confirmationCode ? 'اعرض بطاقتك' : 'سيظهر الرمز بعد تأكيد تسجيلك',
-      mono: true,
+      done: Boolean(user.confirmationCode),
     },
     {
+      key: 'agenda',
+      title: 'جدولك الخاص',
+      desc: savedCount > 0 ? `${arabicCountBare(savedCount, SESSION)} في جدولك` : 'احفظ الجلسات التي تهمّك',
       href: '/dashboard/agenda',
       icon: CalendarDays,
-      label: 'الجلسات المحفوظة',
-      value: String(user._count.savedSessions),
-      hint: user._count.savedSessions ? 'اعرض جدولك' : 'لم تحفظ أي جلسة بعد',
+      done: savedCount > 0,
     },
+    // Presenting a project is a participant benefit, so it is only a step for
+    // the attendees who actually have it — see abilitiesFor() in lib/categories.
     ...(abilities.submitInnovations
-      ? [{
-          href: '/dashboard/innovations',
-          icon: Lightbulb,
-          label: 'ابتكاراتك',
-          value: String(user._count.submissions),
-          hint: user._count.submissions ? 'تابع حالة مشاريعك' : 'لم ترسل أي مشروع بعد',
-        }]
+      ? [
+          {
+            key: 'innovation',
+            title: 'قدّمت مشروعك',
+            desc:
+              submissionCount > 0
+                ? `${arabicCountBare(submissionCount, PROJECT)} قيد المتابعة`
+                : 'اعرض بحثك أو ابتكارك على اللجنة',
+            href: '/dashboard/innovations',
+            icon: Lightbulb,
+            done: submissionCount > 0,
+          },
+        ]
       : []),
   ];
 
-  const submissionChips = [
-    { icon: CircleCheck, label: 'مقبول', count: approved },
-    { icon: Clock, label: 'قيد المراجعة', count: inReview },
-    { icon: FileText, label: 'مسودة', count: drafts },
-  ].filter((c) => c.count > 0);
+  // Counted from the statuses already loaded rather than a second query.
+  const statusCounts = new Map<string, number>();
+  for (const s of user.submissions) {
+    statusCounts.set(s.status, (statusCounts.get(s.status) ?? 0) + 1);
+  }
 
   return (
-    <div dir="rtl">
-      {/* Welcome */}
-      <section
-        className="rounded-2xl p-6 md:p-7 mb-6"
-        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
-      >
-        <p className="text-[12.5px] mb-2" style={{ color: 'var(--text-tertiary)' }}>
-          مؤتمر الإبداع والابتكار · النسخة الرابعة 2026
-        </p>
-        <h1 className="font-outfit font-bold text-2xl md:text-[28px]" style={{ color: 'var(--text-primary)' }}>
-          أهلًا {firstName} 👋
-        </h1>
-        <p className="text-[13.5px] mt-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-          هذه مساحتك الخاصة في المؤتمر — بطاقتك، وجدولك، ومشاريعك، كلها هنا.
-        </p>
+    <div dir="rtl" className="space-y-5">
+      <WelcomeHero
+        firstName={firstName}
+        category={category}
+        code={user.confirmationCode}
+      />
 
-        {(category || user.track || user.organization) && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {[category, user.track, user.organization]
-              .filter((v): v is string => Boolean(v))
-              .map((v) => (
+      <Readiness steps={steps} />
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        {/* Next session */}
+        <Card>
+          <CardHeading title="جلستك القادمة" href="/dashboard/agenda" linkLabel="جدولي" />
+
+          {upcoming ? (
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
                 <span
-                  key={v}
-                  className="rounded-full px-3 py-1 text-[12px] font-medium"
+                  className="rounded-lg px-2.5 py-1 text-[11.5px] font-semibold"
                   style={{
-                    background: 'var(--mat-liquid-bg)',
-                    border: '1px solid var(--mat-liquid-border)',
-                    color: 'var(--text-secondary)',
+                    background: 'color-mix(in srgb, var(--accent-cyan) 16%, transparent)',
+                    color: 'var(--accent-cyan)',
                   }}
                 >
-                  {v}
+                  {DAY_LABELS[upcoming.session.day] ?? upcoming.session.day}
                 </span>
-              ))}
-          </div>
-        )}
-      </section>
-
-      {/* Unread notifications — only when there is something new to read */}
-      {unreadNotifications.length > 0 && (
-        <section
-          className="rounded-2xl p-5 md:p-6 mb-6"
-          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-            <h2
-              className="font-outfit font-bold text-[15px] flex items-center gap-2"
-              style={{ color: 'var(--text-primary)' }}
-            >
-              <Bell className="h-4 w-4" style={{ color: 'var(--primary)' }} />
-              إشعارات جديدة
-            </h2>
-            <Link
-              href="/dashboard/notifications"
-              className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              كل الإشعارات
-              <ArrowLeft className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-
-          <div className="space-y-2">
-            {unreadNotifications.map((n) => (
-              <Link
-                key={n.id}
-                href={n.link ?? '/dashboard/notifications'}
-                className="flex items-start gap-3 rounded-xl p-3.5"
-                style={{
-                  background: 'var(--mat-liquid-bg)',
-                  border: '1px solid var(--mat-liquid-border)',
-                }}
-              >
                 <span
-                  className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
-                  style={{ background: 'var(--primary)' }}
-                  aria-label="غير مقروء"
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[13.5px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-                    {n.title}
-                  </span>
-                  {n.body && (
-                    <span
-                      className="mt-1 block text-[12.5px] leading-relaxed line-clamp-2"
-                      style={{ color: 'var(--text-secondary)' }}
-                    >
-                      {n.body}
-                    </span>
-                  )}
-                  <span className="mt-1.5 block text-[11.5px]" style={{ color: 'var(--text-tertiary)' }}>
-                    {new Date(n.createdAt).toLocaleDateString('ar')}
-                  </span>
+                  className="inline-flex items-center gap-1.5 text-[12px]"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  <Clock className="h-3.5 w-3.5" />
+                  {upcoming.session.time}
                 </span>
+              </div>
+
+              <p
+                className="mt-3 font-outfit font-bold text-[15px] leading-relaxed"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                {upcoming.session.titleAr}
+              </p>
+
+              {(upcoming.session.speakerNameAr || upcoming.session.trackAr) && (
+                <p className="mt-1.5 text-[12.5px]" style={{ color: 'var(--text-tertiary)' }}>
+                  {[upcoming.session.speakerNameAr, upcoming.session.trackAr]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              )}
+
+              {savedCount > 1 && (
+                <p className="mt-4 text-[11.5px]" style={{ color: 'var(--text-tertiary)' }}>
+                  و{arabicCountBare(savedCount - 1, SESSION)} أخرى في جدولك
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="py-3">
+              <p className="text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                {savedCount > 0
+                  ? 'جلساتك المحفوظة لم تُحدَّد أوقاتها بعد — ستظهر هنا فور جدولتها.'
+                  : 'لم تحفظ أي جلسة بعد. تصفّح البرنامج واختر ما يهمّك ليصبح لك جدول خاص.'}
+              </p>
+              <Link
+                href="/dashboard/agenda"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[13px] font-semibold"
+                style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+              >
+                <Sparkles className="h-4 w-4" />
+                تصفّح البرنامج
               </Link>
-            ))}
-          </div>
-        </section>
-      )}
+            </div>
+          )}
+        </Card>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        {stats.map(({ href, icon: Icon, label, value, hint, mono }) => (
-          <Link
-            key={label}
-            href={href}
-            className="rounded-2xl p-5"
-            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
-          >
-            <Icon className="h-5 w-5 mb-4" style={{ color: 'var(--text-tertiary)' }} />
-            <p
-              className="font-outfit font-bold text-2xl break-all"
-              style={{
-                color: 'var(--text-primary)',
-                fontFamily: mono ? 'monospace' : undefined,
-                letterSpacing: mono ? '0.08em' : undefined,
-              }}
-              dir={mono ? 'ltr' : undefined}
-            >
-              {value}
-            </p>
-            <p className="text-[12.5px] mt-1" style={{ color: 'var(--text-secondary)' }}>{label}</p>
-            <p className="text-[11.5px] mt-2" style={{ color: 'var(--text-tertiary)' }}>{hint}</p>
-          </Link>
-        ))}
+        {/* Notifications, or — when the feed is quiet — the project statuses */}
+        <Card>
+          {unreadNotifications.length > 0 ? (
+            <>
+              <CardHeading title="إشعارات جديدة" href="/dashboard/notifications" linkLabel="الكل" />
+              <div className="space-y-2.5">
+                {unreadNotifications.map((n) => (
+                  <Link
+                    key={n.id}
+                    href={n.link ?? '/dashboard/notifications'}
+                    className="platform-activity-row flex items-start gap-3 rounded-xl p-3"
+                    style={{ border: '1px solid var(--mat-liquid-border)' }}
+                  >
+                    <span
+                      className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+                      style={{ background: 'var(--accent-violet)' }}
+                      aria-label="غير مقروء"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span
+                        className="block text-[13px] font-semibold"
+                        style={{ color: 'var(--text-primary)' }}
+                      >
+                        {n.title}
+                      </span>
+                      {n.body && (
+                        <span
+                          className="mt-1 block text-[12px] leading-relaxed line-clamp-2"
+                          style={{ color: 'var(--text-secondary)' }}
+                        >
+                          {n.body}
+                        </span>
+                      )}
+                      <span className="mt-1.5 block text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                        {relativeArabicDate(n.createdAt)}
+                      </span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </>
+          ) : abilities.submitInnovations && submissionCount > 0 ? (
+            <>
+              <CardHeading title="حالة مشاريعك" href="/dashboard/innovations" linkLabel="ابتكاراتي" />
+              <ul className="space-y-2.5">
+                {[...statusCounts.entries()].map(([status, count]) => (
+                  <li key={status} className="flex items-center justify-between gap-3">
+                    <span className="flex items-center gap-2.5 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{
+                          background:
+                            SUBMISSION_STATUS_COLORS[status as keyof typeof SUBMISSION_STATUS_COLORS],
+                        }}
+                      />
+                      {SUBMISSION_STATUS_LABELS[status as keyof typeof SUBMISSION_STATUS_LABELS]}
+                    </span>
+                    <span className="font-outfit font-bold text-[14px]" style={{ color: 'var(--text-primary)' }}>
+                      {count}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <>
+              <CardHeading title="الإشعارات" href="/dashboard/notifications" linkLabel="الكل" />
+              <div className="flex flex-col items-center py-6 text-center">
+                <span
+                  className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl"
+                  style={{ background: 'var(--mat-liquid-bg)' }}
+                >
+                  <Bell className="h-5 w-5" style={{ color: 'var(--text-tertiary)' }} />
+                </span>
+                <p className="text-[13px] leading-relaxed max-w-xs" style={{ color: 'var(--text-secondary)' }}>
+                  لا جديد الآن. سنُعلمك هنا بأي تحديث يخص حضورك أو مشاريعك.
+                </p>
+              </div>
+            </>
+          )}
+        </Card>
       </div>
-
-      {/* Submission status summary — only when there is something to summarize */}
-      {submissionChips.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-8">
-          <span className="text-[12.5px]" style={{ color: 'var(--text-tertiary)' }}>حالة مشاريعك:</span>
-          {submissionChips.map(({ icon: Icon, label, count }) => (
-            <span
-              key={label}
-              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-medium"
-              style={{
-                background: 'var(--mat-liquid-bg)',
-                border: '1px solid var(--mat-liquid-border)',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {label} · {count}
-            </span>
-          ))}
-        </div>
-      )}
 
       {/* What this attendee's category actually includes */}
       {benefits.length > 0 && (
-        <>
-          <h2 className="font-outfit font-bold text-lg mb-4" style={{ color: 'var(--text-primary)' }}>
+        <Card>
+          <h2 className="mb-4 font-outfit font-bold text-[14.5px]" style={{ color: 'var(--text-primary)' }}>
             {category ? `مزايا فئتك · ${category}` : 'مزاياك'}
           </h2>
-          <ul
-            className="mb-8 rounded-2xl p-5 space-y-2.5"
-            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
-          >
+          <ul className="grid gap-2.5 sm:grid-cols-2">
             {benefits.map((b) => (
-              <li key={b} className="flex items-start gap-2.5 text-[13.5px]" style={{ color: 'var(--text-secondary)' }}>
-                <CircleCheck className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--text-tertiary)' }} />
+              <li
+                key={b}
+                className="flex items-start gap-2.5 text-[13px]"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                <CircleCheck
+                  className="h-4 w-4 shrink-0 mt-0.5"
+                  style={{ color: 'var(--accent-cyan)' }}
+                />
                 {b}
               </li>
             ))}
           </ul>
-        </>
+        </Card>
       )}
-
-      {/* Next steps */}
-      <h2 className="font-outfit font-bold text-lg mb-4" style={{ color: 'var(--text-primary)' }}>
-        الخطوات التالية
-      </h2>
-      <div className="space-y-3">
-        {nextSteps.map(({ href, icon: Icon, title, desc }) => (
-          <Link
-            key={href}
-            href={href}
-            className="flex items-center gap-4 rounded-2xl p-4 md:p-5"
-            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
-          >
-            <span
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-              style={{ background: 'var(--mat-liquid-bg)', color: 'var(--text-primary)' }}
-            >
-              <Icon className="h-4 w-4" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[14px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-                {title}
-              </span>
-              <span className="block text-[12.5px] mt-1 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                {desc}
-              </span>
-            </span>
-            <ArrowLeft className="h-4 w-4 shrink-0" style={{ color: 'var(--text-tertiary)' }} />
-          </Link>
-        ))}
-      </div>
     </div>
   );
 }

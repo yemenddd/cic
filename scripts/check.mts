@@ -37,6 +37,7 @@ const { lockSeconds, LOGIN_BY_EMAIL, LOGIN_BY_IP, REGISTER_BY_IP } = await impor
   '../lib/rate-limit'
 );
 const { relativeArabicDate } = await import('../lib/relative-time');
+const { arabicCountBare, SESSION } = await import('../lib/arabic-plural');
 const { daysUntilConference, conferenceStart } = await import('../lib/conference');
 
 let failures = 0;
@@ -81,6 +82,11 @@ check('five hours take the few-plural', ago(300 * MIN), 'قبل 5 ساعات');
 check('two days use the dual', ago(2 * 1440 * MIN), 'قبل يومين');
 check('three days take the few-plural', ago(3 * 1440 * MIN), 'قبل 3 أيام');
 check('a future timestamp never goes negative', relativeArabicDate(new Date(NOW.getTime() + MIN), NOW), 'الآن');
+
+check('one session is bare singular', arabicCountBare(1, SESSION), 'جلسة');
+check('two sessions use the dual with no digit', arabicCountBare(2, SESSION), 'جلستين');
+check('four sessions take the few-plural', arabicCountBare(4, SESSION), '4 جلسات');
+check('twelve sessions go back to the singular noun', arabicCountBare(12, SESSION), '12 جلسة');
 
 // --- the conference dates, which several features compute from ---------------
 

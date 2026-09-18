@@ -50,6 +50,12 @@
   --nav-active-tint:    rgba(139, 92, 246, 0.18);
   --nav-active-ring:    rgba(139, 92, 246, 0.26);
 
+  /* The glow behind the dashboard welcome card. Defined per theme because the
+     same alpha that reads as a soft wash on white disappears entirely on the
+     dark canvas. */
+  --hero-wash: radial-gradient(circle,
+                 color-mix(in srgb, var(--accent-violet) 38%, transparent), transparent 70%);
+
   --hero-bg:            #000000;
 
   --metallic-grad:      linear-gradient(180deg, #FFFFFF 0%, #A2A2A6 100%);
@@ -176,6 +182,9 @@
   --nav-active-bg:      rgba(0, 0, 0, 0.09);
   --nav-active-tint:    rgba(139, 92, 246, 0.10);
   --nav-active-ring:    rgba(139, 92, 246, 0.20);
+
+  --hero-wash: radial-gradient(circle,
+                 color-mix(in srgb, var(--accent-violet) 16%, transparent), transparent 70%);
 
   --hero-bg:            #f2f2f7;
 
