@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Outfit, IBM_Plex_Sans_Arabic } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import StyletronWrapper from "@/components/layout/StyletronWrapper";
 import SiteChrome from "@/components/layout/SiteChrome";
 import { LanguageProvider } from "@/lib/i18n";
 import { ThemeProvider } from "@/lib/theme-context";
@@ -84,11 +83,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-inter" style={{ background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
         <ThemeProvider>
-          <StyletronWrapper>
-            <LanguageProvider>
-              <SiteChrome>{children}</SiteChrome>
-            </LanguageProvider>
-          </StyletronWrapper>
+          <LanguageProvider>
+            <SiteChrome>{children}</SiteChrome>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

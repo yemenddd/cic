@@ -1,12 +1,16 @@
 import type { NextConfig } from "next";
 
+// The spline.design and unpkg.com entries were dropped along with the 3D
+// scene component that needed them. An origin left in this list stays
+// permitted whether or not anything still calls it, so it is removed with the
+// code rather than kept "just in case".
 const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline';
   style-src 'self' 'unsafe-inline';
-  img-src 'self' data: blob: https://img.youtube.com https://*.spline.design https://*.public.blob.vercel-storage.com;
+  img-src 'self' data: blob: https://img.youtube.com https://*.public.blob.vercel-storage.com;
   frame-src https://www.youtube.com;
-  connect-src 'self' blob: https://prod.spline.design https://*.spline.design https://unpkg.com;
+  connect-src 'self' blob:;
   worker-src 'self' blob:;
   media-src 'self' data: blob:;
   font-src 'self';
