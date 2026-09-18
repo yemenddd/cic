@@ -110,7 +110,7 @@ function Identity({ name, email }: { name?: string | null; email?: string | null
 
   return (
     <div
-      className="flex items-center gap-2.5 rounded-xl p-2.5 mb-2"
+      className="flex items-center gap-2.5 rounded-xl p-2 mb-1.5"
       style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)' }}
     >
       <span
@@ -150,7 +150,7 @@ function SidebarFooter({
   const { theme, toggle } = useTheme();
 
   return (
-    <div className="pt-3 mt-3" style={{ borderTop: '1px solid var(--mat-liquid-border)' }}>
+    <div className="pt-2.5 mt-2.5" style={{ borderTop: '1px solid var(--mat-liquid-border)' }}>
       <Identity name={name} email={email} />
 
       <div className="space-y-0.5">
@@ -183,11 +183,16 @@ function SidebarFooter({
   );
 }
 
-function Brand({ title, height = 28 }: { title: string; height?: number }) {
+function Brand({ title, height = 26 }: { title: string; height?: number }) {
   return (
     <div className="flex items-center gap-2.5">
-      <CICTLogo height={height} />
-      <span className="font-outfit font-bold text-[13.5px]" style={{ color: 'var(--text-primary)' }}>
+      {/* The symbol only: the full lockup carries its own Arabic wordmark,
+          which at sidebar size is unreadable and repeats the title beside it. */}
+      <CICTLogo variant="mark" height={height} />
+      <span
+        className="font-outfit font-bold text-[13.5px] tracking-tight"
+        style={{ color: 'var(--text-primary)' }}
+      >
         {title}
       </span>
     </div>
@@ -237,7 +242,10 @@ export default function PlatformShell({
           borderInlineEnd: '1px solid var(--mat-liquid-border)',
         }}
       >
-        <div className="px-1.5 pb-4 mb-1">
+        <div
+          className="px-1.5 pb-3 mb-2"
+          style={{ borderBottom: '1px solid var(--mat-liquid-border)' }}
+        >
           <Brand title={title} height={30} />
         </div>
         <NavLinks groups={groups} pathname={pathname} />
@@ -260,7 +268,10 @@ export default function PlatformShell({
               boxShadow: 'var(--shadow-xl)',
             }}
           >
-            <div className="flex items-center justify-between pb-4 mb-1">
+            <div
+              className="flex items-center justify-between pb-4 mb-3"
+              style={{ borderBottom: '1px solid var(--mat-liquid-border)' }}
+            >
               <Brand title={title} />
               <button
                 type="button"
