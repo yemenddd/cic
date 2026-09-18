@@ -12,21 +12,31 @@ import {
   CheckCircle2,
   ArrowLeft,
   Users,
-  ShieldCheck,
+  Lightbulb,
 } from 'lucide-react';
-import type { SubmissionStatus, UserRole } from '@prisma/client';
+import type { SubmissionStatus } from '@prisma/client';
 import { prisma } from '@/lib/db/client';
-import StatusChip from '@/components/submissions/StatusChip';
-import { SUBMISSION_STATUSES, SUBMISSION_STATUS_LABELS } from '@/lib/submissions';
+import StatCard from '@/components/admin/StatCard';
+import { Panel } from '@/components/admin/Panel';
+import BarList, { type BarItem } from '@/components/admin/BarList';
+import {
+  SUBMISSION_STATUSES,
+  SUBMISSION_STATUS_COLORS,
+  SUBMISSION_STATUS_LABELS,
+} from '@/lib/submissions';
 import { CATEGORIES, categoryLabel } from '@/lib/categories';
+import OverviewHeader from './OverviewHeader';
+import ActivityFeed, { FeedFooterLink, type ActivityItem } from './ActivityFeed';
 
 // Statuses that put a submission in front of the committee. Deliberately not
 // REVIEW_STATUSES — that list is what a reviewer may *set* (it includes the
 // already-decided APPROVED/REJECTED), which is the opposite of a work queue.
 const ACTION_STATUSES: SubmissionStatus[] = ['PENDING', 'UNDER_REVIEW'];
 
-// Reference inventory — no decision hangs on these, so they sit at the bottom.
-const CONTENT_CARDS = [
+// Reference inventory. Nothing here needs a decision, so it is one dense panel
+// at the foot of the page rather than eight cards the size of the numbers that
+// do — the previous layout gave the least consequential section half the page.
+const CONTENT_ITEMS = [
   { href: '/admin/speakers', label: 'المتحدثون', icon: Mic2, count: () => prisma.speaker.count() },
   { href: '/admin/program', label: 'جلسات البرنامج', icon: CalendarDays, count: () => prisma.programSession.count() },
   { href: '/admin/gallery', label: 'صور المعرض', icon: Images, count: () => prisma.galleryImage.count() },
@@ -37,154 +47,203 @@ const CONTENT_CARDS = [
   { href: '/admin/registrations', label: 'التسجيلات', icon: ClipboardList, count: () => prisma.registration.count() },
 ];
 
-const CARD_SURFACE = {
-  background: 'var(--bg-elevated)',
-  border: '1px solid var(--mat-liquid-border)',
-} as const;
+const CATEGORY_COLORS: Record<string, string> = {
+  visitor: 'var(--accent-cyan)',
+  participant: 'var(--accent-violet)',
+  volunteer: 'var(--accent-blue)',
+};
 
-function SectionHeading({ title, href, linkLabel }: { title: string; href: string; linkLabel: string }) {
-  return (
-    <div className="mb-3 flex items-center justify-between gap-3">
-      <h2 className="font-outfit font-bold text-[15px]" style={{ color: 'var(--text-primary)' }}>
-        {title}
-      </h2>
-      <Link
-        href={href}
-        className="inline-flex items-center gap-1 text-[12.5px] font-semibold"
-        style={{ color: 'var(--text-secondary)' }}
-      >
-        {linkLabel}
-        <ArrowLeft className="h-3.5 w-3.5" />
-      </Link>
-    </div>
-  );
-}
-
-function CountChip({ href, label, count }: { href: string; label: string; count: number }) {
-  return (
-    <Link
-      href={href}
-      className="rounded-xl px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap"
-      style={{
-        background: 'var(--mat-liquid-bg)',
-        border: '1px solid var(--mat-liquid-border)',
-        color: 'var(--text-secondary)',
-      }}
-    >
-      {label} · {count}
-    </Link>
-  );
+/** "+3 هذا الأسبوع" — omitted entirely at zero rather than shown as "+0". */
+function weekHint(count: number): string | undefined {
+  return count > 0 ? `+${count} خلال ٧ أيام` : undefined;
 }
 
 export default async function AdminHomePage() {
-  // One round of parallel queries: aggregates via groupBy instead of a count()
-  // per status/category, plus the content inventory nested so the whole page
-  // still fans out in a single Promise.all.
-  const [statusGroups, latest, roleGroups, categoryGroups, contentCounts] = await Promise.all([
+  // This page is rendered per request on the server, so reading the clock is
+  // exactly right here — the "this week" counts mean nothing otherwise.
+  // Written with new Date() rather than Date.now() arithmetic because the
+  // purity lint treats the latter as a re-render hazard, which is a rule aimed
+  // at client components.
+  const since = new Date();
+  since.setUTCDate(since.getUTCDate() - 7);
+
+  const [
+    statusGroups,
+    categoryGroups,
+    attendeeCount,
+    registrationCount,
+    newAccounts,
+    newRegistrations,
+    newSubmissions,
+    recentAccounts,
+    recentSubmissions,
+    recentAnnouncements,
+    contentCounts,
+  ] = await Promise.all([
     prisma.projectSubmission.groupBy({ by: ['status'], _count: { _all: true } }),
-    prisma.projectSubmission.findMany({
-      // Matches the review queue's ordering, so "الأحدث" here means the same
-      // rows that sit at the top of /admin/submissions.
+    prisma.user.groupBy({ by: ['category'], _count: { _all: true }, where: { role: 'ATTENDEE' } }),
+    prisma.user.count({ where: { role: 'ATTENDEE' } }),
+    prisma.registration.count(),
+    prisma.user.count({ where: { role: 'ATTENDEE', createdAt: { gte: since } } }),
+    prisma.registration.count({ where: { submittedAt: { gte: since } } }),
+    prisma.projectSubmission.count({ where: { createdAt: { gte: since } } }),
+    prisma.user.findMany({
+      where: { role: 'ATTENDEE' },
       orderBy: { createdAt: 'desc' },
-      take: 5,
+      take: 6,
+      select: { id: true, name: true, email: true, category: true, createdAt: true },
+    }),
+    prisma.projectSubmission.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 6,
       include: { user: { select: { name: true, email: true } } },
     }),
-    prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
-    prisma.user.groupBy({ by: ['category'], _count: { _all: true }, where: { role: 'ATTENDEE' } }),
-    Promise.all(CONTENT_CARDS.map((c) => c.count())),
+    prisma.announcement.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 3,
+      select: { id: true, title: true, recipients: true, createdAt: true },
+    }),
+    Promise.all(CONTENT_ITEMS.map((c) => c.count())),
   ]);
 
-  const statusCounts = Object.fromEntries(SUBMISSION_STATUSES.map((s) => [s, 0])) as Record<SubmissionStatus, number>;
+  const statusCounts = Object.fromEntries(
+    SUBMISSION_STATUSES.map((s) => [s, 0]),
+  ) as Record<SubmissionStatus, number>;
   for (const g of statusGroups) statusCounts[g.status] = g._count._all;
 
   const needsAction = ACTION_STATUSES.reduce((sum, s) => sum + statusCounts[s], 0);
-  const totalSubmissions = SUBMISSION_STATUSES.reduce((sum, s) => sum + statusCounts[s], 0);
-
-  const roleCounts: Record<UserRole, number> = { ADMIN: 0, ATTENDEE: 0 };
-  for (const g of roleGroups) roleCounts[g.role] = g._count._all;
+  const totalSubmissions = statusGroups.reduce((sum, g) => sum + g._count._all, 0);
 
   const byCategory = new Map(categoryGroups.map((g) => [g.category ?? '', g._count._all]));
-  const categoryRows = CATEGORIES.map((c) => ({
-    key: c.id,
+  const categoryBars: BarItem[] = CATEGORIES.map((c) => ({
     label: categoryLabel(c.id, 'ar'),
     count: byCategory.get(c.id) ?? 0,
+    color: CATEGORY_COLORS[c.id] ?? 'var(--accent-blue)',
   }));
   // Anything the three known categories don't account for (null at signup, or
   // a value that predates the current list) still has to show up somewhere.
-  const uncategorized = roleCounts.ATTENDEE - categoryRows.reduce((sum, r) => sum + r.count, 0);
-  if (uncategorized > 0) categoryRows.push({ key: 'unknown', label: 'غير محدد', count: uncategorized });
+  const uncategorized = attendeeCount - categoryBars.reduce((sum, r) => sum + r.count, 0);
+  if (uncategorized > 0) {
+    categoryBars.push({ label: 'غير محدد', count: uncategorized, color: 'var(--text-tertiary)' });
+  }
+
+  const statusBars: BarItem[] = SUBMISSION_STATUSES.map((s) => ({
+    label: SUBMISSION_STATUS_LABELS[s],
+    count: statusCounts[s],
+    color: SUBMISSION_STATUS_COLORS[s],
+  }));
+
+  // Merged newest-first, then trimmed — so a quiet week of signups doesn't
+  // crowd out a submission that arrived this morning.
+  const activity: ActivityItem[] = [
+    ...recentAccounts.map((u) => ({
+      id: u.id,
+      kind: 'account' as const,
+      title: u.name || u.email,
+      meta: categoryLabel(u.category, 'ar') || undefined,
+      at: u.createdAt,
+      href: `/admin/users/${u.id}`,
+    })),
+    ...recentSubmissions.map((s) => ({
+      id: s.id,
+      kind: 'submission' as const,
+      title: s.titleAr,
+      meta: s.user.name || s.user.email,
+      at: s.submittedAt ?? s.createdAt,
+      href: `/admin/submissions/${s.id}`,
+    })),
+    ...recentAnnouncements.map((a) => ({
+      id: a.id,
+      kind: 'announcement' as const,
+      title: a.title,
+      meta: `وصل إلى ${a.recipients} مشارك`,
+      at: a.createdAt,
+      href: '/admin/announcements',
+    })),
+  ]
+    .sort((a, b) => b.at.getTime() - a.at.getTime())
+    .slice(0, 7);
 
   return (
-    <div className="space-y-9">
-      <h1 className="font-outfit font-bold text-xl" style={{ color: 'var(--text-primary)' }}>
-        نظرة عامة
-      </h1>
+    <div className="space-y-7">
+      <OverviewHeader />
 
-      {/* 1 — what needs a decision today */}
+      {/* The four numbers worth knowing before anything else. */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="التسجيلات"
+          value={registrationCount}
+          icon={ClipboardList}
+          hint={weekHint(newRegistrations)}
+        />
+        <StatCard label="الحاضرون" value={attendeeCount} icon={Users} hint={weekHint(newAccounts)} />
+        <StatCard
+          label="الابتكارات"
+          value={totalSubmissions}
+          icon={Lightbulb}
+          hint={weekHint(newSubmissions)}
+        />
+        <StatCard
+          label="بانتظار المراجعة"
+          value={needsAction}
+          icon={Inbox}
+          // The only tile that asks for an action gets the colour; four tinted
+          // tiles would spend the colour channel on decoration.
+          accent={needsAction > 0 ? 'var(--accent-violet)' : undefined}
+        />
+      </div>
+
+      {/* What needs a decision today. */}
       {needsAction > 0 ? (
         <section
-          className="rounded-2xl p-6"
+          className="rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4"
           style={{
-            background: 'color-mix(in srgb, var(--primary) 7%, var(--bg-elevated))',
-            border: '1px solid color-mix(in srgb, var(--primary) 32%, transparent)',
+            background: 'color-mix(in srgb, var(--accent-violet) 8%, var(--bg-elevated))',
+            border: '1px solid color-mix(in srgb, var(--accent-violet) 28%, transparent)',
           }}
         >
-          <div className="flex flex-wrap items-start justify-between gap-5">
-            <div>
-              <div className="mb-3 flex items-center gap-2">
-                <Inbox className="h-4 w-4" style={{ color: 'var(--primary)' }} />
-                <p className="text-[12.5px] font-semibold" style={{ color: 'var(--primary)' }}>
-                  يحتاج إجراءً
-                </p>
-              </div>
-              <p className="font-outfit font-bold text-4xl leading-none" style={{ color: 'var(--text-primary)' }}>
-                {needsAction}
-              </p>
-              <p className="mt-2 text-[13.5px]" style={{ color: 'var(--text-secondary)' }}>
-                ابتكار بانتظار قرار لجنة المراجعة
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {ACTION_STATUSES.map((s) => (
-                  <CountChip
-                    key={s}
-                    href={`/admin/submissions?status=${s}`}
-                    label={SUBMISSION_STATUS_LABELS[s]}
-                    count={statusCounts[s]}
-                  />
-                ))}
-              </div>
-            </div>
-            <Link
-              href="/admin/submissions?status=PENDING"
-              className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[13.5px] font-semibold"
-              style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+          <div className="flex items-center gap-3.5">
+            <span
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+              style={{ background: 'color-mix(in srgb, var(--accent-violet) 16%, transparent)' }}
             >
-              ابدأ المراجعة
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
+              <Inbox className="h-5 w-5" style={{ color: 'var(--accent-violet)' }} />
+            </span>
+            <div>
+              <p className="text-[14px] font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {needsAction} ابتكار بانتظار قرار اللجنة
+              </p>
+              <p className="mt-1 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                {ACTION_STATUSES.filter((s) => statusCounts[s] > 0)
+                  .map((s) => `${SUBMISSION_STATUS_LABELS[s]}: ${statusCounts[s]}`)
+                  .join(' · ')}
+              </p>
+            </div>
           </div>
+
+          <Link
+            href="/admin/submissions?status=PENDING"
+            className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-[13.5px] font-semibold"
+            style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+          >
+            ابدأ المراجعة
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
         </section>
       ) : (
         <section
-          className="rounded-2xl p-6 flex flex-wrap items-center justify-between gap-4"
-          style={CARD_SURFACE}
+          className="rounded-2xl px-5 py-4 flex flex-wrap items-center justify-between gap-3"
+          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
         >
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 shrink-0" style={{ color: 'var(--text-tertiary)' }} />
-            <div>
-              <p className="text-[13.5px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-                لا شيء بانتظار المراجعة
-              </p>
-              <p className="mt-1 text-[12.5px]" style={{ color: 'var(--text-secondary)' }}>
-                {totalSubmissions > 0
-                  ? 'تمت معالجة كل الابتكارات التي وصلت حتى الآن.'
-                  : 'لم يُقدَّم أي ابتكار بعد.'}
-              </p>
-            </div>
-          </div>
+          <p className="flex items-center gap-2.5 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+            <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: 'var(--text-tertiary)' }} />
+            {totalSubmissions > 0
+              ? 'لا شيء بانتظار المراجعة — تمت معالجة كل الابتكارات.'
+              : 'لا شيء بانتظار المراجعة — لم يُقدَّم أي ابتكار بعد.'}
+          </p>
           <Link
             href="/admin/submissions"
-            className="inline-flex items-center gap-1 text-[12.5px] font-semibold"
+            className="inline-flex items-center gap-1 text-[12px] font-semibold"
             style={{ color: 'var(--text-secondary)' }}
           >
             كل الابتكارات
@@ -193,119 +252,53 @@ export default async function AdminHomePage() {
         </section>
       )}
 
-      {/* 2 — the last five things people sent in */}
-      <section>
-        <SectionHeading title="أحدث الابتكارات" href="/admin/submissions" linkLabel="كل الابتكارات" />
-
-        <div className="mb-3 flex flex-wrap gap-2">
-          {SUBMISSION_STATUSES.map((s) => (
-            <CountChip
-              key={s}
-              href={`/admin/submissions?status=${s}`}
-              label={SUBMISSION_STATUS_LABELS[s]}
-              count={statusCounts[s]}
-            />
-          ))}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <Panel title="آخر النشاط" caption="التسجيلات والابتكارات والإعلانات، الأحدث أولاً">
+            <ActivityFeed items={activity} />
+            {activity.length > 0 && <FeedFooterLink href="/admin/users" label="كل المستخدمين" />}
+          </Panel>
         </div>
 
-        <div className="rounded-2xl overflow-hidden" style={CARD_SURFACE}>
-          {latest.length === 0 ? (
-            <p className="py-10 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
-              لا توجد ابتكارات مقدَّمة بعد
-            </p>
-          ) : (
-            latest.map((s, i) => (
-              <Link
-                key={s.id}
-                href={`/admin/submissions/${s.id}`}
-                className="flex flex-wrap items-center gap-3 p-4"
-                style={{ borderTop: i > 0 ? '1px solid var(--mat-liquid-border)' : undefined }}
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13.5px]" style={{ color: 'var(--text-primary)' }}>
-                    {s.titleAr}
-                  </p>
-                  <p className="mt-0.5 truncate text-[11.5px]" style={{ color: 'var(--text-tertiary)' }}>
-                    {s.user.name || '—'} · <span dir="ltr">{s.user.email}</span>
-                  </p>
-                </div>
-                <span className="text-[11.5px] whitespace-nowrap" style={{ color: 'var(--text-tertiary)' }}>
-                  {new Date(s.submittedAt ?? s.createdAt).toLocaleDateString('ar')}
+        {/* Two short panels stacked, so the narrow column matches the feed's
+            height instead of leaving a column of empty page beside it. */}
+        <div className="space-y-4">
+          <Panel title="الحاضرون حسب الفئة" caption={`${attendeeCount} حساب`}>
+            <BarList items={categoryBars} basis={attendeeCount} />
+            <FeedFooterLink href="/admin/insights" label="الإحصاءات الكاملة" />
+          </Panel>
+
+          <Panel title="حالة الابتكارات" caption={`${totalSubmissions} مشروع`}>
+            <BarList items={statusBars} basis={totalSubmissions} />
+            <FeedFooterLink href="/admin/submissions" label="قائمة المراجعة" />
+          </Panel>
+        </div>
+      </div>
+
+      <Panel title="المحتوى" caption="ما هو منشور على الموقع العام">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {CONTENT_ITEMS.map(({ href, label, icon: Icon }, i) => (
+            <Link
+              key={href}
+              href={href}
+              className="platform-activity-row flex items-center gap-3 rounded-xl p-3"
+            >
+              <Icon className="h-4 w-4 shrink-0" style={{ color: 'var(--text-tertiary)' }} />
+              <span className="min-w-0">
+                <span
+                  className="block font-outfit font-bold text-[17px] leading-none"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  {contentCounts[i]}
                 </span>
-                <StatusChip status={s.status} />
-              </Link>
-            ))
-          )}
-        </div>
-      </section>
-
-      {/* 3 — who signed up */}
-      <section>
-        <SectionHeading title="المستخدمون" href="/admin/users" linkLabel="إدارة المستخدمين" />
-        <div className="grid gap-4 md:grid-cols-3">
-          <Link href="/admin/users" className="rounded-2xl p-5" style={CARD_SURFACE}>
-            <Users className="mb-4 h-5 w-5" style={{ color: 'var(--text-tertiary)' }} />
-            <p className="font-outfit font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
-              {roleCounts.ATTENDEE}
-            </p>
-            <p className="mt-1 text-[12.5px]" style={{ color: 'var(--text-secondary)' }}>
-              حساب حاضر
-            </p>
-          </Link>
-
-          <Link href="/admin/users" className="rounded-2xl p-5" style={CARD_SURFACE}>
-            <ShieldCheck className="mb-4 h-5 w-5" style={{ color: 'var(--text-tertiary)' }} />
-            <p className="font-outfit font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
-              {roleCounts.ADMIN}
-            </p>
-            <p className="mt-1 text-[12.5px]" style={{ color: 'var(--text-secondary)' }}>
-              حساب مشرف
-            </p>
-          </Link>
-
-          <div className="rounded-2xl p-5" style={CARD_SURFACE}>
-            <p className="mb-3 text-[11.5px] font-semibold" style={{ color: 'var(--text-tertiary)' }}>
-              الحاضرون حسب الفئة
-            </p>
-            {roleCounts.ATTENDEE === 0 ? (
-              <p className="text-[12.5px]" style={{ color: 'var(--text-tertiary)' }}>
-                لا يوجد حاضرون بعد
-              </p>
-            ) : (
-              <ul className="space-y-2">
-                {categoryRows.map((r) => (
-                  <li key={r.key} className="flex items-center justify-between gap-3 text-[12.5px]">
-                    <span style={{ color: 'var(--text-secondary)' }}>{r.label}</span>
-                    <span className="font-outfit font-bold" style={{ color: 'var(--text-primary)' }}>
-                      {r.count}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* 4 — inventory, for reference */}
-      <section>
-        <h2 className="mb-3 font-outfit font-bold text-[15px]" style={{ color: 'var(--text-primary)' }}>
-          المحتوى
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {CONTENT_CARDS.map(({ href, label, icon: Icon }, i) => (
-            <Link key={href} href={href} className="rounded-2xl p-5" style={CARD_SURFACE}>
-              <Icon className="mb-4 h-5 w-5" style={{ color: 'var(--text-tertiary)' }} />
-              <p className="font-outfit font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
-                {contentCounts[i]}
-              </p>
-              <p className="mt-1 text-[12.5px]" style={{ color: 'var(--text-secondary)' }}>
-                {label}
-              </p>
+                <span className="mt-1 block truncate text-[11.5px]" style={{ color: 'var(--text-secondary)' }}>
+                  {label}
+                </span>
+              </span>
             </Link>
           ))}
         </div>
-      </section>
+      </Panel>
     </div>
   );
 }

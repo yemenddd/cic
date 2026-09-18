@@ -7,13 +7,12 @@
 // nowhere in the schema and will silently produce wrong events if the
 // conference moves:
 //
-//   1. CICT 2026 runs 2–3 October 2026, so 'dayOne' → 2026-10-02 and
-//      'dayTwo' → 2026-10-03. Update DAY_DATES below if the dates change.
-//   2. The venue is Istanbul, which is UTC+3 all year (Türkiye abolished DST in
-//      2016), so local 09:00 is emitted as 060000Z. Because the offset is
-//      fixed we can write plain UTC stamps and skip a VTIMEZONE block
-//      entirely. If Türkiye ever reintroduces DST this becomes wrong for one
-//      half of the year.
+//   1. 'dayOne' and 'dayTwo' map to the two conference dates, which are read
+//      from lib/conference.ts — the single place they are written down.
+//   2. The venue's offset is fixed (see lib/conference.ts), so local 09:00 is
+//      emitted as 060000Z. Because it never shifts we can write plain UTC
+//      stamps and skip a VTIMEZONE block entirely. If Türkiye ever
+//      reintroduces DST this becomes wrong for one half of the year.
 //   3. There is no end time anywhere, so each session is assumed to last
 //      DEFAULT_DURATION_MINUTES (60). When `time` happens to contain a range
 //      ('09:00 - 10:30') we use the second time as the real end instead.
@@ -21,6 +20,8 @@
 // If `time` can't be parsed at all we emit an all-day event for the right day
 // rather than guessing a clock time or emitting a malformed DTSTART — a
 // calendar app rejects a broken file silently, so degrading is safer.
+
+import { CONFERENCE_DAYS, VENUE_UTC_OFFSET_HOURS, type ConferenceDay } from '@/lib/conference';
 
 export type IcsSession = {
   id: string;
@@ -32,12 +33,9 @@ export type IcsSession = {
   trackAr?: string | null;
 };
 
-const DAY_DATES: Record<string, { y: number; m: number; d: number }> = {
-  dayOne: { y: 2026, m: 10, d: 2 },
-  dayTwo: { y: 2026, m: 10, d: 3 },
-};
+const DAY_DATES: Record<string, ConferenceDay> = CONFERENCE_DAYS;
 
-const ISTANBUL_UTC_OFFSET_HOURS = 3;
+const ISTANBUL_UTC_OFFSET_HOURS = VENUE_UTC_OFFSET_HOURS;
 const DEFAULT_DURATION_MINUTES = 60;
 const LOCATION_AR = 'إسطنبول، تركيا';
 

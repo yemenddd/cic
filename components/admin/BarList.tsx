@@ -1,4 +1,4 @@
-import { EmptyNote } from './Panel';
+import { EmptyNote } from '@/components/admin/Panel';
 
 export interface BarItem {
   label: string;

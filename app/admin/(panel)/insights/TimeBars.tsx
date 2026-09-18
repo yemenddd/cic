@@ -1,4 +1,4 @@
-import { EmptyNote } from './Panel';
+import { EmptyNote } from '@/components/admin/Panel';
 import type { TimeBucket } from './aggregate';
 
 // The plot area in pixels. Heights are computed in px rather than as a

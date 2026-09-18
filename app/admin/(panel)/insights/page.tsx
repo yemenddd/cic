@@ -8,9 +8,9 @@ import {
   SUBMISSION_STATUS_COLORS,
   SUBMISSION_STATUS_LABELS,
 } from '@/lib/submissions';
-import StatCard from './StatCard';
-import { Panel, EmptyNote } from './Panel';
-import BarList, { type BarItem } from './BarList';
+import StatCard from '@/components/admin/StatCard';
+import { Panel, EmptyNote } from '@/components/admin/Panel';
+import BarList, { type BarItem } from '@/components/admin/BarList';
 import TimeBars from './TimeBars';
 import { bucketByTime, topValues, type Slice } from './aggregate';
 

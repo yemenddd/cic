@@ -986,3 +986,13 @@ html[lang="ar"] .font-platform [class*="font-inter"] {
 .platform-table tbody tr:hover {
   background: var(--nav-hover-bg);
 }
+
+/* Rows on the overview that link somewhere — the activity feed and the
+   content inventory. Same hover language as the nav, one step quieter. */
+.platform-activity-row {
+  transition: background-color 150ms ease;
+}
+
+.platform-activity-row:hover {
+  background: var(--nav-hover-bg);
+}

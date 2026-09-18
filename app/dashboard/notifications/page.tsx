@@ -3,20 +3,9 @@ import { redirect } from 'next/navigation';
 import { ArrowLeft, Bell, BellOff } from 'lucide-react';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
+import { relativeArabicDate } from '@/lib/relative-time';
 import { markAllAsRead, markAsRead } from './actions';
 import { MarkAllAsReadButton, MarkAsReadButton } from './MarkReadButtons';
-
-// Arabic-friendly "منذ ..." for recent items, falling back to a plain date.
-function relativeArabicDate(date: Date): string {
-  const minutes = Math.floor((Date.now() - date.getTime()) / 60000);
-  if (minutes < 1) return 'الآن';
-  if (minutes < 60) return `قبل ${minutes} دقيقة`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `قبل ${hours} ساعة`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `قبل ${days} يوم`;
-  return date.toLocaleDateString('ar');
-}
 
 export default async function DashboardNotificationsPage() {
   const session = await auth();

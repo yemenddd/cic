@@ -36,6 +36,8 @@ const { canSubmitInnovations } = await import('../lib/categories');
 const { lockSeconds, LOGIN_BY_EMAIL, LOGIN_BY_IP, REGISTER_BY_IP } = await import(
   '../lib/rate-limit'
 );
+const { relativeArabicDate } = await import('../lib/relative-time');
+const { daysUntilConference, conferenceStart } = await import('../lib/conference');
 
 let failures = 0;
 function check(label: string, actual: unknown, expected: unknown) {
@@ -62,6 +64,30 @@ check('an absurd count still clamps, not Infinity', lockSeconds(1e9, LOGIN_BY_EM
 check('one address gets 19 tries across accounts', lockSeconds(19, LOGIN_BY_IP), 0);
 check('the twentieth locks the address', lockSeconds(20, LOGIN_BY_IP), 60);
 check('bulk signups are capped at an hour', lockSeconds(99, REGISTER_BY_IP), 3600);
+
+// --- Arabic counting, which has four forms rather than two -------------------
+
+const NOW = new Date('2026-09-18T12:00:00Z');
+const ago = (ms: number) => relativeArabicDate(new Date(NOW.getTime() - ms), NOW);
+const MIN = 60_000;
+
+check('under a minute reads as now', ago(30_000), 'الآن');
+check('one minute is singular', ago(MIN), 'قبل دقيقة');
+check('two minutes use the dual, with no digit', ago(2 * MIN), 'قبل دقيقتين');
+check('four minutes take the few-plural', ago(4 * MIN), 'قبل 4 دقائق');
+check('twenty minutes go back to the singular noun', ago(20 * MIN), 'قبل 20 دقيقة');
+check('two hours use the dual', ago(120 * MIN), 'قبل ساعتين');
+check('five hours take the few-plural', ago(300 * MIN), 'قبل 5 ساعات');
+check('two days use the dual', ago(2 * 1440 * MIN), 'قبل يومين');
+check('three days take the few-plural', ago(3 * 1440 * MIN), 'قبل 3 أيام');
+check('a future timestamp never goes negative', relativeArabicDate(new Date(NOW.getTime() + MIN), NOW), 'الآن');
+
+// --- the conference dates, which several features compute from ---------------
+
+check('day one starts at 09:00 local (UTC+3)', conferenceStart().toISOString(), '2026-10-02T06:00:00.000Z');
+check('the countdown counts down', daysUntilConference(new Date('2026-09-28T06:00:00Z')), 4);
+check('it reaches zero on the day', daysUntilConference(new Date('2026-10-02T06:00:00Z')), 0);
+check('and goes negative afterwards, so callers can stop counting', daysUntilConference(new Date('2026-10-05T06:00:00Z')) < 0, true);
 
 // --- what an announcement may contain ----------------------------------------
 
