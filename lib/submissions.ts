@@ -43,3 +43,15 @@ export const SUBMISSION_TRACKS = [
   'البحث العلمي',
   'ريادة الأعمال',
 ];
+
+/**
+ * May this attendee store this track?
+ *
+ * The track is printed on the certificate, so it is chosen from the list above
+ * rather than typed — but an account whose stored track predates that list
+ * must not have it silently dropped when they edit anything else on the page.
+ * Their own current value is therefore always allowed, and so is clearing it.
+ */
+export function isTrackAllowed(track: string, currentTrack: string | null): boolean {
+  return track === '' || SUBMISSION_TRACKS.includes(track) || track === currentTrack;
+}

@@ -33,6 +33,7 @@ const { validateAnnouncement, deliverAnnouncement } = await import(
 );
 const { prisma } = await import('../lib/db/client');
 const { canSubmitInnovations } = await import('../lib/categories');
+const { isTrackAllowed } = await import('../lib/submissions');
 const { lockSeconds, LOGIN_BY_EMAIL, LOGIN_BY_IP, REGISTER_BY_IP } = await import(
   '../lib/rate-limit'
 );
@@ -54,6 +55,14 @@ check('visitors may not', canSubmitInnovations('visitor'), false);
 check('volunteers may not', canSubmitInnovations('volunteer'), false);
 check('an unknown category may not', canSubmitInnovations('vip'), false);
 check('a missing category may not', canSubmitInnovations(null), false);
+
+// --- which track an attendee may store on their certificate ------------------
+
+check('a track from the offered list is accepted', isTrackAllowed('البحث العلمي', null), true);
+check('clearing the track is allowed', isTrackAllowed('', 'البحث العلمي'), true);
+check('an invented track is refused', isTrackAllowed('مسار مخترع', 'البحث العلمي'), false);
+check('a legacy value the account already holds is kept', isTrackAllowed('مسار قديم', 'مسار قديم'), true);
+check('but not one held by somebody else', isTrackAllowed('مسار قديم', 'البحث العلمي'), false);
 
 // --- how hard the login throttle bites ---------------------------------------
 
