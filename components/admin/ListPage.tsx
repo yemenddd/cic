@@ -1,10 +1,17 @@
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 
-export function ListPageHeader({ title, addHref, addLabel = 'إضافة' }: { title: string; addHref?: string; addLabel?: string }) {
+export function ListPageHeader({ title, description, addHref, addLabel = 'إضافة' }: { title: string; description?: string; addHref?: string; addLabel?: string }) {
   return (
-    <div className="flex items-center justify-between mb-6">
-      <h1 className="font-outfit font-bold text-xl" style={{ color: 'var(--text-primary)' }}>{title}</h1>
+    <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+      <div>
+        <h1 className="font-outfit font-bold text-xl" style={{ color: 'var(--text-primary)' }}>{title}</h1>
+        {description && (
+          <p className="mt-1.5 text-[12.5px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+            {description}
+          </p>
+        )}
+      </div>
       {addHref && (
         <Link
           href={addHref}
@@ -25,7 +32,16 @@ export function ListTable({ children }: { children: React.ReactNode }) {
       className="rounded-2xl overflow-hidden"
       style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
     >
-      <table className="w-full text-[13.5px]">{children}</table>
+      {/* The rounded corners need `overflow-hidden` on the box above, which on
+          its own *clips* a table too wide for the screen — several of these
+          have seven columns, so on a phone the last ones were unreachable.
+          The scroll lives on this inner element instead, and min-width keeps
+          the columns from being crushed into unreadable slivers. */}
+      <div className="overflow-x-auto">
+        <table className="platform-table w-full text-[13.5px]" style={{ minWidth: '34rem' }}>
+          {children}
+        </table>
+      </div>
     </div>
   );
 }

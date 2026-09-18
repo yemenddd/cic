@@ -25,5 +25,9 @@ export default async function AdminPanelLayout({ children }: { children: React.R
   // honest destination, not a login form they've already passed.
   if (user.role !== 'ADMIN') redirect('/dashboard');
 
-  return <AdminShell email={user.email}>{children}</AdminShell>;
+  return (
+    <AdminShell name={user.name} email={user.email}>
+      {children}
+    </AdminShell>
+  );
 }

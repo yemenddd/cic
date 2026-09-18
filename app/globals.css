@@ -817,3 +817,140 @@ html[dir="rtl"] ::-webkit-scrollbar {
 .font-platform .font-outfit {
   font-family: var(--font-ibm), 'IBM Plex Sans Arabic', system-ui, sans-serif;
 }
+
+/* ── Platform shell ──────────────────────────────────────────────
+   The admin panel and the attendee dashboard share one shell
+   (components/platform/PlatformShell.tsx). These rules exist as CSS
+   rather than inline styles because a React style object cannot
+   express :hover, :focus-visible or ::before — which is why the nav
+   used to have a `transition-colors` class that transitioned nothing. */
+
+.platform-nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  border-radius: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.platform-nav-link:hover {
+  background: var(--nav-hover-bg);
+  color: var(--text-primary);
+}
+
+.platform-nav-link:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+.platform-nav-link[data-active='true'] {
+  background: var(--nav-active-bg);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* The marker sits on the inline-start edge, which in this RTL shell is
+   the side nearest the page content — so the eye meets it first. */
+.platform-nav-link[data-active='true']::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  height: 1.15rem;
+  width: 3px;
+  transform: translateY(-50%);
+  border-radius: 99px;
+  background: var(--gradient-brand);
+}
+
+.platform-nav-link[data-active='true'] .platform-nav-icon {
+  color: var(--accent-violet);
+}
+
+/* Utility row at the foot of the sidebar: deliberately quieter than the
+   nav, so "sign out" never competes with the section you are trying to
+   reach. */
+.platform-util {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.6rem;
+  border-radius: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.platform-util:hover {
+  background: var(--nav-hover-bg);
+  color: var(--text-primary);
+}
+
+.platform-util:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+.platform-group-label {
+  padding: 0 0.75rem;
+  margin: 1.15rem 0 0.4rem;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+}
+
+.platform-group:first-child .platform-group-label {
+  margin-top: 0;
+}
+
+/* The nav can outgrow a short viewport; its scrollbar should not be a
+   second heavy line next to the sidebar border. */
+.platform-scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.platform-drawer {
+  animation: platform-drawer-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.platform-scrim {
+  animation: platform-fade-in 220ms ease;
+}
+
+/* Slides from the inline-start edge — the right, in this RTL shell. */
+@keyframes platform-drawer-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes platform-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .platform-drawer,
+  .platform-scrim {
+    animation: none;
+  }
+}
+
+/* Admin list tables: a row is usually clickable, so it should answer the
+   pointer. The border lives on each row already (set inline per page), so
+   only the background changes here. */
+.platform-table tbody tr {
+  transition: background-color 150ms ease;
+}
+
+.platform-table tbody tr:hover {
+  background: var(--nav-hover-bg);
+}
