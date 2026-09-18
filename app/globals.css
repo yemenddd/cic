@@ -50,16 +50,6 @@
   --nav-active-tint:    rgba(139, 92, 246, 0.18);
   --nav-active-ring:    rgba(139, 92, 246, 0.26);
 
-  /* The glow behind the dashboard welcome card. Defined per theme because the
-     same alpha that reads as a soft wash on white disappears entirely on the
-     dark canvas.
-
-     Written as rgba of --accent-violet (#8b5cf6) rather than color-mix: the
-     build emits a no-color-mix fallback that simply drops the percentage, so
-     an older browser rendered this as a solid violet blob instead of a wash.
-     An explicit alpha has no fallback to get wrong. */
-  --hero-wash: radial-gradient(circle, rgba(139, 92, 246, 0.38), transparent 70%);
-
   /* A session the attendee has added to their agenda. Solid values per theme
      rather than a color-mix over --bg-elevated: on the light theme an unsaved
      card is pure white, so a translucent "tint" made the *chosen* sessions
@@ -192,8 +182,6 @@
   --nav-active-bg:      rgba(0, 0, 0, 0.09);
   --nav-active-tint:    rgba(139, 92, 246, 0.10);
   --nav-active-ring:    rgba(139, 92, 246, 0.20);
-
-  --hero-wash: radial-gradient(circle, rgba(139, 92, 246, 0.16), transparent 70%);
 
   --agenda-saved-bg: #f0ebff;
 
@@ -685,19 +673,6 @@ html[lang="ar"] .font-inter {
     transparent
   );
 }
-
-/* ── 13. Glow Orbs (ambient background light) ────────────────── */
-.glow-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-  will-change: transform;
-}
-
-.glow-cyan   { background: radial-gradient(circle, rgba(6,  182, 212, 0.18) 0%, transparent 70%); }
-.glow-blue   { background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%); }
-.glow-violet { background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%); }
 
 /* ── 14. Keyframe Animations ─────────────────────────────────── */
 

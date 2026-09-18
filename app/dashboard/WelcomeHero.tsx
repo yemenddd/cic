@@ -57,22 +57,13 @@ export default function WelcomeHero({
 
   return (
     <section
-      className="relative overflow-hidden rounded-2xl p-6 md:p-7"
+      className="rounded-2xl p-6 md:p-7"
       style={{
         background: 'var(--bg-elevated)',
         border: '1px solid var(--mat-liquid-border)',
       }}
     >
-      {/* A soft brand wash rather than a flat panel — this is the one card on
-          the page that should feel like a welcome. Pointer-events off so it
-          never sits between the reader and the link below it. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -top-24 -start-16 h-64 w-64 rounded-full"
-        style={{ background: 'var(--hero-wash)' }}
-      />
-
-      <div className="relative flex flex-wrap items-start justify-between gap-6">
+      <div className="flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0">
           <p className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
             مؤتمر الإبداع والابتكار · النسخة الرابعة {CONFERENCE_DAYS.dayTwo.y}

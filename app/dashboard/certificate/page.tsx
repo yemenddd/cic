@@ -99,16 +99,10 @@ export default async function CertificatePage() {
         </p>
 
         <section
-          className="relative overflow-hidden rounded-2xl p-6 md:p-7"
+          className="rounded-2xl p-6 md:p-7"
           style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
         >
-          <span
-            aria-hidden
-            className="pointer-events-none absolute -top-24 -start-16 h-64 w-64 rounded-full"
-            style={{ background: 'var(--hero-wash)' }}
-          />
-
-          <div className="relative">
+          <div>
             <span
               className="flex h-12 w-12 items-center justify-center rounded-2xl"
               style={{ background: 'color-mix(in srgb, var(--accent-violet) 16%, transparent)' }}

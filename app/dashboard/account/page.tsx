@@ -94,16 +94,10 @@ export default async function AccountPage() {
 
       {/* Who this account is. */}
       <section
-        className="relative overflow-hidden rounded-2xl p-5 md:p-6"
+        className="rounded-2xl p-5 md:p-6"
         style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
       >
-        <span
-          aria-hidden
-          className="pointer-events-none absolute -top-24 -start-16 h-56 w-56 rounded-full"
-          style={{ background: 'var(--hero-wash)' }}
-        />
-
-        <div className="relative flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <span
             aria-hidden
             className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-[20px] font-bold"
