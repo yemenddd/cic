@@ -1008,3 +1008,34 @@ html[lang="ar"] .font-platform [class*="font-inter"] {
 .platform-activity-row:hover {
   background: var(--nav-hover-bg);
 }
+
+/* ── Conference badge entrance ───────────────────────────────────
+   The badge is an attendee's entry pass, so it must be on the page
+   whether or not the animation library ever runs. These replace
+   framer-motion `initial={{opacity:0}}` on the card and its buttons,
+   which left the pass *invisible* — not merely unanimated — if the JS
+   failed to load. A CSS animation degrades to "already visible". */
+@keyframes badge-rise {
+  from { opacity: 0; transform: translateY(28px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes badge-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.badge-rise {
+  animation: badge-rise 550ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.badge-actions-rise {
+  animation: badge-fade-up 400ms cubic-bezier(0.16, 1, 0.3, 1) 300ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge-rise,
+  .badge-actions-rise {
+    animation: none;
+  }
+}

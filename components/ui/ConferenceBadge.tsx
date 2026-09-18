@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, CircleCheck, Download, Copy, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { useTheme } from '@/lib/theme-context';
 
 export interface BadgeProps {
   name:          string;
@@ -19,6 +18,11 @@ export interface BadgeProps {
   onDownloadPDF: () => void;
   onCopyLink:    () => void;
   copied:        boolean;
+  /** Where the secondary "back" button goes. Defaults to the public homepage. */
+  backHref?: string;
+  backLabel?: string;
+  /** Overrides the copy button's label when it copies something other than a link. */
+  copyLabel?: string;
 }
 
 const CATEGORY_ACCENT: Record<string, { from: string; to: string }> = {
@@ -54,23 +58,24 @@ function BarcodeSVG({ code }: { code: string }) {
   );
 }
 
-const EASE = [0.22, 1, 0.36, 1] as const;
-
 export default function ConferenceBadge({
   name, categoryId, categoryLabel, organization, track,
   code, date, location, lang,
   onDownloadPDF, onCopyLink, copied,
+  backHref = '/', backLabel, copyLabel,
 }: BadgeProps) {
   const isRtl = lang === 'ar';
   const accent = CATEGORY_ACCENT[categoryId] ?? DEFAULT_ACCENT;
   const dir = isRtl ? 'rtl' : 'ltr';
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
-
+  // Theme tokens rather than a useTheme() read: these colours were resolved in
+  // JavaScript, so the server always rendered the dark variant and a light-mode
+  // visitor saw near-invisible buttons until hydration finished — or forever,
+  // if it failed. CSS custom properties already carry the right value for each
+  // theme without running anything.
   const btnSecondary = {
-    background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.07)',
-    border:     isLight ? '1px solid rgba(0,0,0,0.10)' : '1px solid rgba(255,255,255,0.15)',
-    color:      isLight ? '#374151' : 'rgba(255,255,255,0.75)',
+    background: 'var(--mat-liquid-bg)',
+    border:     '1px solid var(--mat-liquid-border)',
+    color:      'var(--text-secondary)',
   };
 
   const lbl = {
@@ -83,9 +88,12 @@ export default function ConferenceBadge({
     codeLabel:  isRtl ? 'رمز التأكيد'       : lang === 'tr' ? 'Onay Kodu'          : 'Confirmation Code',
     edition:    isRtl ? 'النسخة الرابعة · 2026' : lang === 'tr' ? '4. Baskı · 2026' : '4th Edition · 2026',
     pdfBtn:     isRtl ? 'تحميل الشارة'      : lang === 'tr' ? 'Rozeti İndir'       : 'Download Badge',
-    copyBtn:    isRtl ? 'نسخ الرابط'        : lang === 'tr' ? 'Linki Kopyala'      : 'Copy Link',
+    copyBtn:    copyLabel ?? (isRtl ? 'نسخ الرابط' : lang === 'tr' ? 'Linki Kopyala' : 'Copy Link'),
     copiedBtn:  isRtl ? 'تم النسخ!'         : lang === 'tr' ? 'Kopyalandı!'        : 'Copied!',
-    backBtn:    isRtl ? 'الرئيسية'          : lang === 'tr' ? 'Ana Sayfa'          : 'Home',
+    // Where "back" goes depends on where the badge is shown: the public
+    // confirmation page came from the marketing site, but an attendee looking
+    // at it inside their dashboard should not be ejected out to the homepage.
+    backBtn:    backLabel ?? (isRtl ? 'الرئيسية' : lang === 'tr' ? 'Ana Sayfa' : 'Home'),
   };
 
 
@@ -106,13 +114,12 @@ export default function ConferenceBadge({
       <div id="cict-badge" className="flex flex-col items-center w-full">
 
         {/* ── THE TICKET ─────────────────────────────────────────────── */}
-        <motion.div
+        {/* Entrance is CSS, not framer-motion: an `initial` opacity of 0 left
+            the pass invisible rather than unanimated when the JS failed. */}
+        <div
           id="cict-badge-card"
           dir={dir}
-          initial={{ opacity: 0, y: 28, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.55, ease: EASE }}
-          className="w-full overflow-hidden"
+          className="badge-rise w-full overflow-hidden"
           style={{
             /* Standard conference badge: 3.375" × 5.375" at 96dpi = 324 × 516px */
             width: 324,
@@ -280,14 +287,11 @@ export default function ConferenceBadge({
 
           {/* ── Bottom gradient strip ── */}
           <div style={{ height: 5, background: `linear-gradient(to ${isRtl ? 'left' : 'right'}, ${accent.from}, ${accent.to})` }} />
-        </motion.div>
+        </div>
 
         {/* ── ACTION BUTTONS — outside the ticket ──────────────────── */}
-        <motion.div
-          className="badge-no-print"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3, ease: EASE }}
+        <div
+          className="badge-no-print badge-actions-rise"
           dir={dir}
           style={{ width: '100%', maxWidth: 324, marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}
         >
@@ -309,7 +313,7 @@ export default function ConferenceBadge({
 
           {/* Copy + Back row */}
           <div style={{ display: 'flex', gap: 10 }}>
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
               <motion.button
                 key={copied ? 'copied' : 'copy'}
                 initial={{ opacity: 0, scale: 0.93 }}
@@ -334,7 +338,7 @@ export default function ConferenceBadge({
             </AnimatePresence>
 
             <Link
-              href="/"
+              href={backHref}
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 gap: 6, padding: '11px 16px', borderRadius: 14, textDecoration: 'none',
@@ -349,7 +353,7 @@ export default function ConferenceBadge({
               {lbl.backBtn}
             </Link>
           </div>
-        </motion.div>
+        </div>
 
       </div>
     </>

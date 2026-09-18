@@ -29,12 +29,16 @@ export default function DashboardBadge({
 
   const handleDownloadPDF = useCallback(() => { void downloadBadgePDF(name); }, [name]);
 
-  const handleCopyLink = useCallback(() => {
-    navigator.clipboard.writeText(window.location.href).then(() => {
+  // Copies the confirmation code, not the page URL. On the public confirmation
+  // screen the URL was worth sharing; here it is /dashboard/badge, which is
+  // behind a login and useless to anyone the attendee sends it to. The code is
+  // what actually gets asked for at the door and read out over the phone.
+  const handleCopyCode = useCallback(() => {
+    navigator.clipboard.writeText(code).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     });
-  }, []);
+  }, [code]);
 
   return (
     <ConferenceBadge
@@ -48,8 +52,11 @@ export default function DashboardBadge({
       location={location}
       lang="ar"
       onDownloadPDF={handleDownloadPDF}
-      onCopyLink={handleCopyLink}
+      onCopyLink={handleCopyCode}
       copied={copied}
+      copyLabel="نسخ الرمز"
+      backHref="/dashboard"
+      backLabel="لوحتي"
     />
   );
 }
