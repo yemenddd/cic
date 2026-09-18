@@ -45,7 +45,7 @@ export default async function Image() {
           مؤتمر الإبداع والابتكار
         </div>
         <div style={{ marginTop: 20, fontSize: 26, color: 'rgba(255,255,255,0.45)', display: 'flex', fontFamily: 'Thmanyah' }}>
-          15–16 أغسطس 2026 · إسطنبول
+          2–3 أكتوبر 2026 · إسطنبول
         </div>
       </div>
     ),

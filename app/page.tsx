@@ -15,8 +15,8 @@ const eventJsonLd = {
   "@context": "https://schema.org",
   "@type": "Event",
   name: "مؤتمر الإبداع والابتكار 2026 (CICT 2026)",
-  startDate: "2026-08-15",
-  endDate: "2026-08-16",
+  startDate: "2026-10-02",
+  endDate: "2026-10-03",
   eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
   eventStatus: "https://schema.org/EventScheduled",
   location: {
@@ -26,7 +26,7 @@ const eventJsonLd = {
   },
   image: [`${siteUrl}/opengraph-image`],
   description:
-    "انضم إلينا في مؤتمر الإبداع والابتكار الرابع يومي ١٥–١٦ أغسطس ٢٠٢٦. اكتشف مستقبل الابتكار.",
+    "انضم إلينا في مؤتمر الإبداع والابتكار الرابع يومي ٢–٣ أكتوبر ٢٠٢٦. اكتشف مستقبل الابتكار.",
   organizer: { "@type": "Organization", name: "CICT", url: siteUrl },
 };
 

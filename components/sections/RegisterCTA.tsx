@@ -82,7 +82,7 @@ export default function RegisterCTA() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    const target = new Date('2026-08-15T09:00:00').getTime();
+    const target = new Date('2026-10-02T09:00:00').getTime();
     const tick = () => {
       const diff = target - Date.now();
       if (diff <= 0) return;

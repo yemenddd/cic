@@ -7,8 +7,8 @@
 // nowhere in the schema and will silently produce wrong events if the
 // conference moves:
 //
-//   1. CICT 2026 runs 15–16 August 2026, so 'dayOne' → 2026-08-15 and
-//      'dayTwo' → 2026-08-16. Update DAY_DATES below if the dates change.
+//   1. CICT 2026 runs 2–3 October 2026, so 'dayOne' → 2026-10-02 and
+//      'dayTwo' → 2026-10-03. Update DAY_DATES below if the dates change.
 //   2. The venue is Istanbul, which is UTC+3 all year (Türkiye abolished DST in
 //      2016), so local 09:00 is emitted as 060000Z. Because the offset is
 //      fixed we can write plain UTC stamps and skip a VTIMEZONE block
@@ -33,8 +33,8 @@ export type IcsSession = {
 };
 
 const DAY_DATES: Record<string, { y: number; m: number; d: number }> = {
-  dayOne: { y: 2026, m: 8, d: 15 },
-  dayTwo: { y: 2026, m: 8, d: 16 },
+  dayOne: { y: 2026, m: 10, d: 2 },
+  dayTwo: { y: 2026, m: 10, d: 3 },
 };
 
 const ISTANBUL_UTC_OFFSET_HOURS = 3;
@@ -82,7 +82,7 @@ function pad(n: number): string {
   return String(n).padStart(2, '0');
 }
 
-/** Format a Date as an RFC 5545 UTC date-time: 20260815T060000Z. */
+/** Format a Date as an RFC 5545 UTC date-time: 20261002T060000Z. */
 export function formatUtcStamp(date: Date): string {
   return (
     `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}` +

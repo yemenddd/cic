@@ -41,7 +41,7 @@ const thmanyah = localFont({
 
 const title = "CICT 2026 | مؤتمر الإبداع والابتكار الرابع";
 const description =
-  "انضم إلينا في مؤتمر الإبداع والابتكار الرابع يومي ١٥–١٦ أغسطس ٢٠٢٦. اكتشف مستقبل الابتكار.";
+  "انضم إلينا في مؤتمر الإبداع والابتكار الرابع يومي ٢–٣ أكتوبر ٢٠٢٦. اكتشف مستقبل الابتكار.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
