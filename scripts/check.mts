@@ -38,7 +38,7 @@ const { lockSeconds, LOGIN_BY_EMAIL, LOGIN_BY_IP, REGISTER_BY_IP } = await impor
 );
 const { relativeArabicDate } = await import('../lib/relative-time');
 const { arabicCountBare, SESSION } = await import('../lib/arabic-plural');
-const { daysUntilConference, conferenceStart } = await import('../lib/conference');
+const { daysUntilConference, conferenceStart, conferenceEnd, conferenceHasEnded } = await import('../lib/conference');
 
 let failures = 0;
 function check(label: string, actual: unknown, expected: unknown) {
@@ -94,6 +94,13 @@ check('day one starts at 09:00 local (UTC+3)', conferenceStart().toISOString(), 
 check('the countdown counts down', daysUntilConference(new Date('2026-09-28T06:00:00Z')), 4);
 check('it reaches zero on the day', daysUntilConference(new Date('2026-10-02T06:00:00Z')), 0);
 check('and goes negative afterwards, so callers can stop counting', daysUntilConference(new Date('2026-10-05T06:00:00Z')) < 0, true);
+
+check('the conference ends at midnight after day two', conferenceEnd().toISOString(), '2026-10-03T21:00:00.000Z');
+check('a certificate is not issuable two weeks early', conferenceHasEnded(new Date('2026-09-18T12:00:00Z')), false);
+check('nor on the morning of day one', conferenceHasEnded(new Date('2026-10-02T06:00:00Z')), false);
+check('nor during the final afternoon', conferenceHasEnded(new Date('2026-10-03T13:00:00Z')), false);
+check('but is once the last day is over', conferenceHasEnded(new Date('2026-10-03T21:00:00Z')), true);
+check('and stays issuable afterwards', conferenceHasEnded(new Date('2026-11-01T00:00:00Z')), true);
 
 // --- what an announcement may contain ----------------------------------------
 

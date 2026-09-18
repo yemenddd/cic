@@ -37,6 +37,25 @@ export function conferenceStart(): Date {
 }
 
 /**
+ * The moment the conference is over — midnight at the end of the second day,
+ * local time.
+ *
+ * Exists because some things must not be issued before it. A certificate of
+ * participation states, in the past tense, that its holder attended; handing
+ * one out two weeks in advance makes it a false document and devalues the ones
+ * held by people who actually turn up.
+ */
+export function conferenceEnd(): Date {
+  const { y, m, d } = CONFERENCE_DAYS.dayTwo;
+  // Hour 24 of the final day = 00:00 the next morning, shifted to UTC.
+  return new Date(Date.UTC(y, m - 1, d, 24 - VENUE_UTC_OFFSET_HOURS, 0, 0));
+}
+
+export function conferenceHasEnded(now: Date = new Date()): boolean {
+  return now.getTime() >= conferenceEnd().getTime();
+}
+
+/**
  * Whole days from `now` until the opening session.
  *
  * Negative once the conference has started, which is the caller's cue to stop
