@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { Loader2, Sun, Moon, Eye, EyeOff, TriangleAlert, CalendarClock, MapPin } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import Image from 'next/image';
 import CICTLogo from '@/components/ui/CICTLogo';
 import { useTheme } from '@/lib/theme-context';
 import { loginErrorMessage } from '@/lib/login-error';
@@ -90,6 +91,73 @@ export default function AuthScreen({
         {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
       </button>
 
+
+      {/* Brand panel — a photograph from the conference itself rather than a
+          blank surface, with a gradient over it so the type stays legible.
+          Fixed light colours here on purpose: the backdrop is a photo, not a
+          theme surface, so it must not follow the light/dark tokens. */}
+      <aside className="relative hidden lg:block w-[44%] max-w-2xl overflow-hidden">
+        <Image
+          src="/images/experience/2.jpg"
+          alt="مشاركون يعرضون مشروعاً في معرض الابتكار خلال المؤتمر"
+          fill
+          sizes="44vw"
+          priority
+          className="object-cover"
+        />
+
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(to top, rgba(12,10,22,0.94) 0%, rgba(12,10,22,0.72) 40%, rgba(12,10,22,0.42) 100%)',
+          }}
+        />
+
+        <div className="relative flex h-full flex-col justify-between p-12">
+          {/* The logo's ink follows the theme, but its backdrop here is the
+              photo's dark overlay in both themes — left alone it turned navy
+              on navy under the light theme. Pinning the variables locally is
+              what they are for. */}
+          <span
+            style={
+              {
+                '--logo-ink': '#f5f5f7',
+                '--logo-ink-soft': '#c8c8ce',
+                '--logo-ink-muted': 'rgba(245,245,247,0.6)',
+              } as React.CSSProperties
+            }
+          >
+            <CICTLogo height={44} />
+          </span>
+
+          <div>
+            <h2 className="font-outfit font-bold text-[26px] leading-snug text-white">
+              منصة مؤتمر الإبداع والابتكار
+            </h2>
+            <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.72)' }}>
+              مساحة واحدة للتسجيل والبرنامج والبطاقات والابتكارات المقدَّمة.
+            </p>
+
+            <div className="mt-8 space-y-2.5">
+              <p className="flex items-center gap-2.5 text-[13px]" style={{ color: 'rgba(255,255,255,0.88)' }}>
+                <CalendarClock className="h-4 w-4 shrink-0" style={{ color: 'var(--accent-violet)' }} />
+                {conference.range}
+                <span style={{ color: 'rgba(255,255,255,0.55)' }}>· {conference.countdown}</span>
+              </p>
+              <p className="flex items-center gap-2.5 text-[13px]" style={{ color: 'rgba(255,255,255,0.88)' }}>
+                <MapPin className="h-4 w-4 shrink-0" style={{ color: 'var(--accent-violet)' }} />
+                {conference.venue}
+              </p>
+            </div>
+          </div>
+
+          <p className="text-[11.5px]" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            CICT 2026 · النسخة الرابعة
+          </p>
+        </div>
+      </aside>
 
       <main className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-sm">
@@ -214,45 +282,6 @@ export default function AuthScreen({
         </div>
       </main>
 
-      {/* Brand panel — real context (when and where), not decoration. Hidden on
-          small screens, where the form is the only thing worth the space. */}
-      <aside
-        className="hidden lg:flex w-[46%] max-w-xl flex-col justify-between p-12"
-        style={{
-          background: 'var(--bg-elevated)',
-          borderInlineStart: '1px solid var(--mat-liquid-border)',
-        }}
-      >
-        <CICTLogo height={44} />
-
-        <div>
-          <h2
-            className="font-outfit font-bold text-[26px] leading-snug"
-            style={{ color: 'var(--text-primary)' }}
-          >
-            منصة مؤتمر الإبداع والابتكار
-          </h2>
-          <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            مساحة واحدة للتسجيل والبرنامج والبطاقات والابتكارات المقدَّمة.
-          </p>
-
-          <div className="mt-8 space-y-2.5">
-            <p className="flex items-center gap-2.5 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
-              <CalendarClock className="h-4 w-4 shrink-0" style={{ color: 'var(--accent-violet)' }} />
-              {conference.range}
-              <span style={{ color: 'var(--text-tertiary)' }}>· {conference.countdown}</span>
-            </p>
-            <p className="flex items-center gap-2.5 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
-              <MapPin className="h-4 w-4 shrink-0" style={{ color: 'var(--accent-violet)' }} />
-              {conference.venue}
-            </p>
-          </div>
-        </div>
-
-        <p className="text-[11.5px]" style={{ color: 'var(--text-tertiary)' }}>
-          CICT 2026 · النسخة الرابعة
-        </p>
-      </aside>
     </div>
   );
 }
