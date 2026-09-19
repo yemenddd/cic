@@ -95,6 +95,13 @@
   --border-default: rgba(255, 255, 255, 0.12);
   --border-strong:  rgba(255, 255, 255, 0.20);
 
+  /* Form fields. Opaque on purpose, both of them: Chrome's autofill
+     background can only be displaced by an inset shadow, and a translucent
+     one lets its blue through underneath. Focus is the lighter of the two on
+     both themes — "lift" means toward the foreground in either. */
+  --field-bg:       #191a1c;
+  --field-bg-focus: #212226;
+
   /* Radii */
   --radius-sm:  8px;
   --radius-md:  12px;
@@ -212,6 +219,11 @@
   --border-subtle:  rgba(0, 0, 0, 0.09);
   --border-default: rgba(0, 0, 0, 0.13);
   --border-strong:  rgba(0, 0, 0, 0.22);
+
+  /* See the dark theme's note. #f2f2f7 page, so the field sits just above it
+     and focus goes to pure white. */
+  --field-bg:       #fbfbfd;
+  --field-bg-focus: #ffffff;
 
   /* shadcn compat */
   --background:           var(--bg-base);
@@ -582,7 +594,11 @@ html[lang="ar"] .font-inter {
 .input-glass {
   width: 100%;
   padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.04);
+  /* Was a hardcoded rgba(255,255,255,0.04). That is a gentle lift on the dark
+     canvas and literally nothing on the light one — 4% white over #f2f2f7 is
+     #f2f2f7 — so under the light theme every field in the platform was a ghost
+     box, readable only by its 1px border. */
+  background: var(--field-bg);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   color: var(--text-primary);
@@ -596,11 +612,49 @@ html[lang="ar"] .font-inter {
 .input-glass:hover  { border-color: var(--border-strong); }
 .input-glass:focus  {
   border-color: var(--accent-violet);
-  background: var(--mat-liquid-bg);
+  /* Lifts, so focus reads as a change of fill and not only as a ring — when
+     the resting fill matched the page, the ring was the only signal there was.
+     Deliberately not --bg-elevated: that is #161618 on the dark theme, which
+     is *darker* than a field at #191a1c, so focus would have sunk instead of
+     lifted on exactly one of the two themes. */
+  background: var(--field-bg-focus);
   /* The ring was a black shadow, which is all but invisible on the dark
      canvas — so a keyboard user could not see where they were. A brand-tinted
      ring reads on both themes. */
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+}
+
+/* ── Autofilled fields ───────────────────────────────────────────
+   Chrome paints its own background over a field it filled from saved
+   credentials — a pale blue, #e8f0fe — and ignores `background-color`
+   while doing it. Every remembered email and password in the platform
+   therefore rendered as a foreign blue box in the middle of the design,
+   which is exactly what the sign-in screen was reported looking like.
+
+   The background genuinely cannot be overridden. A full-bleed inset
+   shadow covering the field is the only thing that displaces it, and
+   the text colour needs -webkit-text-fill-color for the same reason. */
+.input-glass:-webkit-autofill,
+.input-glass:-webkit-autofill:hover,
+.input-glass:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-primary);
+  caret-color: var(--text-primary);
+  -webkit-box-shadow: 0 0 0 100px var(--field-bg-focus) inset;
+          box-shadow: 0 0 0 100px var(--field-bg-focus) inset;
+  /* Chrome fades its own colour in on autofill. An absurd delay is the
+     documented way to stop that animation from ever reaching frame one. */
+  transition: background-color 600000s 0s;
+}
+
+/* The focus ring is itself a box-shadow, so the rule above replaces it.
+   Both have to be restated together or an autofilled field loses its
+   focus ring — the one case where a keyboard user needs it most, since
+   they did not type the value and cannot see which field they are in. */
+.input-glass:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 100px var(--field-bg-focus) inset,
+                      0 0 0 3px rgba(139, 92, 246, 0.25);
+          box-shadow: 0 0 0 100px var(--field-bg-focus) inset,
+                      0 0 0 3px rgba(139, 92, 246, 0.25);
 }
 
 /* ── 10. Typography Helpers ──────────────────────────────────── */

@@ -118,11 +118,27 @@ export default function AuthScreen({
         {/* Blends the photograph into the form's surface along the edge the two
             share. The panel sits on the right, so the shared edge is its
             inline-END — putting this on start-0 laid a dark band down the
-            screen's outer edge instead, which is the opposite of the intent. */}
+            screen's outer edge instead, which is the opposite of the intent.
+            (The gradient direction below is physical, not logical, and is
+            correct only because this screen is always RTL: its own copy is
+            Arabic.)
+
+            The ramp is eased rather than linear. A straight fade from the page
+            colour to transparent still sits at half strength a third of the
+            way across, which on the light theme laid a pale grey wash over the
+            faces at the edge of the photograph — it read as a rendering fault
+            rather than as a blend. It now loses most of its weight in the
+            first 20 pixels, so the join is soft without bleaching the image. */}
         <div
           aria-hidden
-          className="absolute inset-y-0 end-0 w-28"
-          style={{ background: 'linear-gradient(to right, var(--bg-base), transparent)' }}
+          className="absolute inset-y-0 end-0 w-20"
+          style={{
+            background:
+              'linear-gradient(to right, var(--bg-base) 0%, ' +
+              'color-mix(in srgb, var(--bg-base) 58%, transparent) 26%, ' +
+              'color-mix(in srgb, var(--bg-base) 20%, transparent) 58%, ' +
+              'transparent 100%)',
+          }}
         />
 
         <div className="relative flex h-full flex-col justify-between p-12 xl:p-16">
