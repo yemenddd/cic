@@ -12,7 +12,7 @@ const ContentSecurityPolicy = `
   frame-src https://www.youtube.com;
   connect-src 'self' blob:;
   worker-src 'self' blob:;
-  media-src 'self' data: blob:;
+  media-src 'self' data: blob: mediastream:;
   font-src 'self';
   object-src 'none';
   base-uri 'self';
@@ -24,7 +24,11 @@ const securityHeaders = [
   { key: 'X-Frame-Options',             value: 'DENY' },
   { key: 'X-Content-Type-Options',      value: 'nosniff' },
   { key: 'Referrer-Policy',             value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy',          value: 'camera=(), microphone=(), geolocation=(), payment=()' },
+  // The camera is allowed for this origin only, and only because the
+  // attendance scanner at /admin/attendance/scan reads badge QR codes with it.
+  // Everything else stays denied: a blanket `camera=()` would have made the
+  // scanner silently fail to start, with no error a user could act on.
+  { key: 'Permissions-Policy',          value: 'camera=(self), microphone=(), geolocation=(), payment=()' },
   { key: 'Strict-Transport-Security',   value: 'max-age=63072000; includeSubDomains; preload' },
 ];
 

@@ -4,7 +4,7 @@ import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, Mic2, CalendarDays, Images, Handshake,
   History, Trophy, Clapperboard, ClipboardList, Lightbulb, Users, BarChart3,
-  LogOut, Megaphone, KeyRound, ExternalLink,
+  LogOut, Megaphone, KeyRound, ExternalLink, ScanLine,
 } from 'lucide-react';
 import PlatformShell, { type NavGroup, type UtilAction } from '@/components/platform/PlatformShell';
 
@@ -33,6 +33,7 @@ const GROUPS: NavGroup[] = [
       { href: '/admin/registrations', label: 'التسجيلات', icon: ClipboardList },
       { href: '/admin/submissions', label: 'الابتكارات المقدَّمة', icon: Lightbulb },
       { href: '/admin/users', label: 'المستخدمون', icon: Users },
+      { href: '/admin/attendance', label: 'الحضور', icon: ScanLine },
     ],
   },
   {

@@ -46,6 +46,8 @@ const { daysUntilConference, conferenceStart, conferenceEnd, conferenceHasEnded 
 const { badgeToken, verifyBadgeToken } = await import('../lib/badge-token');
 const { qrMatrix, qrPath } = await import('../lib/qr');
 const jsQR = (await import('jsqr')).default;
+const { activeDayKey, attendanceRate, suggestedCheckpoint } = await import('../lib/attendance');
+const { parseScanInput, recordAttendance } = await import('../lib/attendance-record');
 
 let failures = 0;
 function check(label: string, actual: unknown, expected: unknown) {
@@ -267,6 +269,145 @@ function decodeBadgeSymbol(payload: string): string | null {
 
 check('the symbol a badge ships decodes back to its token', decodeBadgeSymbol(TOKEN), TOKEN);
 check('and that token still resolves to the account', verifyBadgeToken(decodeBadgeSymbol(TOKEN) ?? ''), SUBJECT);
+
+// --- reading whatever came out of the camera ---------------------------------
+
+check('a signed token is read as a token', parseScanInput(TOKEN), { kind: 'token', userId: SUBJECT });
+check('surrounding whitespace is tolerated', parseScanInput(`  ${TOKEN}\n`), { kind: 'token', userId: SUBJECT });
+check(
+  'a token wrapped in a URL by a generic camera app still reads',
+  parseScanInput(`https://cict2026.com/b/${TOKEN}`),
+  { kind: 'token', userId: SUBJECT },
+);
+check('a confirmation code is read as a code', parseScanInput('CICT-2026-ABC234'), { kind: 'code', code: 'CICT-2026-ABC234' });
+check('a code typed in lowercase is accepted', parseScanInput('cict-2026-abc234'), { kind: 'code', code: 'CICT-2026-ABC234' });
+check('a code with the ambiguous glyphs is refused', parseScanInput('CICT-2026-ABC01O'), { kind: 'unreadable' });
+check('a forged token is not downgraded to a code lookup', parseScanInput('CICT1.ckuser000000000000000000.AAAAAAAAAAAAAAAAAAAAAA'), { kind: 'unreadable' });
+check('a product barcode is unreadable', parseScanInput('5901234123457'), { kind: 'unreadable' });
+check('an empty scan is unreadable', parseScanInput('   '), { kind: 'unreadable' });
+
+// --- which conference day it is, in the venue's timezone ---------------------
+
+check('the morning of day one is day one', activeDayKey(new Date('2026-10-02T06:00:00Z')), 'dayOne');
+// 00:30 Istanbul on day two is 21:30 UTC on day one. A server reading its own
+// clock would file this under the wrong day — and the wrong day's total is
+// what the organizers read off the board.
+check('half past midnight on day two is day two', activeDayKey(new Date('2026-10-02T21:30:00Z')), 'dayTwo');
+check('the last minute of day two is still day two', activeDayKey(new Date('2026-10-03T20:59:00Z')), 'dayTwo');
+check('the day before is neither', activeDayKey(new Date('2026-10-01T12:00:00Z')), null);
+check('the day after is neither', activeDayKey(new Date('2026-10-04T12:00:00Z')), null);
+
+// --- turnout ------------------------------------------------------------------
+
+check('turnout with nobody registered is zero, not NaN', attendanceRate(0, 0), 0);
+check('turnout rounds down', attendanceRate(97, 100), 97);
+check('999 of 1000 is 99%, never 100%', attendanceRate(999, 1000), 99);
+check('everybody present is 100%', attendanceRate(50, 50), 100);
+
+// --- which checkpoint a scanner opens on --------------------------------------
+
+const GATES = [
+  { id: 'g1', day: 'dayOne', kind: 'GATE' as const, isOpen: true },
+  { id: 'g2', day: 'dayTwo', kind: 'GATE' as const, isOpen: true },
+  { id: 's2', day: 'dayTwo', kind: 'SESSION' as const, isOpen: true },
+];
+
+check("it opens on today's gate", suggestedCheckpoint(GATES, new Date('2026-10-03T08:00:00Z'))?.id, 'g2');
+check('before the conference it falls back to the first gate', suggestedCheckpoint(GATES, new Date('2026-09-01T08:00:00Z'))?.id, 'g1');
+check(
+  'a closed gate is skipped for an open room on the same day',
+  suggestedCheckpoint(
+    GATES.map((g) => (g.id === 'g2' ? { ...g, isOpen: false } : g)),
+    new Date('2026-10-03T08:00:00Z'),
+  )?.id,
+  's2',
+);
+check('with everything closed it opens on nothing', suggestedCheckpoint(GATES.map((g) => ({ ...g, isOpen: false }))), null);
+
+// --- taking attendance, against real rows -------------------------------------
+
+const scanned = await prisma.user.findFirst({ where: { role: 'ATTENDEE' }, select: { id: true } });
+
+if (scanned) {
+  const gate = await prisma.checkpoint.create({
+    data: { nameAr: `[check] gate ${Date.now()}`, day: 'dayOne', kind: 'GATE', isOpen: true },
+  });
+
+  const first = await recordAttendance({
+    checkpointId: gate.id,
+    raw: badgeToken(scanned.id),
+    method: 'QR',
+    recordedById: admin.id,
+  });
+  check('a valid badge is counted', first.status, 'recorded');
+
+  // The point of the unique pair: a scanner pointed at a queue decodes the
+  // same badge dozens of times while it is held up.
+  const again = await recordAttendance({
+    checkpointId: gate.id,
+    raw: badgeToken(scanned.id),
+    method: 'QR',
+    recordedById: admin.id,
+  });
+  check('the same badge again is a duplicate, not a second row', again.status, 'duplicate');
+  check('and only one row exists', await prisma.attendance.count({ where: { checkpointId: gate.id } }), 1);
+
+  check(
+    'a forged badge counts nobody',
+    (await recordAttendance({
+      checkpointId: gate.id,
+      raw: 'CICT1.ckuser000000000000000000.AAAAAAAAAAAAAAAAAAAAAA',
+      method: 'QR',
+      recordedById: admin.id,
+    })).status,
+    'unreadable',
+  );
+
+  check(
+    'a well-formed code nobody holds counts nobody',
+    (await recordAttendance({
+      checkpointId: gate.id,
+      raw: 'CICT-2026-ZZZZZZ',
+      method: 'QR',
+      recordedById: admin.id,
+    })).status,
+    'unknown',
+  );
+
+  await prisma.checkpoint.update({ where: { id: gate.id }, data: { isOpen: false } });
+  const other = await prisma.user.findFirst({
+    where: { role: 'ATTENDEE', id: { not: scanned.id } },
+    select: { id: true },
+  });
+  if (other) {
+    check(
+      'a closed checkpoint refuses new scans',
+      (await recordAttendance({
+        checkpointId: gate.id,
+        raw: badgeToken(other.id),
+        method: 'QR',
+        recordedById: admin.id,
+      })).status,
+      'closed',
+    );
+  }
+
+  check(
+    'a checkpoint that no longer exists refuses too',
+    (await recordAttendance({
+      checkpointId: 'ckcheckpoint000000000000',
+      raw: badgeToken(scanned.id),
+      method: 'QR',
+      recordedById: admin.id,
+    })).status,
+    'no-checkpoint',
+  );
+
+  // Cascades the one attendance row with it.
+  await prisma.checkpoint.delete({ where: { id: gate.id } });
+  await prisma.notification.deleteMany({ where: { title: { contains: '[check] gate' } } });
+  check('attendance test rows removed', await prisma.checkpoint.count({ where: { nameAr: { startsWith: '[check] ' } } }), 0);
+}
 
 // --- undo --------------------------------------------------------------------
 

@@ -30,6 +30,25 @@ enum SubmissionStatus {
   REJECTED
 }
 
+// How an attendance row came to exist. Recorded rather than inferred because
+// the two are not equally trustworthy: a QR scan proves the badge was present,
+// while a manual entry is an organizer's word for it. When the attendance list
+// is later used to decide who earns a certificate, that distinction is the
+// only thing separating an audit from a guess.
+enum AttendanceMethod {
+  QR
+  MANUAL
+}
+
+// A gate counts arrivals at the venue for one day; a session checkpoint counts
+// the people in one room. They are the same act of scanning, so they are one
+// model — but a day's headline attendance figure means the gates only, and
+// summing both would double-count everyone who walked into a workshop.
+enum CheckpointKind {
+  GATE
+  SESSION
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -56,6 +75,10 @@ model User {
   submissions   ProjectSubmission[]
   notifications Notification[]
   announcements Announcement[]
+  attendance    Attendance[]
+  // Scans this account performed on behalf of others — the organizer side of
+  // the desk, kept apart from their own attendance.
+  scansRecorded Attendance[]        @relation("AttendanceRecorder")
 
   @@index([role])
 }
@@ -119,7 +142,7 @@ model Notification {
   title String
   body  String?
   link  String? // where clicking it should take them
-  read  Boolean @default(false)
+  read  Boolean          @default(false)
   // Defaults to GENERAL so rows written before this column keep working.
   kind  NotificationKind @default(GENERAL)
 
@@ -222,7 +245,8 @@ model ProgramSession {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  savedBy SavedSession[]
+  savedBy     SavedSession[]
+  checkpoints Checkpoint[]
 
   @@index([day, order])
 }
@@ -338,4 +362,66 @@ model Registration {
 
   @@index([submittedAt])
   @@index([userId])
+}
+
+// A place and moment at which badges are scanned — the venue door on day one,
+// the door on day two, a workshop room.
+//
+// Attendance is deliberately not a boolean on User. "Did they attend?" is not
+// one question: the organizers need day-one arrivals separately from day-two,
+// and a room's count separately from the building's. A checkpoint is the thing
+// a scan is *against*, which makes every one of those a count rather than a
+// schema change.
+model Checkpoint {
+  id     String         @id @default(cuid())
+  nameAr String
+  day    String // 'dayOne' | 'dayTwo'
+  kind   CheckpointKind @default(GATE)
+
+  // Set only for SESSION checkpoints. SetNull rather than Cascade: deleting a
+  // session from the program must not erase the record that fifty people were
+  // counted into the room.
+  sessionId String?
+  session   ProgramSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  // Closed checkpoints refuse new scans. The desk is staffed for an hour, and
+  // a scanner left open on a phone afterwards would keep admitting people to a
+  // room that is empty.
+  isOpen Boolean @default(true)
+
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attendance Attendance[]
+
+  @@index([day, order])
+}
+
+// One person, counted once at one checkpoint.
+//
+// The unique pair is what makes the scanner safe to point at a queue: a badge
+// scanned twice — because the reader beeped and the holder did not hear it —
+// is recognised as already counted rather than inflating the figure.
+model Attendance {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  checkpointId String
+  checkpoint   Checkpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+
+  method AttendanceMethod @default(QR)
+
+  // Who was holding the scanner. SetNull so removing a volunteer's account
+  // leaves the attendance figures intact.
+  recordedById String?
+  recordedBy   User?   @relation("AttendanceRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
+
+  checkedInAt DateTime @default(now())
+
+  @@unique([userId, checkpointId])
+  @@index([checkpointId, checkedInAt])
+  @@index([checkedInAt])
 }
