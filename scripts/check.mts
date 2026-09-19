@@ -48,6 +48,7 @@ const { qrMatrix, qrPath } = await import('../lib/qr');
 const jsQR = (await import('jsqr')).default;
 const { activeDayKey, attendanceRate, suggestedCheckpoint } = await import('../lib/attendance');
 const { parseScanInput, recordAttendance } = await import('../lib/attendance-record');
+const { parseUserFilters, userWhere, userFiltersToQuery } = await import('../lib/admin-users');
 
 let failures = 0;
 function check(label: string, actual: unknown, expected: unknown) {
@@ -323,6 +324,32 @@ check(
   's2',
 );
 check('with everything closed it opens on nothing', suggestedCheckpoint(GATES.map((g) => ({ ...g, isOpen: false }))), null);
+
+// --- the filters behind the user directory and its CSV export ----------------
+//
+// The export re-parses the page's own query string through these, so a
+// disagreement here is an export that silently contains people the admin was
+// not looking at.
+
+check('an unknown role is ignored rather than queried', parseUserFilters({ role: 'DROP' }).role, '');
+check('a lowercase role still filters', parseUserFilters({ role: 'admin' }).role, 'ADMIN');
+check('an unknown category is ignored', parseUserFilters({ category: 'vip' }).category, '');
+check('"no category" is a real filter', parseUserFilters({ category: 'none' }).category, 'none');
+check('an unknown sort falls back to the default', parseUserFilters({ sort: 'salary' }).sort, 'recent');
+check('page zero is page one', parseUserFilters({ page: '0' }).page, 1);
+check('a nonsense page is page one', parseUserFilters({ page: 'abc' }).page, 1);
+check('an absurd page number is clamped', parseUserFilters({ page: '999999999' }).page, 10000);
+check('no filters means no where-clause', userWhere(parseUserFilters({})), {});
+check(
+  '"absent" is a none-relation, not a negation',
+  userWhere(parseUserFilters({ attendance: 'absent' })),
+  { AND: [{ attendance: { none: {} } }] },
+);
+check(
+  'the export link carries the same filters the page used',
+  userFiltersToQuery(parseUserFilters({ q: 'ali', role: 'ADMIN', attendance: 'present' })),
+  '?q=ali&role=ADMIN&attendance=present',
+);
 
 // --- taking attendance, against real rows -------------------------------------
 

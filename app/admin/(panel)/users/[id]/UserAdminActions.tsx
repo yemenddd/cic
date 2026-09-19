@@ -1,9 +1,15 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Check, Copy, KeyRound, ShieldCheck, ShieldOff, Trash2 } from 'lucide-react';
+import { Check, Copy, KeyRound, QrCode, ShieldCheck, ShieldOff, Trash2 } from 'lucide-react';
 import type { UserRole } from '@prisma/client';
-import { deleteUser, resetUserPassword, setUserRole, setUserCategory } from '../actions';
+import {
+  deleteUser,
+  regenerateConfirmationCode,
+  resetUserPassword,
+  setUserRole,
+  setUserCategory,
+} from '../actions';
 import { CATEGORIES } from '@/lib/categories';
 
 function Notice({ text, tone }: { text: string; tone: 'error' | 'success' }) {
@@ -76,11 +82,14 @@ export default function UserAdminActions({
   role,
   category,
   isSelf,
+  hasCode,
 }: {
   userId: string;
   role: UserRole;
   category: string | null;
   isSelf: boolean;
+  /** Whether a badge code has ever been issued — changes the button's wording. */
+  hasCode: boolean;
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -178,9 +187,30 @@ export default function UserAdminActions({
 
         <button
           type="button"
+          disabled={pending}
+          onClick={() => {
+            const label = hasCode
+              ? 'إصدار رمز تأكيد جديد؟ سيتوقف الرمز الحالي و أي بطاقة مطبوعة منه عن العمل.'
+              : 'إصدار رمز تأكيد لهذا المستخدم؟';
+            if (!confirm(label)) return;
+            run(() => regenerateConfirmationCode(userId));
+          }}
+          className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[12.5px] font-semibold transition-opacity disabled:opacity-60"
+          style={{
+            background: 'var(--mat-liquid-bg)',
+            border: '1px solid var(--mat-liquid-border)',
+            color: 'var(--text-primary)',
+          }}
+        >
+          <QrCode className="h-3.5 w-3.5" />
+          {hasCode ? 'إصدار رمز تأكيد جديد' : 'إصدار رمز تأكيد'}
+        </button>
+
+        <button
+          type="button"
           disabled={pending || isSelf}
           onClick={() => {
-            if (!confirm('حذف هذا المستخدم نهائياً؟ ستُحذف معه ابتكاراته وجلساته المحفوظة.')) return;
+            if (!confirm('حذف هذا المستخدم نهائياً؟ ستُحذف معه ابتكاراته وجلساته المحفوظة وسجل حضوره.')) return;
             run(() => deleteUser(userId));
           }}
           title={isSelf ? 'لا يمكنك حذف حسابك الحالي' : undefined}
