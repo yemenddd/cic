@@ -11,6 +11,7 @@ import {
   setUserCategory,
 } from '../actions';
 import { CATEGORIES } from '@/lib/categories';
+import { useConfirm } from '@/components/platform/ConfirmDialog';
 
 function Notice({ text, tone }: { text: string; tone: 'error' | 'success' }) {
   return (
@@ -95,6 +96,7 @@ export default function UserAdminActions({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [password, setPassword] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const nextRole: UserRole = role === 'ADMIN' ? 'ATTENDEE' : 'ADMIN';
 
@@ -155,8 +157,13 @@ export default function UserAdminActions({
         <button
           type="button"
           disabled={pending}
-          onClick={() => {
-            if (!confirm('إعادة تعيين كلمة مرور هذا المستخدم؟ ستتوقف كلمة مروره الحالية عن العمل فوراً.')) return;
+          onClick={async () => {
+            const ok = await confirm({
+              title: 'إعادة تعيين كلمة مرور هذا المستخدم؟',
+              body: 'ستتوقف كلمة مروره الحالية عن العمل فوراً، وتُعرض الكلمة الجديدة مرة واحدة.',
+              confirmLabel: 'إعادة التعيين',
+            });
+            if (!ok) return;
             run(() => resetUserPassword(userId));
           }}
           className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[12.5px] font-semibold transition-opacity disabled:opacity-60"
@@ -169,9 +176,17 @@ export default function UserAdminActions({
         <button
           type="button"
           disabled={pending}
-          onClick={() => {
-            const label = nextRole === 'ADMIN' ? 'ترقية هذا المستخدم إلى مدير؟' : 'تحويل هذا المدير إلى مشارك؟';
-            if (!confirm(label)) return;
+          onClick={async () => {
+            const promoting = nextRole === 'ADMIN';
+            const ok = await confirm({
+              title: promoting ? 'ترقية هذا المستخدم إلى مدير؟' : 'تحويل هذا المدير إلى مشارك؟',
+              body: promoting
+                ? 'سيصبح قادراً على تعديل الموقع وقراءة بيانات كل المشاركين وحذف الحسابات.'
+                : 'سيفقد الوصول إلى لوحة الإدارة فوراً.',
+              confirmLabel: promoting ? 'ترقية' : 'تحويل',
+              tone: promoting ? 'danger' : 'default',
+            });
+            if (!ok) return;
             run(() => setUserRole(userId, nextRole));
           }}
           className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[12.5px] font-semibold transition-opacity disabled:opacity-60"
@@ -188,11 +203,16 @@ export default function UserAdminActions({
         <button
           type="button"
           disabled={pending}
-          onClick={() => {
-            const label = hasCode
-              ? 'إصدار رمز تأكيد جديد؟ سيتوقف الرمز الحالي و أي بطاقة مطبوعة منه عن العمل.'
-              : 'إصدار رمز تأكيد لهذا المستخدم؟';
-            if (!confirm(label)) return;
+          onClick={async () => {
+            const ok = await confirm({
+              title: hasCode ? 'إصدار رمز تأكيد جديد؟' : 'إصدار رمز تأكيد لهذا المستخدم؟',
+              body: hasCode
+                ? 'سيتوقف الرمز الحالي وأي بطاقة مطبوعة منه عن العمل. رمز QR لا يتأثر.'
+                : undefined,
+              confirmLabel: 'إصدار',
+              tone: hasCode ? 'danger' : 'default',
+            });
+            if (!ok) return;
             run(() => regenerateConfirmationCode(userId));
           }}
           className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[12.5px] font-semibold transition-opacity disabled:opacity-60"
@@ -209,8 +229,14 @@ export default function UserAdminActions({
         <button
           type="button"
           disabled={pending || isSelf}
-          onClick={() => {
-            if (!confirm('حذف هذا المستخدم نهائياً؟ ستُحذف معه ابتكاراته وجلساته المحفوظة وسجل حضوره.')) return;
+          onClick={async () => {
+            const ok = await confirm({
+              title: 'حذف هذا المستخدم نهائياً؟',
+              body: 'ستُحذف معه ابتكاراته وجلساته المحفوظة وسجل حضوره. لا يمكن التراجع.',
+              confirmLabel: 'حذف نهائي',
+              tone: 'danger',
+            });
+            if (!ok) return;
             run(() => deleteUser(userId));
           }}
           title={isSelf ? 'لا يمكنك حذف حسابك الحالي' : undefined}

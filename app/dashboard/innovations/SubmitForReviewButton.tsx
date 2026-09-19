@@ -2,19 +2,29 @@
 
 import { useState, useTransition } from 'react';
 import { Send } from 'lucide-react';
+import { useConfirm } from '@/components/platform/ConfirmDialog';
 import { submitForReview } from './actions';
 
 export default function SubmitForReviewButton({ id }: { id: string }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   return (
     <div className="flex flex-col items-start gap-1">
       <button
         type="button"
         disabled={pending}
-        onClick={() => {
-          if (!confirm('إرسال المشروع إلى لجنة المراجعة؟ لن تتمكن من تعديله بعد الإرسال.')) return;
+        onClick={async () => {
+          if (
+            !(await confirm({
+              title: 'إرسال المشروع إلى لجنة المراجعة؟',
+              body: 'لن تتمكن من تعديله بعد الإرسال.',
+              confirmLabel: 'إرسال',
+            }))
+          ) {
+            return;
+          }
           setError(null);
           startTransition(async () => {
             const result = await submitForReview(id);

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { DoorClosed, DoorOpen, Trash2 } from 'lucide-react';
+import { useConfirm } from '@/components/platform/ConfirmDialog';
 import { deleteCheckpoint, setCheckpointOpen } from './actions';
 
 /** Open/close and delete, for one checkpoint row. */
@@ -16,6 +17,7 @@ export default function CheckpointControls({
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   function run(fn: () => Promise<{ error?: string; success?: string }>) {
     setError(null);
@@ -53,8 +55,14 @@ export default function CheckpointControls({
         <button
           type="button"
           disabled={pending}
-          onClick={() => {
-            if (!confirm('حذف نقطة الحضور هذه؟')) return;
+          onClick={async () => {
+            const ok = await confirm({
+              title: 'حذف نقطة الحضور هذه؟',
+              body: 'لم يُسجَّل عندها أي حضور، فلن تفقد أي بيانات.',
+              confirmLabel: 'حذف',
+              tone: 'danger',
+            });
+            if (!ok) return;
             run(() => deleteCheckpoint(checkpointId));
           }}
           className="rounded-lg p-1.5 transition-opacity disabled:opacity-50"

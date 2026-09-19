@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import CICTLogo from '@/components/ui/CICTLogo';
+import ConfirmProvider from '@/components/platform/ConfirmDialog';
 import { useTheme } from '@/lib/theme-context';
 
 /**
@@ -233,7 +234,15 @@ export default function PlatformShell({
   }, [menuOpen]);
 
   return (
+    <ConfirmProvider>
     <div className="font-platform flex min-h-screen" style={{ background: 'var(--bg-base)' }} dir="rtl">
+      {/* Keyboard users reach the page without tabbing through every nav link
+          first. The marketing site has had one of these; the panels, which
+          have three times the navigation, did not. */}
+      <a href="#panel-content" className="platform-skip-link">
+        تخطَّ إلى المحتوى الرئيسي
+      </a>
+
       {/* Desktop sidebar — pinned, so a long page never scrolls the nav away. */}
       <aside
         className="hidden md:flex sticky top-0 h-screen w-[248px] shrink-0 flex-col p-4"
@@ -317,8 +326,13 @@ export default function PlatformShell({
           <Brand title={title} height={24} />
         </header>
 
-        <main className="p-5 md:p-8 max-w-6xl mx-auto">{children}</main>
+        {/* tabIndex -1 so the skip link can actually move focus here; without
+            it the browser scrolls but leaves focus where it was. */}
+        <main id="panel-content" tabIndex={-1} className="p-5 md:p-8 max-w-6xl mx-auto">
+          {children}
+        </main>
       </div>
     </div>
+    </ConfirmProvider>
   );
 }

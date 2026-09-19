@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { CircleCheck, Trash2, UserCheck } from 'lucide-react';
+import { useConfirm } from '@/components/platform/ConfirmDialog';
 import { manualCheckIn, undoAttendance } from '../../attendance/actions';
 import { ATTENDANCE_METHOD_LABELS, OUTCOME_LABELS, dayLabel } from '@/lib/attendance';
 import type { AttendanceMethod } from '@prisma/client';
@@ -44,6 +45,7 @@ export default function UserAttendance({
   const [pending, startTransition] = useTransition();
   const [notice, setNotice] = useState<{ tone: 'error' | 'success'; text: string } | null>(null);
   const [checkpointId, setCheckpointId] = useState(checkpoints[0]?.id ?? '');
+  const confirm = useConfirm();
 
   function checkIn() {
     if (!checkpointId) return;
@@ -58,8 +60,14 @@ export default function UserAttendance({
     });
   }
 
-  function undo(id: string) {
-    if (!confirm('حذف سجل الحضور هذا؟')) return;
+  async function undo(id: string) {
+    const ok = await confirm({
+      title: 'حذف سجل الحضور هذا؟',
+      body: 'سيُحتسب هذا المشارك غائباً عن هذه النقطة حتى يُمسح مجدداً.',
+      confirmLabel: 'حذف',
+      tone: 'danger',
+    });
+    if (!ok) return;
     setNotice(null);
     startTransition(async () => {
       const result = await undoAttendance(id);
@@ -109,7 +117,7 @@ export default function UserAttendance({
               <button
                 type="button"
                 disabled={pending}
-                onClick={() => undo(e.id)}
+                onClick={() => void undo(e.id)}
                 className="rounded-lg p-1.5 transition-opacity disabled:opacity-50"
                 style={{ color: 'var(--destructive)' }}
                 aria-label="حذف سجل الحضور"

@@ -60,7 +60,11 @@ export async function downloadBadgePDF(name = 'CICT-Badge') {
     }
   } catch (err) {
     console.error('Badge download failed:', err);
-    alert('Could not generate file. Please try again.');
+    // Left as a native alert deliberately: this is the failure path of the
+    // download itself, and it has to be visible even when the page's own
+    // rendering is what went wrong. Localized, though — an English string
+    // in an Arabic interface reads as a crash, not as a message.
+    alert('تعذّر إنشاء ملف البطاقة. حاول مرة أخرى.');
   } finally {
     hidden.forEach(el => { el.style.visibility = ''; });
   }

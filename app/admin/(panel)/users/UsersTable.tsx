@@ -7,6 +7,7 @@ import type { UserRole } from '@prisma/client';
 import { CATEGORIES, categoryLabel } from '@/lib/categories';
 import { EmptyRow, ListTable } from '@/components/admin/ListPage';
 import RoleChip from './RoleChip';
+import { useConfirm } from '@/components/platform/ConfirmDialog';
 import { bulkDeleteUsers, bulkSetCategory } from './actions';
 
 export interface UserRow {
@@ -67,6 +68,7 @@ export default function UsersTable({ rows, currentAdminId }: { rows: UserRow[]; 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [pending, startTransition] = useTransition();
   const [notice, setNotice] = useState<{ tone: 'error' | 'success'; text: string } | null>(null);
+  const confirm = useConfirm();
 
   // A page change replaces `rows`, so anything selected on the previous page
   // is no longer on screen. Intersecting keeps the count honest rather than
@@ -127,8 +129,13 @@ export default function UsersTable({ rows, currentAdminId }: { rows: UserRow[]; 
               key={c.id}
               type="button"
               disabled={pending}
-              onClick={() => {
-                if (!confirm(`تغيير فئة ${ids.length} مستخدماً إلى «${c.labels.ar}»؟`)) return;
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `تغيير فئة ${ids.length} مستخدماً إلى «${c.labels.ar}»؟`,
+                  body: 'تتغيّر معها المزايا المتاحة لهم — تقديم الابتكارات متاح لفئة «مشارك» فقط.',
+                  confirmLabel: 'تغيير الفئة',
+                });
+                if (!ok) return;
                 run(() => bulkSetCategory(ids, c.id));
               }}
               className="rounded-xl px-3 py-1.5 text-[12.5px] font-semibold transition-opacity disabled:opacity-60"
@@ -145,8 +152,14 @@ export default function UsersTable({ rows, currentAdminId }: { rows: UserRow[]; 
           <button
             type="button"
             disabled={pending}
-            onClick={() => {
-              if (!confirm(`حذف ${ids.length} مستخدماً نهائياً؟ ستُحذف معهم ابتكاراتهم وحضورهم.`)) return;
+            onClick={async () => {
+              const ok = await confirm({
+                title: `حذف ${ids.length} مستخدماً نهائياً؟`,
+                body: 'ستُحذف معهم ابتكاراتهم وجلساتهم المحفوظة وسجل حضورهم. لا يمكن التراجع.',
+                confirmLabel: 'حذف نهائي',
+                tone: 'danger',
+              });
+              if (!ok) return;
               run(() => bulkDeleteUsers(ids));
             }}
             className="ms-auto inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[12.5px] font-semibold transition-opacity disabled:opacity-60"
