@@ -15,11 +15,20 @@ import { CATEGORIES } from '@/lib/categories';
 
 export type LinkedFilter = '' | 'yes' | 'no';
 
+export const REGISTRATION_SORTS = [
+  { value: 'recent', label: 'الأحدث تسجيلاً' },
+  { value: 'oldest', label: 'الأقدم تسجيلاً' },
+  { value: 'name', label: 'الاسم (أ–ي)' },
+] as const;
+
+export type RegistrationSort = (typeof REGISTRATION_SORTS)[number]['value'];
+
 export interface RegistrationFilters {
   q: string;
   category: string;
   /** Whether the registration has an account behind it. */
   linked: LinkedFilter;
+  sort: RegistrationSort;
   page: number;
 }
 
@@ -30,6 +39,7 @@ export function parseRegistrationFilters(
 ): RegistrationFilters {
   const category = params.category ?? '';
   const linked = params.linked ?? '';
+  const sort = params.sort ?? '';
   const page = Number.parseInt(params.page ?? '1', 10);
 
   return {
@@ -38,8 +48,23 @@ export function parseRegistrationFilters(
     // value would return an empty page that reads as "no registrations".
     category: CATEGORIES.some((c) => c.id === category) ? category : '',
     linked: linked === 'yes' || linked === 'no' ? linked : '',
+    sort: REGISTRATION_SORTS.some((s) => s.value === sort) ? (sort as RegistrationSort) : 'recent',
     page: Number.isFinite(page) && page > 0 ? Math.min(page, 10_000) : 1,
   };
+}
+
+export function registrationOrderBy(
+  sort: RegistrationSort,
+): Prisma.RegistrationOrderByWithRelationInput[] {
+  switch (sort) {
+    case 'oldest':
+      return [{ submittedAt: 'asc' }];
+    case 'name':
+      return [{ fullName: 'asc' }];
+    case 'recent':
+    default:
+      return [{ submittedAt: 'desc' }];
+  }
 }
 
 export function registrationWhere(filters: RegistrationFilters): Prisma.RegistrationWhereInput {
@@ -71,4 +96,22 @@ export function registrationWhere(filters: RegistrationFilters): Prisma.Registra
 
 export function isRegistrationFiltered(filters: RegistrationFilters): boolean {
   return Boolean(filters.q || filters.category || filters.linked);
+}
+
+/**
+ * Which of these addresses appear on more than one registration.
+ *
+ * Nothing stops somebody filling in the public form twice — the column is not
+ * unique, and a person who is unsure whether the first submission worked will
+ * simply do it again. Two rows for one person inflates every headcount the
+ * organizers plan catering and seating from, and the duplicate is invisible in
+ * a list sorted by date because the two are weeks apart.
+ *
+ * Scoped to the addresses passed in, so this stays one indexed pass over the
+ * page being rendered rather than a scan of the whole table.
+ */
+export function duplicateEmailsAmong(
+  rows: { email: string; _count?: never }[],
+): { email: { in: string[] } } {
+  return { email: { in: [...new Set(rows.map((r) => r.email))] } };
 }

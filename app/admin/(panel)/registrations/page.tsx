@@ -1,19 +1,21 @@
 import Link from 'next/link';
-import { ClipboardList, Download, Search, UserCheck, X } from 'lucide-react';
+import { ClipboardList, Copy, Download, Search, UserCheck, X } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
-import { ListPageHeader, ListTable, EmptyRow } from '@/components/admin/ListPage';
-import DeleteButton from '@/components/admin/DeleteButton';
+import { ListPageHeader } from '@/components/admin/ListPage';
 import Pagination from '@/components/admin/Pagination';
+import SortSelect from '@/components/admin/SortSelect';
 import StatCard from '@/components/admin/StatCard';
-import { CATEGORIES, categoryLabel } from '@/lib/categories';
+import { CATEGORIES } from '@/lib/categories';
 import { LIST_PAGE_SIZE, listHref, pageCountFor } from '@/lib/admin-list';
 import {
+  REGISTRATION_SORTS,
   isRegistrationFiltered,
   parseRegistrationFilters,
+  registrationOrderBy,
   registrationWhere,
   type RegistrationSearchParams,
 } from '@/lib/admin-registrations';
-import { deleteRegistration } from './actions';
+import RegistrationsTable, { type RegistrationRow } from './RegistrationsTable';
 
 interface Props {
   // Next.js 16: searchParams is a Promise and must be awaited.
@@ -24,14 +26,14 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
   // Parsed through the same helpers the CSV export uses, so "export" can only
   // ever mean "this list".
   const filters = parseRegistrationFilters(await searchParams);
-  const { q: query, category, linked, page } = filters;
+  const { q: query, category, linked, sort, page } = filters;
   const where = registrationWhere(filters);
 
-  const [total, registrations, allCount, unlinkedCount] = await Promise.all([
+  const [total, registrations, allCount, unlinkedCount, duplicateGroups] = await Promise.all([
     prisma.registration.count({ where }),
     prisma.registration.findMany({
       where,
-      orderBy: { submittedAt: 'desc' },
+      orderBy: registrationOrderBy(sort),
       skip: (page - 1) * LIST_PAGE_SIZE,
       take: LIST_PAGE_SIZE,
       select: {
@@ -41,14 +43,42 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
     }),
     prisma.registration.count(),
     prisma.registration.count({ where: { userId: null } }),
+    // Every address that appears on more than one registration. The public
+    // form has no unique constraint behind it and somebody unsure whether
+    // their first submission worked simply sends another, so two rows for one
+    // person inflates every headcount the organizers plan catering from.
+    prisma.registration.groupBy({
+      by: ['email'],
+      _count: { _all: true },
+      having: { email: { _count: { gt: 1 } } },
+    }),
   ]);
+
+  const duplicatedEmails = new Set(duplicateGroups.map((g) => g.email.toLowerCase()));
+  // Rows, not groups: three registrations of one address are two rows too many.
+  const duplicateRows = duplicateGroups.reduce((sum, g) => sum + (g._count._all - 1), 0);
 
   const pageCount = pageCountFor(total);
   const current = Math.min(page, pageCount);
   const filtered = isRegistrationFiltered(filters);
 
   const href = (overrides: Record<string, string | number | undefined>) =>
-    listHref('/admin/registrations', { q: query, category, linked, page: current, ...overrides });
+    listHref('/admin/registrations', {
+      q: query, category, linked, sort: sort === 'recent' ? '' : sort, page: current, ...overrides,
+    });
+
+  const rows: RegistrationRow[] = registrations.map((r) => ({
+    id: r.id,
+    fullName: r.fullName,
+    email: r.email,
+    phone: r.phone,
+    country: r.country,
+    category: r.category,
+    // Serialized for the Client Component below.
+    submittedAt: r.submittedAt.toISOString(),
+    hasAccount: Boolean(r.userId),
+    duplicate: duplicatedEmails.has(r.email.toLowerCase()),
+  }));
 
   const chips = [
     { key: 'category', value: '', label: 'كل الفئات', active: !category },
@@ -68,17 +98,25 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
         description="كل من ملأ نموذج التسجيل — بما فيهم من سجّلوا قبل وجود الحسابات."
       />
 
-      <div className="mb-5 grid grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Two of these four ask for something to be done, and only those two
+          carry colour — four tinted tiles would spend the colour channel on
+          decoration and say nothing. */}
+      <div className="mb-5 grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="كل التسجيلات" value={allCount} icon={ClipboardList} />
         <StatCard label="لها حساب" value={allCount - unlinkedCount} icon={UserCheck} />
         <StatCard
           label="بلا حساب"
           value={unlinkedCount}
           icon={X}
-          // The only figure here that asks for an action: these people cannot
-          // sign in or be scanned at the door until an account is created.
           accent={unlinkedCount > 0 ? 'var(--accent-violet)' : undefined}
           hint={unlinkedCount > 0 ? 'لا يمكنهم تسجيل الدخول' : undefined}
+        />
+        <StatCard
+          label="تسجيلات مكررة"
+          value={duplicateRows}
+          icon={Copy}
+          accent={duplicateRows > 0 ? '#f59e0b' : undefined}
+          hint={duplicateRows > 0 ? 'تُحتسب مرتين في الأعداد' : undefined}
         />
       </div>
 
@@ -107,7 +145,9 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
         {/* Carries the current filters, so the file is the filtered list —
             every row matching it, not just this page. */}
         <a
-          href={listHref('/admin/registrations/export', { q: query, category, linked })}
+          href={listHref('/admin/registrations/export', {
+            q: query, category, linked, sort: sort === 'recent' ? '' : sort,
+          })}
           className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[13.5px] font-semibold whitespace-nowrap"
           style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
         >
@@ -138,6 +178,15 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
           </Link>
         ))}
 
+        {/* Its own GET form so choosing an order keeps the filters that are
+            already applied, instead of resetting the view. */}
+        <form method="GET" className="flex items-center">
+          {query && <input type="hidden" name="q" value={query} />}
+          {category && <input type="hidden" name="category" value={category} />}
+          {linked && <input type="hidden" name="linked" value={linked} />}
+          <SortSelect value={sort} options={REGISTRATION_SORTS} />
+        </form>
+
         <p className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
           {filtered ? `${total} نتيجة` : `${total} تسجيل`}
         </p>
@@ -154,45 +203,7 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
         )}
       </div>
 
-      <ListTable>
-        <tbody>
-          {registrations.length === 0 && (
-            <EmptyRow
-              colSpan={7}
-              label={filtered ? 'لا توجد نتائج مطابقة' : 'لا يوجد تسجيلات بعد'}
-            />
-          )}
-          {registrations.map((r) => (
-            <tr key={r.id} style={{ borderTop: '1px solid var(--mat-liquid-border)' }}>
-              <td className="p-3" style={{ color: 'var(--text-primary)' }}>
-                {r.fullName}
-                {!r.userId && (
-                  <span className="block text-[11px]" style={{ color: 'var(--accent-violet)' }}>
-                    بلا حساب
-                  </span>
-                )}
-              </td>
-              <td className="p-3" style={{ color: 'var(--text-secondary)' }} dir="ltr">{r.email}</td>
-              <td className="p-3" style={{ color: 'var(--text-secondary)' }} dir="ltr">{r.phone || '—'}</td>
-              <td className="p-3" style={{ color: 'var(--text-secondary)' }}>{r.country || '—'}</td>
-              <td className="p-3" style={{ color: 'var(--text-secondary)' }}>
-                {categoryLabel(r.category, 'ar') || r.category}
-              </td>
-              <td className="p-3 w-28" style={{ color: 'var(--text-tertiary)' }}>
-                {new Date(r.submittedAt).toLocaleDateString('ar')}
-              </td>
-              <td className="p-3 w-16">
-                <div className="flex items-center justify-end">
-                  <DeleteButton
-                    action={deleteRegistration.bind(null, r.id)}
-                    confirmText={`حذف تسجيل «${r.fullName}» نهائياً؟`}
-                  />
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </ListTable>
+      <RegistrationsTable rows={rows} filtered={filtered} />
 
       <Pagination page={current} pageCount={pageCount} buildHref={(p) => href({ page: p })} />
     </div>

@@ -49,7 +49,9 @@ const jsQR = (await import('jsqr')).default;
 const { activeDayKey, attendanceRate, suggestedCheckpoint } = await import('../lib/attendance');
 const { parseScanInput, recordAttendance } = await import('../lib/attendance-record');
 const { parseUserFilters, userWhere, userFiltersToQuery } = await import('../lib/admin-users');
-const { parseRegistrationFilters, registrationWhere } = await import('../lib/admin-registrations');
+const {
+  parseRegistrationFilters, registrationWhere, registrationOrderBy,
+} = await import('../lib/admin-registrations');
 const { parsePage, pageCountFor, listHref } = await import('../lib/admin-list');
 const { MAX_SUBMISSIONS_PER_ATTENDEE } = await import('../lib/categories');
 const {
@@ -58,6 +60,7 @@ const {
 const { emailConfigured } = await import('../lib/email');
 const { RESET_BY_IP } = await import('../lib/rate-limit');
 const { auditServerActions } = await import('../lib/guard-audit');
+const { reconcileRegistrationAccount } = await import('../lib/registration-accounts');
 
 let failures = 0;
 function check(label: string, actual: unknown, expected: unknown) {
@@ -380,6 +383,10 @@ check('page one is left implicit in a link', listHref('/admin/x', { page: 1 }), 
 check('empty filters are dropped from a link', listHref('/admin/x', { q: '', status: undefined }), '/admin/x');
 check('applied filters survive into the link', listHref('/admin/x', { q: 'ali', page: 3 }), '/admin/x?q=ali&page=3');
 
+check('an unknown registration sort falls back to the default', parseRegistrationFilters({ sort: 'salary' }).sort, 'recent');
+check('a known sort is kept', parseRegistrationFilters({ sort: 'name' }).sort, 'name');
+check('the default order is newest first', registrationOrderBy('recent'), [{ submittedAt: 'desc' }]);
+check('oldest-first really reverses it', registrationOrderBy('oldest'), [{ submittedAt: 'asc' }]);
 check('an unknown registration category is ignored', parseRegistrationFilters({ category: 'vip' }).category, '');
 check('a known one filters', parseRegistrationFilters({ category: 'volunteer' }).category, 'volunteer');
 check('an unknown linked value is ignored', parseRegistrationFilters({ linked: 'maybe' }).linked, '');
@@ -604,6 +611,68 @@ console.log(
   `  (${audit.total} server actions; ${audit.declaredPublic.length} declared public: ` +
     `${audit.declaredPublic.map((a) => a.action).join(', ') || 'none'})`,
 );
+
+// --- giving a registration an account -----------------------------------------
+//
+// The action behind the "بلا حساب" filter. Checked here rather than through
+// the action, because an action is only reachable by guessing Next.js's
+// internal id for it — which, when attempted, identified the wrong one and
+// deleted the row under test.
+
+const RMARK = '[regcheck]';
+await prisma.registration.deleteMany({ where: { fullName: { startsWith: RMARK } } });
+await prisma.user.deleteMany({ where: { email: { endsWith: '@regcheck.invalid' } } });
+
+// 1. A registration with no account anywhere -> an account is created.
+const orphan = await prisma.registration.create({
+  data: {
+    fullName: `${RMARK} بلا حساب`,
+    email: 'orphan@regcheck.invalid',
+    category: 'participant',
+    phone: '555',
+    country: 'تركيا',
+    track: 'البحث العلمي',
+  },
+});
+
+const madeAccount = await reconcileRegistrationAccount(orphan.id);
+check('a registration with no account gets one', madeAccount.status, 'created');
+check('and the password comes back exactly once', madeAccount.status === 'created' && madeAccount.password.length, 16);
+
+const madeUser = await prisma.user.findUnique({
+  where: { email: 'orphan@regcheck.invalid' },
+  select: { id: true, name: true, phone: true, country: true, track: true, category: true, confirmationCode: true, role: true },
+});
+check('the account carries the registration\'s own details', [madeUser?.name, madeUser?.phone, madeUser?.country, madeUser?.track], [`${RMARK} بلا حساب`, '555', 'تركيا', 'البحث العلمي']);
+check('the tier is taken from the registration', madeUser?.category, 'participant');
+check('and it is an attendee, never an admin', madeUser?.role, 'ATTENDEE');
+check('it gets a badge code, so it can be scanned', /^CICT-2026-[A-Z0-9]{6}$/.test(madeUser?.confirmationCode ?? ''), true);
+
+const linkedBack = await prisma.registration.findUnique({ where: { id: orphan.id }, select: { userId: true } });
+check('the registration is attached in the same breath', linkedBack?.userId, madeUser?.id);
+check('so it no longer counts as needing an account', await prisma.registration.count({ where: { id: orphan.id, userId: null } }), 0);
+
+// 2. Doing it twice must not make a second account.
+check('a second attempt is refused', (await reconcileRegistrationAccount(orphan.id)).status, 'already-linked');
+check('and no duplicate account exists', await prisma.user.count({ where: { email: 'orphan@regcheck.invalid' } }), 1);
+
+// 3. A registration whose address ALREADY has an account -> link, never create.
+//    This is the case that quietly turns one person into two.
+const second = await prisma.registration.create({
+  data: { fullName: `${RMARK} نسخة ثانية`, email: 'orphan@regcheck.invalid', category: 'visitor' },
+});
+const relinked = await reconcileRegistrationAccount(second.id);
+check('an address that already has an account is linked, not duplicated', relinked.status, 'linked');
+check('it points at the existing account', relinked.status === 'linked' && relinked.userId, madeUser?.id);
+check('and still exactly one account holds that address', await prisma.user.count({ where: { email: 'orphan@regcheck.invalid' } }), 1);
+
+// 4. A registration that does not exist.
+check('a missing registration is reported, not thrown', (await reconcileRegistrationAccount('ckdoesnotexist000000000')).status, 'not-found');
+
+await prisma.registration.deleteMany({ where: { fullName: { startsWith: RMARK } } });
+await prisma.user.deleteMany({ where: { email: { endsWith: '@regcheck.invalid' } } });
+check('registration test rows removed', await prisma.registration.count({ where: { fullName: { startsWith: RMARK } } }), 0);
+check('and their accounts too', await prisma.user.count({ where: { email: { endsWith: '@regcheck.invalid' } } }), 0);
 
 // --- undo --------------------------------------------------------------------
 

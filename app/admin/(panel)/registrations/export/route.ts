@@ -3,7 +3,11 @@ import { prisma } from '@/lib/db/client';
 import { requireAdmin } from '@/lib/auth-guards';
 import { categoryLabel } from '@/lib/categories';
 import { toCsv } from '@/lib/csv';
-import { parseRegistrationFilters, registrationWhere } from '@/lib/admin-registrations';
+import {
+  parseRegistrationFilters,
+  registrationOrderBy,
+  registrationWhere,
+} from '@/lib/admin-registrations';
 
 /**
  * The registrations list as a spreadsheet — the rows currently on screen, not
@@ -27,7 +31,9 @@ export async function GET(request: NextRequest) {
 
   const registrations = await prisma.registration.findMany({
     where: registrationWhere(filters),
-    orderBy: { submittedAt: 'desc' },
+    // Same order as the screen, so the spreadsheet reads in the sequence the
+    // admin was looking at rather than a second, silently different one.
+    orderBy: registrationOrderBy(filters.sort),
   });
 
   const csv = toCsv(
