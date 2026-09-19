@@ -96,12 +96,12 @@ export default function AuthScreen({
           blank surface, with a gradient over it so the type stays legible.
           Fixed light colours here on purpose: the backdrop is a photo, not a
           theme surface, so it must not follow the light/dark tokens. */}
-      <aside className="relative hidden lg:block w-[44%] max-w-2xl overflow-hidden">
+      <aside className="relative hidden lg:block w-[48%] overflow-hidden">
         <Image
           src="/images/experience/2.jpg"
           alt="مشاركون يعرضون مشروعاً في معرض الابتكار خلال المؤتمر"
           fill
-          sizes="44vw"
+          sizes="48vw"
           priority
           className="object-cover"
         />
@@ -211,7 +211,7 @@ export default function AuthScreen({
                 كلمة المرور
               </label>
 
-              <div className="relative">
+              <div className="relative" dir="ltr">
                 <input
                   id={passwordId}
                   name="password"
