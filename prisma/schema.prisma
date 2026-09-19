@@ -5,6 +5,18 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+
+  // Migrations must not go through the pooler. DATABASE_URL points at Neon's
+  // PgBouncer, which multiplexes many clients onto few server connections and
+  // therefore cannot hold the session-level advisory lock Prisma Migrate takes
+  // to stop two deploys migrating at once — `migrate deploy` against it times
+  // out waiting for a lock it can never acquire.
+  //
+  // DATABASE_URL_UNPOOLED is the unpooled endpoint, and is the variable Neon's
+  // Vercel integration actually populates — DIRECT_URL exists in this project
+  // but is set to an empty string, which Prisma rejects outright. Used for
+  // migrations only; every ordinary query still goes through the pooler.
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 // Superseded by `User` — kept until the admin row is verified migrated, so
@@ -70,15 +82,16 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  registrations Registration[]
-  savedSessions SavedSession[]
-  submissions   ProjectSubmission[]
-  notifications Notification[]
-  announcements Announcement[]
-  attendance    Attendance[]
+  registrations       Registration[]
+  savedSessions       SavedSession[]
+  submissions         ProjectSubmission[]
+  notifications       Notification[]
+  announcements       Announcement[]
+  attendance          Attendance[]
   // Scans this account performed on behalf of others — the organizer side of
   // the desk, kept apart from their own attendance.
-  scansRecorded Attendance[]        @relation("AttendanceRecorder")
+  scansRecorded       Attendance[]         @relation("AttendanceRecorder")
+  passwordResetTokens PasswordResetToken[]
 
   @@index([role])
 }
@@ -424,4 +437,40 @@ model Attendance {
   @@unique([userId, checkpointId])
   @@index([checkpointId, checkedInAt])
   @@index([checkedInAt])
+}
+
+// A single-use link that lets somebody who has lost their password prove they
+// still control their inbox.
+//
+// Without this, the only way back into an account was to ask an organizer to
+// reset it and read the generated password out — which does not scale past a
+// handful of people, and puts the organizers in the business of handling
+// plaintext passwords on the busiest day of the conference.
+//
+// The token itself is never stored, only its SHA-256 hash: a read of this
+// table must not hand the reader a working reset link for every account that
+// has an outstanding one. SHA-256 rather than bcrypt is deliberate — bcrypt's
+// slowness exists to protect low-entropy human passwords, and this is 256 bits
+// of randomness, which is not guessable at any speed.
+model PasswordResetToken {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /**
+   * SHA-256 of the token in the link. Unique so a lookup is an index hit.
+   */
+  tokenHash String @unique
+
+  expiresAt DateTime
+  /**
+   * Set the moment it is spent, so a link in a mailbox works exactly once.
+   */
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }

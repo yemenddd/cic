@@ -5,9 +5,9 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ScrollToTop from '@/components/layout/ScrollToTop';
 
-// The panels (/admin, /dashboard) and the login screen carry their own
+// The panels (/admin, /dashboard) and the auth screens carry their own
 // chrome — the marketing site's header/footer would only get in the way.
-const BARE_ROUTES = ['/admin', '/dashboard', '/login'];
+const BARE_ROUTES = ['/admin', '/dashboard', '/login', '/forgot-password', '/reset-password'];
 
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

@@ -38,6 +38,24 @@ export const LOGIN_BY_IP: ThrottleRule = { limit: 20, windowSeconds: 900, maxLoc
 export const REGISTER_BY_IP: ThrottleRule = { limit: 5, windowSeconds: 3600, maxLockSeconds: 3600 };
 
 /**
+ * Password-reset requests. Counts every attempt, not just failures — there is
+ * no such thing as a failed one from the caller's point of view, since the
+ * form deliberately answers the same way for an unknown address.
+ *
+ * Tight, because each accepted request sends real mail to somebody who did not
+ * ask for it. Three a quarter-hour is generous for a person who mistyped their
+ * address and far below what it takes to use the form to harass an inbox.
+ */
+export const RESET_BY_IP: ThrottleRule = { limit: 3, windowSeconds: 900, maxLockSeconds: 1800 };
+
+/**
+ * And per address, so one target cannot be flooded from many sources.
+ * Deliberately keyed on the address typed in, not on an account — the whole
+ * point is that we do not reveal whether one exists.
+ */
+export const RESET_BY_EMAIL: ThrottleRule = { limit: 3, windowSeconds: 900, maxLockSeconds: 1800 };
+
+/**
  * How long to lock after `failures` failures. Doubles each extra failure past
  * the limit, so an honest typo costs a minute while a script hits the ceiling
  * almost immediately.

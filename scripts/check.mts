@@ -52,6 +52,11 @@ const { parseUserFilters, userWhere, userFiltersToQuery } = await import('../lib
 const { parseRegistrationFilters, registrationWhere } = await import('../lib/admin-registrations');
 const { parsePage, pageCountFor, listHref } = await import('../lib/admin-list');
 const { MAX_SUBMISSIONS_PER_ATTENDEE } = await import('../lib/categories');
+const {
+  requestPasswordReset, checkResetToken, completePasswordReset, isTokenShape, resetLink,
+} = await import('../lib/password-reset');
+const { emailConfigured } = await import('../lib/email');
+const { RESET_BY_IP } = await import('../lib/rate-limit');
 
 let failures = 0;
 function check(label: string, actual: unknown, expected: unknown) {
@@ -477,6 +482,106 @@ if (scanned) {
   await prisma.notification.deleteMany({ where: { title: { contains: '[check] gate' } } });
   check('attendance test rows removed', await prisma.checkpoint.count({ where: { nameAr: { startsWith: '[check] ' } } }), 0);
 }
+
+// --- losing your password, and getting back in -------------------------------
+//
+// Security-critical and entirely invisible from the outside: every failure
+// mode here either locks a real person out or lets somebody else in.
+
+check('a reset request is capped at three a window', lockSeconds(3, RESET_BY_IP), 60);
+check('two requests cost nothing', lockSeconds(2, RESET_BY_IP), 0);
+
+check('a 43-char base64url token is the right shape', isTokenShape('a'.repeat(43)), true);
+check('a short token is not', isTokenShape('abc'), false);
+check('a token with padding is not', isTokenShape('a'.repeat(42) + '='), false);
+check('an empty token is not', isTokenShape(''), false);
+check('the link carries the token as a query parameter', resetLink('abc').includes('/reset-password?token=abc'), true);
+
+check('a garbage token is refused without a lookup', (await checkResetToken('nonsense')).valid, false);
+check('an empty token is refused', (await checkResetToken('')).valid, false);
+
+const resetSubject = await prisma.user.findFirst({
+  where: { role: 'ATTENDEE' },
+  select: { id: true, email: true, passwordHash: true },
+});
+
+if (resetSubject) {
+  // requestPasswordReset does not hand back the token — it goes to an inbox.
+  // The row it writes holds only a hash, so the check reads the token the same
+  // way an attacker with database access would have to: it cannot.
+  await prisma.passwordResetToken.deleteMany({ where: { userId: resetSubject.id } });
+  await requestPasswordReset(resetSubject.email);
+
+  const issued = await prisma.passwordResetToken.findMany({ where: { userId: resetSubject.id } });
+  check('a request issues exactly one token', issued.length, 1);
+  check('and stores a hash, never the token itself', /^[0-9a-f]{64}$/.test(issued[0]?.tokenHash ?? ''), true);
+  check('which expires within the hour', issued[0].expiresAt.getTime() - Date.now() <= 3_600_000, true);
+  check('and is not yet spent', issued[0].usedAt, null);
+
+  // A second request abandons the first, so a mailbox never holds two live
+  // links into one account.
+  await requestPasswordReset(resetSubject.email);
+  check('a second request replaces the first', await prisma.passwordResetToken.count({ where: { userId: resetSubject.id } }), 1);
+
+  // An unknown address must do nothing at all — and, crucially, must not throw,
+  // since a different code path is something a caller could time.
+  await requestPasswordReset('nobody-at-all@example.invalid');
+  check('an unknown address issues nothing', await prisma.passwordResetToken.count({ where: { user: { email: 'nobody-at-all@example.invalid' } } }), 0);
+
+  // Drive the rest through a token forged the way the real one is made, so the
+  // spend/expire behaviour is exercised end to end.
+  const { createHash, randomBytes } = await import('node:crypto');
+  const mint = async (overrides: { expiresAt?: Date; usedAt?: Date } = {}) => {
+    const token = randomBytes(32).toString('base64url');
+    await prisma.passwordResetToken.deleteMany({ where: { userId: resetSubject.id } });
+    await prisma.passwordResetToken.create({
+      data: {
+        userId: resetSubject.id,
+        tokenHash: createHash('sha256').update(token).digest('hex'),
+        expiresAt: overrides.expiresAt ?? new Date(Date.now() + 3_600_000),
+        usedAt: overrides.usedAt ?? null,
+      },
+    });
+    return token;
+  };
+
+  const expired = await mint({ expiresAt: new Date(Date.now() - 1000) });
+  check('an expired token is refused', (await checkResetToken(expired)).valid, false);
+
+  const spent = await mint({ usedAt: new Date() });
+  check('an already-used token is refused', (await checkResetToken(spent)).valid, false);
+
+  const live = await mint();
+  const liveState = await checkResetToken(live);
+  // Narrowed rather than read straight off the union: `userId` only exists on
+  // the valid branch, which is the point of modelling it that way.
+  check('a fresh token resolves to its account', liveState.valid && liveState.userId, resetSubject.id);
+  check('a short password is refused', (await completePasswordReset(live, 'short')).status, 'weak-password');
+  check('and refusing it did not spend the token', (await checkResetToken(live)).valid, true);
+
+  check('a good password is accepted', (await completePasswordReset(live, 'a-long-enough-password')).status, 'ok');
+  check('the token is spent immediately after', (await checkResetToken(live)).valid, false);
+  check('and cannot be replayed', (await completePasswordReset(live, 'another-long-password')).status, 'invalid-token');
+
+  const changed = await prisma.user.findUnique({ where: { id: resetSubject.id }, select: { passwordHash: true } });
+  check('the password really changed', changed?.passwordHash !== resetSubject.passwordHash, true);
+
+  // Put the account back exactly as it was — this runs against the real
+  // database, and the person it belongs to must still be able to sign in.
+  await prisma.user.update({
+    where: { id: resetSubject.id },
+    data: { passwordHash: resetSubject.passwordHash },
+  });
+  await prisma.passwordResetToken.deleteMany({ where: { userId: resetSubject.id } });
+
+  const restored = await prisma.user.findUnique({ where: { id: resetSubject.id }, select: { passwordHash: true } });
+  check('the original password hash is restored', restored?.passwordHash, resetSubject.passwordHash);
+  check('and no reset tokens are left behind', await prisma.passwordResetToken.count({ where: { userId: resetSubject.id } }), 0);
+}
+
+// Reported, not asserted: mail being switched off is a valid configuration,
+// and the reset flow is built to behave identically either way.
+console.log(`  (email ${emailConfigured() ? 'is configured' : 'is NOT configured — reset links will not be delivered'})`);
 
 // --- undo --------------------------------------------------------------------
 

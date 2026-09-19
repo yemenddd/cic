@@ -19,6 +19,14 @@ export default function LoginForm({
       conference={conference}
       footer={
         <span style={{ color: 'var(--text-tertiary)' }}>
+          <Link
+            href="/forgot-password"
+            className="font-semibold"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            نسيت كلمة المرور؟
+          </Link>
+          <span className="mx-2" aria-hidden>·</span>
           ليس لديك حساب؟{' '}
           <Link href="/register" className="font-semibold" style={{ color: 'var(--text-primary)' }}>
             سجّل الآن
