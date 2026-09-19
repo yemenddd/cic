@@ -3,6 +3,7 @@ import { CalendarClock, MapPin, ScanLine, Smartphone, Printer, TriangleAlert } f
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
 import { categoryLabel } from '@/lib/categories';
+import { badgeToken } from '@/lib/badge-token';
 import { dict } from '@/lib/dictionary';
 import { CONFERENCE_DAYS, daysUntilConference } from '@/lib/conference';
 import { arabicCountBare, DAY } from '@/lib/arabic-plural';
@@ -82,7 +83,7 @@ export default async function BadgePage() {
         بطاقتي
       </h1>
       <p className="mt-1.5 mb-6 text-[13px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
-        بطاقتك الدائمة للمؤتمر — تُعرض عند الدخول، وتُستخدم في تسجيل الحضور.
+        بطاقتك الدائمة للمؤتمر — يُمسح رمز QR عليها عند الدخول فيُسجَّل حضورك تلقائياً.
       </p>
 
       {!user.confirmationCode && (
@@ -95,8 +96,8 @@ export default async function BadgePage() {
         >
           <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" style={{ color: '#f59e0b' }} />
           <p className="text-[12.5px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            لم يصدر رمز التأكيد الخاص بك بعد، وستظهر البطاقة كاملة بمجرد اعتماد تسجيلك.
-            يمكنك تحميلها الآن، لكن الرمز سيكون فارغاً.
+            لم يصدر رمز التأكيد المكتوب على بطاقتك بعد. رمز QR يعمل الآن ويكفي لتسجيل حضورك عند
+            البوابة — أما الرمز المكتوب فيظهر بمجرد اعتماد تسجيلك.
           </p>
         </div>
       )}
@@ -112,6 +113,10 @@ export default async function BadgePage() {
             organization={user.organization ?? undefined}
             track={user.track ?? ''}
             code={user.confirmationCode ?? '—'}
+            // Derived from the account id, not the confirmation code — so the
+            // QR works even for an account whose code was never issued, which
+            // is exactly the case the warning above is about.
+            qrValue={badgeToken(session.user.id)}
             date={dict.ar.registerPage.date}
             location={dict.ar.registerPage.location}
           />
@@ -159,8 +164,8 @@ export default async function BadgePage() {
               />
               <Tip
                 icon={ScanLine}
-                title="رمز التأكيد هو هويتك"
-                body="اضغط «نسخ الرمز» لنسخه، وقد يُطلب منك قراءته عند مكتب التسجيل."
+                title="رمز QR يسجّل حضورك"
+                body="اعرض الرمز على الشاشة أو على الورقة عند البوابة — يُمسح في ثانية ويصلك إشعار فور تسجيل حضورك."
               />
               <Tip
                 icon={Printer}

@@ -43,6 +43,9 @@ const { lockSeconds, LOGIN_BY_EMAIL, LOGIN_BY_IP, REGISTER_BY_IP } = await impor
 const { relativeArabicDate } = await import('../lib/relative-time');
 const { arabicCountBare, SESSION } = await import('../lib/arabic-plural');
 const { daysUntilConference, conferenceStart, conferenceEnd, conferenceHasEnded } = await import('../lib/conference');
+const { badgeToken, verifyBadgeToken } = await import('../lib/badge-token');
+const { qrMatrix, qrPath } = await import('../lib/qr');
+const jsQR = (await import('jsqr')).default;
 
 let failures = 0;
 function check(label: string, actual: unknown, expected: unknown) {
@@ -210,6 +213,60 @@ if (owner && other) {
   await prisma.notification.deleteMany({ where: { title: { startsWith: '[check] ' } } });
   check('open-test rows removed', await prisma.notification.count({ where: { title: { startsWith: '[check] ' } } }), 0);
 }
+
+// --- the badge a QR code carries ---------------------------------------------
+//
+// This is the whole security story of attendance: if a token can be forged,
+// the attendance figures — and the certificates issued from them — are fiction.
+
+const SUBJECT = 'ckuser000000000000000000';
+const TOKEN = badgeToken(SUBJECT);
+
+check('a badge token resolves back to its account', verifyBadgeToken(TOKEN), SUBJECT);
+check('the same account always gets the same token', badgeToken(SUBJECT), TOKEN);
+check('a different account gets a different one', badgeToken('ckuser000000000000000001') === TOKEN, false);
+check('a tampered signature is refused', verifyBadgeToken(TOKEN.slice(0, -1) + (TOKEN.endsWith('A') ? 'B' : 'A')), null);
+check('a swapped subject is refused', verifyBadgeToken(TOKEN.replace(SUBJECT, 'ckuser000000000000000002')), null);
+check('an unsigned lookalike is refused', verifyBadgeToken('CICT1.ckuser000000000000000000.AAAAAAAAAAAAAAAAAAAAAA'), null);
+check('a random string is refused', verifyBadgeToken('hello'), null);
+check('an empty string is refused', verifyBadgeToken(''), null);
+
+// The symbol has to be small enough for a phone camera to resolve at arm's
+// length; anything past version 10 (57 modules) starts failing on a cheap one.
+check('the badge QR stays a small, scannable version', qrMatrix(TOKEN).size <= 45, true);
+
+/**
+ * The badge, read back by the same decoder the scanner uses.
+ *
+ * This rasterizes the SVG path the component actually ships — not the matrix
+ * it was built from — so a path that transposed rows and columns, or dropped
+ * the quiet zone, fails here rather than at a door on the morning of day one.
+ * Nothing else in the platform would have caught it: a mirrored QR still looks
+ * exactly like a QR.
+ */
+function decodeBadgeSymbol(payload: string): string | null {
+  const matrix = qrMatrix(payload);
+  const MARGIN = 2;
+  const SCALE = 4;
+  const side = (matrix.size + MARGIN * 2) * SCALE;
+  const px = new Uint8ClampedArray(side * side * 4).fill(255);
+
+  for (const [, xs, ys, ws] of qrPath(matrix).matchAll(/M(\d+) (\d+)h(\d+)v1h-\d+z/g)) {
+    const x0 = (Number(xs) + MARGIN) * SCALE;
+    const y0 = (Number(ys) + MARGIN) * SCALE;
+    for (let y = y0; y < y0 + SCALE; y++) {
+      for (let x = x0; x < x0 + Number(ws) * SCALE; x++) {
+        const i = (y * side + x) * 4;
+        px[i] = px[i + 1] = px[i + 2] = 0;
+      }
+    }
+  }
+
+  return jsQR(px, side, side)?.data ?? null;
+}
+
+check('the symbol a badge ships decodes back to its token', decodeBadgeSymbol(TOKEN), TOKEN);
+check('and that token still resolves to the account', verifyBadgeToken(decodeBadgeSymbol(TOKEN) ?? ''), SUBJECT);
 
 // --- undo --------------------------------------------------------------------
 

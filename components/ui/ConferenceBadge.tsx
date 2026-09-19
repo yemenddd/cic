@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, CircleCheck, Download, Copy, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import QRCode from '@/components/ui/QRCode';
 
 export interface BadgeProps {
   name:          string;
@@ -23,6 +24,17 @@ export interface BadgeProps {
   backLabel?: string;
   /** Overrides the copy button's label when it copies something other than a link. */
   copyLabel?: string;
+  /**
+   * The signed badge token this pass should carry as a QR code — what the
+   * scanner at the door actually reads. Computed on the server (it is an HMAC)
+   * and passed in, so this component stays a pure renderer.
+   *
+   * Omitted on the public confirmation screen, which is rendered from URL
+   * parameters and has no account to sign for. That badge falls back to the
+   * decorative strip below, and the attendee gets the real one from their
+   * dashboard once they sign in.
+   */
+  qrValue?: string;
 }
 
 const CATEGORY_ACCENT: Record<string, { from: string; to: string }> = {
@@ -62,7 +74,7 @@ export default function ConferenceBadge({
   name, categoryId, categoryLabel, organization, track,
   code, date, location, lang,
   onDownloadPDF, onCopyLink, copied,
-  backHref = '/', backLabel, copyLabel,
+  backHref = '/', backLabel, copyLabel, qrValue,
 }: BadgeProps) {
   const isRtl = lang === 'ar';
   const accent = CATEGORY_ACCENT[categoryId] ?? DEFAULT_ACCENT;
@@ -86,6 +98,7 @@ export default function ConferenceBadge({
     dateLabel:  isRtl ? 'التاريخ'           : lang === 'tr' ? 'Tarih'              : 'Date',
     venueLabel: isRtl ? 'المكان'            : lang === 'tr' ? 'Mekan'              : 'Venue',
     codeLabel:  isRtl ? 'رمز التأكيد'       : lang === 'tr' ? 'Onay Kodu'          : 'Confirmation Code',
+    scanHint:   isRtl ? 'امسح هذا الرمز عند الدخول' : lang === 'tr' ? 'Girişte bu kodu okutun' : 'Scan at the entrance',
     edition:    isRtl ? 'النسخة الرابعة · 2026' : lang === 'tr' ? '4. Baskı · 2026' : '4th Edition · 2026',
     pdfBtn:     isRtl ? 'تحميل الشارة'      : lang === 'tr' ? 'Rozeti İndir'       : 'Download Badge',
     copyBtn:    copyLabel ?? (isRtl ? 'نسخ الرابط' : lang === 'tr' ? 'Linki Kopyala' : 'Copy Link'),
@@ -263,25 +276,53 @@ export default function ConferenceBadge({
             </div>
           </div>
 
-          {/* ── Barcode ── */}
+          {/* ── Scan block ──
+              The QR is the badge's working part: it is what the door scanner
+              reads, and it carries a signed token rather than the printed code,
+              so a photographed badge cannot be turned into somebody else's.
+              The code stays beside it in plain text because the desk still has
+              to be able to find a person when a screen is too dim to scan. */}
           <div style={{ padding: '10px 20px 18px', background: '#f8fafc' }}>
             <div style={{
               background: '#fff', borderRadius: 10,
-              padding: '12px 12px 10px',
+              padding: qrValue ? 12 : '12px 12px 10px',
               border: '1px solid #e2e8f0',
             }}>
-              <BarcodeSVG code={code} />
-              <div style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                marginTop: 8, flexDirection: isRtl ? 'row-reverse' : 'row',
-              }}>
-                <span style={{ color: '#94a3b8', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.18em' }}>
-                  {lbl.codeLabel}
-                </span>
-                <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 800, color: '#334155', letterSpacing: '0.1em' }}>
-                  {code}
-                </span>
-              </div>
+              {qrValue ? (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  flexDirection: isRtl ? 'row-reverse' : 'row',
+                }}>
+                  <QRCode value={qrValue} size={84} margin={1} title={lbl.codeLabel} />
+
+                  <div style={{ minWidth: 0, textAlign: isRtl ? 'right' : 'left' }}>
+                    <p style={{ color: '#94a3b8', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 4px' }}>
+                      {lbl.codeLabel}
+                    </p>
+                    <p style={{ fontFamily: 'monospace', fontSize: 12.5, fontWeight: 800, color: '#334155', letterSpacing: '0.08em', margin: 0, wordBreak: 'break-all' }}>
+                      {code}
+                    </p>
+                    <p style={{ color: '#94a3b8', fontSize: 10, margin: '6px 0 0', lineHeight: 1.4 }}>
+                      {lbl.scanHint}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <BarcodeSVG code={code} />
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    marginTop: 8, flexDirection: isRtl ? 'row-reverse' : 'row',
+                  }}>
+                    <span style={{ color: '#94a3b8', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.18em' }}>
+                      {lbl.codeLabel}
+                    </span>
+                    <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 800, color: '#334155', letterSpacing: '0.1em' }}>
+                      {code}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

@@ -15,6 +15,7 @@ export default function DashboardBadge({
   code,
   date,
   location,
+  qrValue,
 }: {
   name: string;
   categoryId: string;
@@ -24,6 +25,8 @@ export default function DashboardBadge({
   code: string;
   date: string;
   location: string;
+  /** The signed badge token, computed on the server — see lib/badge-token.ts. */
+  qrValue: string;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -50,6 +53,7 @@ export default function DashboardBadge({
       code={code}
       date={date}
       location={location}
+      qrValue={qrValue}
       lang="ar"
       onDownloadPDF={handleDownloadPDF}
       onCopyLink={handleCopyCode}
