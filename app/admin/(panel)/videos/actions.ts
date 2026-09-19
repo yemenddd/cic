@@ -3,10 +3,14 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/client';
+import { assertAdmin, requireAdmin } from '@/lib/auth-guards';
 
 type ActionResult = { error?: string } | void;
 
+const UNAUTHORIZED = 'غير مصرح لك بهذا الإجراء';
+
 export async function createVideo(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const section = String(formData.get('section') || '').trim();
   const editionLabelAr = String(formData.get('editionLabelAr') || '').trim();
   const editionLabelEn = String(formData.get('editionLabelEn') || '').trim();
@@ -40,6 +44,7 @@ export async function createVideo(_prev: ActionResult, formData: FormData): Prom
 }
 
 export async function updateVideo(id: string, _prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const section = String(formData.get('section') || '').trim();
   const editionLabelAr = String(formData.get('editionLabelAr') || '').trim();
   const editionLabelEn = String(formData.get('editionLabelEn') || '').trim();
@@ -75,6 +80,7 @@ export async function updateVideo(id: string, _prev: ActionResult, formData: For
 }
 
 export async function deleteVideo(id: string): Promise<void> {
+  await assertAdmin();
   await prisma.video.delete({ where: { id } });
   revalidatePath('/videos');
   revalidatePath('/admin/videos');

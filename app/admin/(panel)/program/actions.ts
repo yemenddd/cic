@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/client';
 import { uploadImage, deleteImage } from '@/lib/blob';
+import { assertAdmin, requireAdmin } from '@/lib/auth-guards';
 
 type ActionResult = { error?: string } | void;
 
@@ -13,7 +14,10 @@ async function resolveSpeakerPhotoUrl(formData: FormData, currentUrl?: string | 
   return currentUrl ?? null;
 }
 
+const UNAUTHORIZED = 'غير مصرح لك بهذا الإجراء';
+
 export async function createSession(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const day = String(formData.get('day') || '').trim();
   const time = String(formData.get('time') || '').trim();
   const titleAr = String(formData.get('titleAr') || '').trim();
@@ -64,6 +68,7 @@ export async function createSession(_prev: ActionResult, formData: FormData): Pr
 }
 
 export async function updateSession(id: string, _prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const day = String(formData.get('day') || '').trim();
   const time = String(formData.get('time') || '').trim();
   const titleAr = String(formData.get('titleAr') || '').trim();
@@ -116,6 +121,7 @@ export async function updateSession(id: string, _prev: ActionResult, formData: F
 }
 
 export async function deleteSession(id: string): Promise<void> {
+  await assertAdmin();
   const existing = await prisma.programSession.findUnique({ where: { id } });
   if (existing?.speakerPhotoUrl) await deleteImage(existing.speakerPhotoUrl);
   await prisma.programSession.delete({ where: { id } });

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/client';
 import { uploadImage, deleteImage } from '@/lib/blob';
+import { assertAdmin, requireAdmin } from '@/lib/auth-guards';
 
 type ActionResult = { error?: string } | void;
 
@@ -13,7 +14,10 @@ async function resolvePhotoUrl(formData: FormData, currentUrl?: string | null): 
   return currentUrl ?? null;
 }
 
+const UNAUTHORIZED = 'غير مصرح لك بهذا الإجراء';
+
 export async function createSpeaker(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const nameAr = String(formData.get('nameAr') || '').trim();
   const nameEn = String(formData.get('nameEn') || '').trim();
   const nameTr = String(formData.get('nameTr') || '').trim();
@@ -53,6 +57,7 @@ export async function createSpeaker(_prev: ActionResult, formData: FormData): Pr
 }
 
 export async function updateSpeaker(id: string, _prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const nameAr = String(formData.get('nameAr') || '').trim();
   const nameEn = String(formData.get('nameEn') || '').trim();
   const nameTr = String(formData.get('nameTr') || '').trim();
@@ -94,6 +99,7 @@ export async function updateSpeaker(id: string, _prev: ActionResult, formData: F
 }
 
 export async function deleteSpeaker(id: string): Promise<void> {
+  await assertAdmin();
   const existing = await prisma.speaker.findUnique({ where: { id } });
   if (existing?.photoUrl) await deleteImage(existing.photoUrl);
   await prisma.speaker.delete({ where: { id } });

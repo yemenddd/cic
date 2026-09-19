@@ -50,3 +50,19 @@ export async function requireAdmin(): Promise<GuardedUser | null> {
   const user = await currentUser();
   return user?.role === 'ADMIN' ? user : null;
 }
+
+/**
+ * The same check, for actions that return nothing.
+ *
+ * `requireAdmin` returns null so a caller can turn refusal into a message the
+ * form can render. An action typed `Promise<void>` — a delete behind an icon
+ * button — has nowhere to put that message, and silently returning would make
+ * an unauthorized call indistinguishable from a successful one. Throwing is
+ * the honest outcome: it cannot be reached from the panel, so anything that
+ * does reach it is a direct POST to the action endpoint.
+ */
+export async function assertAdmin(): Promise<GuardedUser> {
+  const user = await requireAdmin();
+  if (!user) throw new Error('غير مصرح لك بهذا الإجراء');
+  return user;
+}

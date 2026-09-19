@@ -19,6 +19,11 @@ export interface RequestResult {
 /**
  * Ask for a reset link.
  *
+ * @public-action — signed out is the only state anyone reaches this from, so a
+ * session check here would lock out exactly the people it exists for. What
+ * stands in for a guard is the throttle below and the fact that the response
+ * carries no information about the address.
+ *
  * The answer is the same for an address that has an account and one that does
  * not: "if this address is registered, a link is on its way." Anything else
  * turns this form into a way to test a list of addresses against the attendee

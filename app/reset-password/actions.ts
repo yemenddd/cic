@@ -10,6 +10,10 @@ export interface ResetResult {
 /**
  * Set a new password from a reset link.
  *
+ * @public-action — the caller is by definition signed out. The token is the
+ * credential: 256 bits of randomness, stored only as a hash, single-use and
+ * hour-limited, which is a stronger claim than a session cookie.
+ *
  * Unthrottled on purpose, unlike the request half: the token is 256 bits of
  * randomness behind a unique index, so there is nothing here to guess at a
  * rate worth limiting — and a limit keyed on anything an attacker controls

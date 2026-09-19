@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/client';
 import { uploadImage, deleteImage } from '@/lib/blob';
+import { assertAdmin, requireAdmin } from '@/lib/auth-guards';
 
 type ActionResult = { error?: string } | void;
 
@@ -13,7 +14,10 @@ async function resolveImageUrl(formData: FormData, currentUrl?: string): Promise
   return currentUrl;
 }
 
+const UNAUTHORIZED = 'غير مصرح لك بهذا الإجراء';
+
 export async function createGalleryImage(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const captionAr = String(formData.get('captionAr') || '').trim();
   const captionEn = String(formData.get('captionEn') || '').trim();
   const captionTr = String(formData.get('captionTr') || '').trim();
@@ -37,6 +41,7 @@ export async function createGalleryImage(_prev: ActionResult, formData: FormData
 }
 
 export async function updateGalleryImage(id: string, _prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const captionAr = String(formData.get('captionAr') || '').trim();
   const captionEn = String(formData.get('captionEn') || '').trim();
   const captionTr = String(formData.get('captionTr') || '').trim();
@@ -62,6 +67,7 @@ export async function updateGalleryImage(id: string, _prev: ActionResult, formDa
 }
 
 export async function deleteGalleryImage(id: string): Promise<void> {
+  await assertAdmin();
   const existing = await prisma.galleryImage.findUnique({ where: { id } });
   if (existing) await deleteImage(existing.imageUrl);
   await prisma.galleryImage.delete({ where: { id } });

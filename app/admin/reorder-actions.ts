@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db/client';
+import { assertAdmin } from '@/lib/auth-guards';
 
 // Minimal shape shared by every orderable model's Prisma delegate. Each model
 // is cast to this once in MODELS below, which keeps the swap logic generic
@@ -75,6 +76,7 @@ export async function moveItem(
   id: string,
   direction: 'up' | 'down',
 ): Promise<void> {
+  await assertAdmin();
   const config = MODELS[model];
   if (!config) return;
 

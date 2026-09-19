@@ -3,10 +3,14 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/client';
+import { assertAdmin, requireAdmin } from '@/lib/auth-guards';
 
 type ActionResult = { error?: string } | void;
 
+const UNAUTHORIZED = 'غير مصرح لك بهذا الإجراء';
+
 export async function createEdition(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const year = String(formData.get('year') || '').trim();
   const titleAr = String(formData.get('titleAr') || '').trim();
   const titleEn = String(formData.get('titleEn') || '').trim();
@@ -37,6 +41,7 @@ export async function createEdition(_prev: ActionResult, formData: FormData): Pr
 }
 
 export async function updateEdition(id: string, _prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const year = String(formData.get('year') || '').trim();
   const titleAr = String(formData.get('titleAr') || '').trim();
   const titleEn = String(formData.get('titleEn') || '').trim();
@@ -69,6 +74,7 @@ export async function updateEdition(id: string, _prev: ActionResult, formData: F
 }
 
 export async function deleteEdition(id: string): Promise<void> {
+  await assertAdmin();
   await prisma.historyEdition.delete({ where: { id } });
   revalidatePath('/history');
   revalidatePath('/admin/history');

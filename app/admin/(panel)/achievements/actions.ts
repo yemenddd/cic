@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/client';
 import { deleteImage } from '@/lib/blob';
+import { assertAdmin, requireAdmin } from '@/lib/auth-guards';
 
 type ActionResult = { error?: string } | void;
 
@@ -14,7 +15,10 @@ function revalidateAchievements() {
   revalidatePath('/achievements/[edition]', 'page');
 }
 
+const UNAUTHORIZED = 'غير مصرح لك بهذا الإجراء';
+
 export async function createEdition(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const slug = String(formData.get('slug') || '').trim();
   const numberRaw = String(formData.get('number') || '').trim();
   const year = String(formData.get('year') || '').trim();
@@ -50,6 +54,7 @@ export async function createEdition(_prev: ActionResult, formData: FormData): Pr
 }
 
 export async function updateEdition(id: string, _prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const slug = String(formData.get('slug') || '').trim();
   const numberRaw = String(formData.get('number') || '').trim();
   const year = String(formData.get('year') || '').trim();
@@ -87,6 +92,7 @@ export async function updateEdition(id: string, _prev: ActionResult, formData: F
 }
 
 export async function deleteEdition(id: string): Promise<void> {
+  await assertAdmin();
   const students = await prisma.achievementStudent.findMany({ where: { editionId: id } });
   for (const student of students) {
     for (const url of student.photoUrls) {

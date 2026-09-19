@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/client';
 import { uploadImage, deleteImage } from '@/lib/blob';
+import { assertAdmin, requireAdmin } from '@/lib/auth-guards';
 
 type ActionResult = { error?: string } | void;
 
@@ -38,7 +39,10 @@ async function revalidateEdition(editionId: string) {
   revalidatePath('/achievements/[edition]', 'page');
 }
 
+const UNAUTHORIZED = 'غير مصرح لك بهذا الإجراء';
+
 export async function createStudent(editionId: string, _prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const studentId = String(formData.get('studentId') || '').trim();
   const name = String(formData.get('name') || '').trim();
   const projectTitleAr = String(formData.get('projectTitleAr') || '').trim();
@@ -86,6 +90,7 @@ export async function updateStudent(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
+  if (!(await requireAdmin())) return { error: UNAUTHORIZED };
   const studentCode = String(formData.get('studentId') || '').trim();
   const name = String(formData.get('name') || '').trim();
   const projectTitleAr = String(formData.get('projectTitleAr') || '').trim();
@@ -126,6 +131,7 @@ export async function updateStudent(
 }
 
 export async function deleteStudent(editionId: string, studentId: string): Promise<void> {
+  await assertAdmin();
   const existing = await prisma.achievementStudent.findUnique({ where: { id: studentId } });
   if (existing) {
     for (const url of existing.photoUrls) {

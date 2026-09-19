@@ -57,6 +57,7 @@ const {
 } = await import('../lib/password-reset');
 const { emailConfigured } = await import('../lib/email');
 const { RESET_BY_IP } = await import('../lib/rate-limit');
+const { auditServerActions } = await import('../lib/guard-audit');
 
 let failures = 0;
 function check(label: string, actual: unknown, expected: unknown) {
@@ -582,6 +583,27 @@ if (resetSubject) {
 // Reported, not asserted: mail being switched off is a valid configuration,
 // and the reset flow is built to behave identically either way.
 console.log(`  (email ${emailConfigured() ? 'is configured' : 'is NOT configured — reset links will not be delivered'})`);
+
+// --- every server action checks who is calling it ----------------------------
+//
+// Structural, and the most valuable check in this file: a missing guard is
+// invisible in the panel — the feature works perfectly for the admin using it
+// — and means a stranger can call the action directly. Nine modules were in
+// exactly that state, including the one that deletes registrations.
+
+const audit = auditServerActions('app');
+for (const { file, action } of audit.unguarded) {
+  console.log(`    unguarded: ${file} :: ${action}`);
+}
+check('every exported server action checks its caller', audit.unguarded.length, 0);
+
+// Reported, not asserted. These are public on purpose — you are by definition
+// signed out when you ask for a password-reset link — and the point of listing
+// them is that the list stays short and stays read.
+console.log(
+  `  (${audit.total} server actions; ${audit.declaredPublic.length} declared public: ` +
+    `${audit.declaredPublic.map((a) => a.action).join(', ') || 'none'})`,
+);
 
 // --- undo --------------------------------------------------------------------
 
