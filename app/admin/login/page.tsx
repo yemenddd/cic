@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { currentUser } from '@/lib/auth-guards';
+import { conferenceDisplay } from '@/lib/conference-display';
 import AdminLoginForm from '@/components/admin/AdminLoginForm';
 
 export const metadata: Metadata = {
@@ -16,5 +17,5 @@ export default async function AdminLoginPage() {
   const user = await currentUser();
   if (user) redirect(user.role === 'ADMIN' ? '/admin' : '/dashboard');
 
-  return <AdminLoginForm />;
+  return <AdminLoginForm conference={conferenceDisplay()} />;
 }

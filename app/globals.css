@@ -595,9 +595,12 @@ html[lang="ar"] .font-inter {
 .input-glass::placeholder { color: var(--text-tertiary); }
 .input-glass:hover  { border-color: var(--border-strong); }
 .input-glass:focus  {
-  border-color: var(--border-strong);
+  border-color: var(--accent-violet);
   background: var(--mat-liquid-bg);
-  box-shadow: 0 0 0 3px rgba(0,0,0,0.07);
+  /* The ring was a black shadow, which is all but invisible on the dark
+     canvas — so a keyboard user could not see where they were. A brand-tinted
+     ring reads on both themes. */
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
 }
 
 /* ── 10. Typography Helpers ──────────────────────────────────── */
