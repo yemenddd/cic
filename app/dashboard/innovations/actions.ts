@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
 import { uploadImage } from '@/lib/blob';
-import { canSubmitInnovations } from '@/lib/categories';
+import { canSubmitInnovations, MAX_SUBMISSIONS_PER_ATTENDEE } from '@/lib/categories';
 
 type ActionResult = { error?: string; success?: string } | void;
 
@@ -35,6 +35,7 @@ async function entitledUserId(): Promise<{ id: string } | { error: string }> {
   return { id };
 }
 
+const TOO_MANY = `لا يمكن تقديم أكثر من ${MAX_SUBMISSIONS_PER_ATTENDEE} مشاريع من حساب واحد — احذف مشروعاً قديماً أولاً`;
 const SESSION_EXPIRED = 'انتهت الجلسة، سجّل الدخول مرة أخرى';
 const NOT_FOUND = 'المشروع غير موجود';
 const LOCKED = 'لا يمكن تعديل المشروع بعد إرساله إلى لجنة المراجعة';
@@ -79,6 +80,14 @@ export async function createSubmission(_prev: ActionResult, formData: FormData):
   const fields = readFields(formData);
   if (!fields.titleAr) return { error: 'عنوان المشروع مطلوب' };
   if (!fields.summaryAr) return { error: 'الملخص مطلوب' };
+
+  // Checked BEFORE the cover is uploaded, not after. A server action is a
+  // public POST endpoint, and this one had no ceiling at all: a signed-in
+  // participant could create submissions in a loop, each one costing a Blob
+  // upload that is never reclaimed and a row in the committee's review queue.
+  // Refusing after the upload would stop the rows but still pay for the files.
+  const existing = await prisma.projectSubmission.count({ where: { userId } });
+  if (existing >= MAX_SUBMISSIONS_PER_ATTENDEE) return { error: TOO_MANY };
 
   const coverImageUrl = await resolveCoverUrl(formData);
 

@@ -87,3 +87,18 @@ export function abilitiesFor(categoryId: string | null | undefined): CategoryAbi
 export function canSubmitInnovations(categoryId: string | null | undefined): boolean {
   return abilitiesFor(categoryId).submitInnovations;
 }
+
+/**
+ * How many projects one account may present.
+ *
+ * Here rather than inline in the action because it is a rule about what a
+ * participant is entitled to, which is what this file is for.
+ *
+ * The number is deliberately generous — a team submitting a handful of
+ * related projects is a real thing, an attendee submitting their fiftieth is
+ * not. What matters is that a ceiling exists at all: the create action is a
+ * public POST endpoint that uploads a cover image to Blob storage, so without
+ * one it is an unmetered way to spend the conference's storage budget and
+ * bury the review committee.
+ */
+export const MAX_SUBMISSIONS_PER_ATTENDEE = 10;

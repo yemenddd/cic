@@ -1,10 +1,11 @@
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Download, ShieldCheck, UserCheck, UserPlus, Users } from 'lucide-react';
+import { Download, ShieldCheck, UserCheck, UserPlus, Users } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
 import { requireAdmin } from '@/lib/auth-guards';
 import { redirect } from 'next/navigation';
 import StatCard from '@/components/admin/StatCard';
 import { ListPageHeader } from '@/components/admin/ListPage';
+import Pagination from '@/components/admin/Pagination';
 import {
   USERS_PAGE_SIZE,
   parseUserFilters,
@@ -19,35 +20,6 @@ import UsersTable, { type UserRow } from './UsersTable';
 interface Props {
   // Next.js 16: searchParams is a Promise and must be awaited.
   searchParams: Promise<UserSearchParams>;
-}
-
-/** One end of the pager. Rendered inert rather than hidden, so it never jumps. */
-function PageLink({ href, label, icon: Icon, disabled }: {
-  href: string; label: string; icon: typeof ArrowRight; disabled: boolean;
-}) {
-  const style = {
-    background: 'var(--mat-liquid-bg)',
-    border: '1px solid var(--mat-liquid-border)',
-    color: disabled ? 'var(--text-tertiary)' : 'var(--text-primary)',
-    opacity: disabled ? 0.45 : 1,
-  };
-  const className = 'inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[12.5px] font-semibold';
-
-  if (disabled) {
-    return (
-      <span className={className} style={style} aria-disabled>
-        <Icon className="h-3.5 w-3.5" />
-        {label}
-      </span>
-    );
-  }
-
-  return (
-    <Link href={href} className={className} style={style}>
-      <Icon className="h-3.5 w-3.5" />
-      {label}
-    </Link>
-  );
 }
 
 export default async function AdminUsersPage({ searchParams }: Props) {
@@ -164,25 +136,11 @@ export default async function AdminUsersPage({ searchParams }: Props) {
 
       <UsersTable rows={rows} currentAdminId={admin.id} />
 
-      {pageCount > 1 && (
-        <div className="mt-5 flex items-center justify-between gap-3">
-          <PageLink
-            href={`/admin/users${userFiltersToQuery(filters, { page: page - 1 })}`}
-            label="السابق"
-            icon={ArrowRight}
-            disabled={page <= 1}
-          />
-          <p className="text-[12.5px]" style={{ color: 'var(--text-tertiary)' }}>
-            صفحة {page} من {pageCount}
-          </p>
-          <PageLink
-            href={`/admin/users${userFiltersToQuery(filters, { page: page + 1 })}`}
-            label="التالي"
-            icon={ArrowLeft}
-            disabled={page >= pageCount}
-          />
-        </div>
-      )}
+      <Pagination
+        page={page}
+        pageCount={pageCount}
+        buildHref={(p) => `/admin/users${userFiltersToQuery(filters, { page: p })}`}
+      />
     </div>
   );
 }

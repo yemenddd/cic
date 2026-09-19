@@ -49,6 +49,9 @@ const jsQR = (await import('jsqr')).default;
 const { activeDayKey, attendanceRate, suggestedCheckpoint } = await import('../lib/attendance');
 const { parseScanInput, recordAttendance } = await import('../lib/attendance-record');
 const { parseUserFilters, userWhere, userFiltersToQuery } = await import('../lib/admin-users');
+const { parseRegistrationFilters, registrationWhere } = await import('../lib/admin-registrations');
+const { parsePage, pageCountFor, listHref } = await import('../lib/admin-list');
+const { MAX_SUBMISSIONS_PER_ATTENDEE } = await import('../lib/categories');
 
 let failures = 0;
 function check(label: string, actual: unknown, expected: unknown) {
@@ -350,6 +353,45 @@ check(
   userFiltersToQuery(parseUserFilters({ q: 'ali', role: 'ADMIN', attendance: 'present' })),
   '?q=ali&role=ADMIN&attendance=present',
 );
+
+// --- paging and the registration filters -------------------------------------
+//
+// Same reason as the user filters above: the registrations CSV re-parses the
+// page's own query string through these, so a disagreement here is an export
+// containing people the admin was not looking at.
+
+check('page zero is page one', parsePage('0'), 1);
+check('a negative page is page one', parsePage('-3'), 1);
+check('a nonsense page is page one', parsePage('abc'), 1);
+check('a missing page is page one', parsePage(undefined), 1);
+check('an absurd page is clamped, not an enormous OFFSET', parsePage('999999999'), 10000);
+
+check('an empty list still has one page', pageCountFor(0), 1);
+check('a part-full page still counts', pageCountFor(26), 2);
+check('an exact multiple does not gain an empty page', pageCountFor(50), 2);
+
+check('page one is left implicit in a link', listHref('/admin/x', { page: 1 }), '/admin/x');
+check('empty filters are dropped from a link', listHref('/admin/x', { q: '', status: undefined }), '/admin/x');
+check('applied filters survive into the link', listHref('/admin/x', { q: 'ali', page: 3 }), '/admin/x?q=ali&page=3');
+
+check('an unknown registration category is ignored', parseRegistrationFilters({ category: 'vip' }).category, '');
+check('a known one filters', parseRegistrationFilters({ category: 'volunteer' }).category, 'volunteer');
+check('an unknown linked value is ignored', parseRegistrationFilters({ linked: 'maybe' }).linked, '');
+check('no filters means no where-clause', registrationWhere(parseRegistrationFilters({})), {});
+check(
+  '"no account" is a null check, not a negation',
+  registrationWhere(parseRegistrationFilters({ linked: 'no' })),
+  { AND: [{ userId: null }] },
+);
+
+// --- the ceiling on what one attendee may submit -----------------------------
+//
+// createSubmission is a public POST endpoint that uploads a cover image to
+// Blob storage before it writes anything, so an absent ceiling is an unmetered
+// way to spend the conference's storage budget and bury the review committee.
+
+check('a ceiling on submissions exists at all', Number.isInteger(MAX_SUBMISSIONS_PER_ATTENDEE), true);
+check('and it is a real limit, not a formality', MAX_SUBMISSIONS_PER_ATTENDEE > 0 && MAX_SUBMISSIONS_PER_ATTENDEE <= 25, true);
 
 // --- taking attendance, against real rows -------------------------------------
 
