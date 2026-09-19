@@ -96,12 +96,12 @@ export default function AuthScreen({
           blank surface, with a gradient over it so the type stays legible.
           Fixed light colours here on purpose: the backdrop is a photo, not a
           theme surface, so it must not follow the light/dark tokens. */}
-      <aside className="relative hidden lg:block w-[48%] overflow-hidden">
+      <aside className="relative hidden lg:block lg:w-[60%] xl:w-2/3 overflow-hidden">
         <Image
           src="/images/experience/2.jpg"
           alt="مشاركون يعرضون مشروعاً في معرض الابتكار خلال المؤتمر"
           fill
-          sizes="48vw"
+          sizes="(min-width: 1280px) 67vw, 60vw"
           priority
           className="object-cover"
         />
@@ -111,11 +111,21 @@ export default function AuthScreen({
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(to top, rgba(12,10,22,0.94) 0%, rgba(12,10,22,0.72) 40%, rgba(12,10,22,0.42) 100%)',
+              'linear-gradient(to top, rgba(12,10,22,0.94) 0%, rgba(12,10,22,0.70) 42%, rgba(12,10,22,0.38) 100%)',
           }}
         />
 
-        <div className="relative flex h-full flex-col justify-between p-12">
+        {/* Blends the photograph into the form's surface along the edge the two
+            share. The panel sits on the right, so the shared edge is its
+            inline-END — putting this on start-0 laid a dark band down the
+            screen's outer edge instead, which is the opposite of the intent. */}
+        <div
+          aria-hidden
+          className="absolute inset-y-0 end-0 w-28"
+          style={{ background: 'linear-gradient(to right, var(--bg-base), transparent)' }}
+        />
+
+        <div className="relative flex h-full flex-col justify-between p-12 xl:p-16">
           {/* The logo's ink follows the theme, but its backdrop here is the
               photo's dark overlay in both themes — left alone it turned navy
               on navy under the light theme. Pinning the variables locally is
@@ -132,11 +142,11 @@ export default function AuthScreen({
             <CICTLogo height={44} />
           </span>
 
-          <div>
-            <h2 className="font-outfit font-bold text-[26px] leading-snug text-white">
+          <div className="max-w-lg">
+            <h2 className="font-outfit font-bold text-[26px] xl:text-[32px] leading-snug text-white">
               منصة مؤتمر الإبداع والابتكار
             </h2>
-            <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.72)' }}>
+            <p className="mt-3.5 text-[14px] xl:text-[15px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.74)' }}>
               مساحة واحدة للتسجيل والبرنامج والبطاقات والابتكارات المقدَّمة.
             </p>
 
