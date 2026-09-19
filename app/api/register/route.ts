@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db/client';
+import { generateConfirmationCode, isCodeCollision } from '@/lib/confirmation-code';
 import { REGISTER_BY_IP, clientIp, recordFailure, throttleState } from '@/lib/rate-limit';
 
 const RegistrationSchema = z.object({
@@ -15,24 +15,6 @@ const RegistrationSchema = z.object({
   track: z.string().trim().max(200),
   password: z.string().min(8).max(200),
 });
-
-// No 0/O/1/I — this code is read off a printed badge at the door.
-const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-/**
- * A random badge code.
- *
- * The previous version seeded a hash with `Date.now()` and the attendee's
- * name, which meant two people with the same name registering in the same
- * millisecond — a family signing up together on one laptop — were handed
- * identical codes. Randomness plus the unique column below removes that.
- */
-function generateCode(): string {
-  const size = CODE_ALPHABET.length;
-  // 32 divides 256 evenly, so `% size` is uniform with no bytes to discard.
-  const code = Array.from(randomBytes(6), (b) => CODE_ALPHABET[b % size]).join('');
-  return `CICT-2026-${code}`;
-}
 
 export async function POST(req: Request) {
   // Anyone can post here, and every accepted call costs a bcrypt hash and a
@@ -81,7 +63,7 @@ export async function POST(req: Request) {
   // unique, and a signup must never fail over a dice roll. Retry, then give up
   // rather than loop forever against a genuinely broken database.
   for (let attempt = 0; attempt < 5; attempt++) {
-    const confirmationCode = generateCode();
+    const confirmationCode = generateConfirmationCode();
 
     try {
       // The account and its registration record are created together: a user
@@ -110,12 +92,9 @@ export async function POST(req: Request) {
       // means "draw another code"; on email it means someone registered in the
       // moment between the check above and this write, and retrying would only
       // fail the same way.
-      const target = (err as { code?: string; meta?: { target?: string[] } });
-      const clashedOnCode =
-        target.code === 'P2002' && target.meta?.target?.includes('confirmationCode');
-      if (clashedOnCode) continue;
+      if (isCodeCollision(err)) continue;
 
-      if (target.code === 'P2002') {
+      if ((err as { code?: string }).code === 'P2002') {
         return NextResponse.json(
           { ok: false, error: 'هذا البريد مسجَّل بالفعل — سجّل الدخول بدلاً من ذلك' },
           { status: 409 },

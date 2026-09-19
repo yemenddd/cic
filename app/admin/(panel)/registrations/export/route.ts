@@ -1,39 +1,42 @@
 import { prisma } from '@/lib/db/client';
+import { requireAdmin } from '@/lib/auth-guards';
+import { categoryLabel } from '@/lib/categories';
+import { toCsv } from '@/lib/csv';
 
-const CATEGORY_LABELS: Record<string, string> = {
-  visitor: 'زائر',
-  participant: 'مشارك',
-  volunteer: 'متطوع',
-};
-
-function csvCell(value: string | null | undefined): string {
-  const raw = value ?? '';
-  if (/[",\n]/.test(raw)) return `"${raw.replace(/"/g, '""')}"`;
-  return raw;
-}
-
+/**
+ * Guarded in its own right: a route handler does not sit under the panel
+ * layout, so nothing above it has checked who is asking. proxy.ts reads the
+ * role from the JWT — a copy written at sign-in and carried for up to 30 days
+ * — which means a demoted organizer could still pull this file. It contains
+ * every registrant's email and phone number, so the check belongs here too.
+ */
 export async function GET() {
+  if (!(await requireAdmin())) {
+    return new Response('Forbidden', { status: 403 });
+  }
+
   const registrations = await prisma.registration.findMany({ orderBy: { submittedAt: 'desc' } });
 
-  const header = ['الاسم', 'البريد', 'الهاتف', 'الدولة', 'المؤسسة', 'الفئة', 'المسار', 'رمز التأكيد', 'تاريخ التسجيل'];
-  const rows = registrations.map((r) => [
-    csvCell(r.fullName),
-    csvCell(r.email),
-    csvCell(r.phone),
-    csvCell(r.country),
-    csvCell(r.organization),
-    csvCell(CATEGORY_LABELS[r.category] ?? r.category),
-    csvCell(r.track),
-    csvCell(r.confirmationCode),
-    csvCell(new Date(r.submittedAt).toLocaleDateString('ar')),
-  ]);
-
-  const csv = [header.join(','), ...rows.map((row) => row.join(','))].join('\n');
+  const csv = toCsv(
+    ['الاسم', 'البريد', 'الهاتف', 'الدولة', 'المؤسسة', 'الفئة', 'المسار', 'رمز التأكيد', 'تاريخ التسجيل'],
+    registrations.map((r) => [
+      r.fullName,
+      r.email,
+      r.phone,
+      r.country,
+      r.organization,
+      categoryLabel(r.category, 'ar') || r.category,
+      r.track,
+      r.confirmationCode,
+      new Date(r.submittedAt).toLocaleDateString('ar'),
+    ]),
+  );
 
   return new Response(csv, {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
       'Content-Disposition': 'attachment; filename="registrations.csv"',
+      'Cache-Control': 'no-store',
     },
   });
 }
