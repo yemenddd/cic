@@ -37,6 +37,8 @@ const { isInternalPath, openAndResolveTarget, NOTIFICATIONS_PATH } = await impor
 );
 const { canSubmitInnovations } = await import('../lib/categories');
 const { isTrackAllowed } = await import('../lib/submissions');
+const { csvCell, toCsv } = await import('../lib/csv');
+const { checkUpload, MAX_UPLOAD_BYTES } = await import('../lib/blob');
 const { lockSeconds, LOGIN_BY_EMAIL, LOGIN_BY_IP, REGISTER_BY_IP } = await import(
   '../lib/rate-limit'
 );
@@ -76,6 +78,40 @@ check('visitors may not', canSubmitInnovations('visitor'), false);
 check('volunteers may not', canSubmitInnovations('volunteer'), false);
 check('an unknown category may not', canSubmitInnovations('vip'), false);
 check('a missing category may not', canSubmitInnovations(null), false);
+
+// --- CSV exports, which an organiser opens in Excel --------------------------
+
+// Every string in an export came from a public registration form, so a cell a
+// spreadsheet would execute is somebody else's code running on the organiser's
+// machine.
+check('a formula is neutralised', csvCell('=HYPERLINK("http://e.example","x")').startsWith('"\'='), true);
+check('the DDE form is neutralised', csvCell("=cmd|'/c calc'!A1"), "'=cmd|'/c calc'!A1");
+check('a leading plus is neutralised', csvCell('+1+1'), "'+1+1");
+check('a leading minus is neutralised', csvCell('-1+1'), "'-1+1");
+check('a leading at is neutralised', csvCell('@SUM(1)'), "'@SUM(1)");
+check('a leading tab is neutralised', csvCell('\tx'), "'\tx");
+check('an ordinary Arabic name is untouched', csvCell('ريم الشرعبي'), 'ريم الشرعبي');
+check('an ordinary number is untouched', csvCell(42), '42');
+check('a negative number is treated as text, not arithmetic', csvCell(-5), "'-5");
+check('commas are still quoted', csvCell('صنعاء, اليمن'), '"صنعاء, اليمن"');
+check('embedded quotes are still doubled', csvCell('a "b" c'), '"a ""b"" c"');
+check('the file still opens as UTF-8 in Excel', toCsv(['أ'], [['ب']]).startsWith('﻿'), true);
+check('rows still end CRLF', toCsv(['أ'], [['ب']]).includes('\r\n'), true);
+
+// --- uploads, one of which any signed-in participant can reach ---------------
+
+const fakeFile = (size: number, type: string) =>
+  ({ size, type, name: 'x' }) as unknown as File;
+
+check('a normal photo is accepted', checkUpload(fakeFile(900_000, 'image/jpeg')), null);
+check('png is accepted', checkUpload(fakeFile(1000, 'image/png')), null);
+check('an empty file is refused', checkUpload(fakeFile(0, 'image/png')) !== null, true);
+check('a file over the ceiling is refused', checkUpload(fakeFile(MAX_UPLOAD_BYTES + 1, 'image/png')) !== null, true);
+check('a file exactly at the ceiling is accepted', checkUpload(fakeFile(MAX_UPLOAD_BYTES, 'image/png')), null);
+check('SVG is refused — it can carry script', checkUpload(fakeFile(500, 'image/svg+xml')) !== null, true);
+check('HTML is refused', checkUpload(fakeFile(500, 'text/html')) !== null, true);
+check('a PDF is refused', checkUpload(fakeFile(500, 'application/pdf')) !== null, true);
+check('an unknown type is refused', checkUpload(fakeFile(500, '')) !== null, true);
 
 // --- which track an attendee may store on their certificate ------------------
 

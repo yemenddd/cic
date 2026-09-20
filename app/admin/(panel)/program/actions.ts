@@ -3,15 +3,24 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/client';
-import { uploadImage, deleteImage } from '@/lib/blob';
+import { checkUpload, uploadImage, deleteImage } from '@/lib/blob';
 import { assertAdmin, requireAdmin } from '@/lib/auth-guards';
 
 type ActionResult = { error?: string } | void;
 
-async function resolveSpeakerPhotoUrl(formData: FormData, currentUrl?: string | null): Promise<string | null> {
+async function resolveSpeakerPhotoUrl(
+  formData: FormData,
+  currentUrl?: string | null,
+): Promise<{ url: string | null } | { error: string }> {
   const file = formData.get('speakerPhoto') as File | null;
-  if (file && file.size > 0) return uploadImage(file, 'program');
-  return currentUrl ?? null;
+  if (!file || file.size === 0) return { url: currentUrl ?? null };
+
+  // Checked before the upload: refusing an oversized file should cost nothing,
+  // and the reason should reach whoever tried.
+  const problem = checkUpload(file);
+  if (problem) return { error: problem };
+
+  return { url: await uploadImage(file, 'program') };
 }
 
 const UNAUTHORIZED = 'غير مصرح لك بهذا الإجراء';
@@ -38,7 +47,9 @@ export async function createSession(_prev: ActionResult, formData: FormData): Pr
   if (!time) return { error: 'الوقت مطلوب' };
   if (!titleAr) return { error: 'العنوان مطلوب' };
 
-  const speakerPhotoUrl = await resolveSpeakerPhotoUrl(formData);
+  const speakerPhotoUrlResult = await resolveSpeakerPhotoUrl(formData);
+  if ('error' in speakerPhotoUrlResult) return { error: speakerPhotoUrlResult.error };
+  const speakerPhotoUrl = speakerPhotoUrlResult.url;
 
   const count = await prisma.programSession.count({ where: { day } });
   await prisma.programSession.create({
@@ -92,7 +103,9 @@ export async function updateSession(id: string, _prev: ActionResult, formData: F
   const existing = await prisma.programSession.findUnique({ where: { id } });
   if (!existing) return { error: 'العنصر غير موجود' };
 
-  const speakerPhotoUrl = await resolveSpeakerPhotoUrl(formData, existing.speakerPhotoUrl);
+  const speakerPhotoUrlResult = await resolveSpeakerPhotoUrl(formData, existing.speakerPhotoUrl);
+  if ('error' in speakerPhotoUrlResult) return { error: speakerPhotoUrlResult.error };
+  const speakerPhotoUrl = speakerPhotoUrlResult.url;
 
   await prisma.programSession.update({
     where: { id },

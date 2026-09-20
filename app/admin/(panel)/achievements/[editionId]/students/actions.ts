@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/client';
-import { uploadImage, deleteImage } from '@/lib/blob';
+import { checkUpload, uploadImage, deleteImage } from '@/lib/blob';
 import { assertAdmin, requireAdmin } from '@/lib/auth-guards';
 
 type ActionResult = { error?: string } | void;
@@ -18,17 +18,26 @@ function parseMembers(formData: FormData): string[] {
     .filter((line) => line.length > 0);
 }
 
-async function resolvePhotoUrls(formData: FormData, currentUrls: string[] = []): Promise<string[]> {
+async function resolvePhotoUrls(
+  formData: FormData,
+  currentUrls: string[] = [],
+): Promise<{ urls: string[] } | { error: string }> {
   const urls: (string | undefined)[] = [];
+
   for (let i = 0; i < PHOTO_SLOTS; i++) {
     const file = formData.get(`photos_${i}`) as File | null;
     if (file && file.size > 0) {
+      // Every slot is checked before anything is uploaded, so one bad file in
+      // slot three does not leave the first two already stored.
+      const problem = checkUpload(file);
+      if (problem) return { error: `الصورة ${i + 1}: ${problem}` };
       urls.push(await uploadImage(file, 'achievements'));
     } else {
       urls.push(currentUrls[i]);
     }
   }
-  return urls.filter((u): u is string => Boolean(u));
+
+  return { urls: urls.filter((u): u is string => Boolean(u)) };
 }
 
 async function revalidateEdition(editionId: string) {
@@ -60,7 +69,9 @@ export async function createStudent(editionId: string, _prev: ActionResult, form
   if (!edition) return { error: 'الدورة غير موجودة' };
 
   const members = parseMembers(formData);
-  const photoUrls = await resolvePhotoUrls(formData);
+  const photosResult = await resolvePhotoUrls(formData);
+  if ('error' in photosResult) return { error: photosResult.error };
+  const photoUrls = photosResult.urls;
 
   const count = await prisma.achievementStudent.count({ where: { editionId } });
   await prisma.achievementStudent.create({
@@ -108,7 +119,9 @@ export async function updateStudent(
   if (!existing || existing.editionId !== editionId) return { error: 'العنصر غير موجود' };
 
   const members = parseMembers(formData);
-  const photoUrls = await resolvePhotoUrls(formData, existing.photoUrls);
+  const photosResult = await resolvePhotoUrls(formData, existing.photoUrls);
+  if ('error' in photosResult) return { error: photosResult.error };
+  const photoUrls = photosResult.urls;
 
   await prisma.achievementStudent.update({
     where: { id: studentId },

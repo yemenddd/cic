@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
-import { uploadImage } from '@/lib/blob';
+import { checkUpload, uploadImage } from '@/lib/blob';
 import { canSubmitInnovations, MAX_SUBMISSIONS_PER_ATTENDEE } from '@/lib/categories';
 
 type ActionResult = { error?: string; success?: string } | void;
@@ -60,10 +60,24 @@ function readFields(formData: FormData) {
   };
 }
 
-async function resolveCoverUrl(formData: FormData, currentUrl?: string | null): Promise<string | null> {
+/**
+ * The cover image, or the reason it was refused.
+ *
+ * Checked before the upload rather than after: an oversized file should cost
+ * nothing to reject, and the attendee should be told what was wrong with it
+ * rather than meeting a generic failure.
+ */
+async function resolveCoverUrl(
+  formData: FormData,
+  currentUrl?: string | null,
+): Promise<{ url: string | null } | { error: string }> {
   const file = formData.get('cover') as File | null;
-  if (file && file.size > 0) return uploadImage(file, 'submissions');
-  return currentUrl ?? null;
+  if (!file || file.size === 0) return { url: currentUrl ?? null };
+
+  const problem = checkUpload(file);
+  if (problem) return { error: problem };
+
+  return { url: await uploadImage(file, 'submissions') };
 }
 
 function revalidate() {
@@ -89,7 +103,9 @@ export async function createSubmission(_prev: ActionResult, formData: FormData):
   const existing = await prisma.projectSubmission.count({ where: { userId } });
   if (existing >= MAX_SUBMISSIONS_PER_ATTENDEE) return { error: TOO_MANY };
 
-  const coverImageUrl = await resolveCoverUrl(formData);
+  const cover = await resolveCoverUrl(formData);
+  if ('error' in cover) return { error: cover.error };
+  const coverImageUrl = cover.url;
 
   await prisma.projectSubmission.create({
     data: {
@@ -124,7 +140,9 @@ export async function updateSubmission(id: string, _prev: ActionResult, formData
   if (!existing) return { error: NOT_FOUND };
   if (existing.status !== 'DRAFT') return { error: LOCKED };
 
-  const coverImageUrl = await resolveCoverUrl(formData, existing.coverImageUrl);
+  const cover = await resolveCoverUrl(formData, existing.coverImageUrl);
+  if ('error' in cover) return { error: cover.error };
+  const coverImageUrl = cover.url;
 
   // updateMany re-asserts owner AND status in the WHERE clause, so a review
   // that lands between the read above and this write cannot be overwritten.

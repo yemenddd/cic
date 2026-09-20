@@ -3,15 +3,24 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/client';
-import { uploadImage, deleteImage } from '@/lib/blob';
+import { checkUpload, uploadImage, deleteImage } from '@/lib/blob';
 import { assertAdmin, requireAdmin } from '@/lib/auth-guards';
 
 type ActionResult = { error?: string } | void;
 
-async function resolvePhotoUrl(formData: FormData, currentUrl?: string | null): Promise<string | null> {
+async function resolvePhotoUrl(
+  formData: FormData,
+  currentUrl?: string | null,
+): Promise<{ url: string | null } | { error: string }> {
   const file = formData.get('photo') as File | null;
-  if (file && file.size > 0) return uploadImage(file, 'speakers');
-  return currentUrl ?? null;
+  if (!file || file.size === 0) return { url: currentUrl ?? null };
+
+  // Checked before the upload: refusing an oversized file should cost nothing,
+  // and the reason should reach whoever tried.
+  const problem = checkUpload(file);
+  if (problem) return { error: problem };
+
+  return { url: await uploadImage(file, 'speakers') };
 }
 
 const UNAUTHORIZED = 'غير مصرح لك بهذا الإجراء';
@@ -37,7 +46,9 @@ export async function createSpeaker(_prev: ActionResult, formData: FormData): Pr
   if (!nameAr) return { error: 'الاسم مطلوب' };
   if (!roleAr) return { error: 'المنصب مطلوب' };
 
-  const photoUrl = await resolvePhotoUrl(formData);
+  const photoUrlResult = await resolvePhotoUrl(formData);
+  if ('error' in photoUrlResult) return { error: photoUrlResult.error };
+  const photoUrl = photoUrlResult.url;
 
   const count = await prisma.speaker.count();
   await prisma.speaker.create({
@@ -80,7 +91,9 @@ export async function updateSpeaker(id: string, _prev: ActionResult, formData: F
   const existing = await prisma.speaker.findUnique({ where: { id } });
   if (!existing) return { error: 'العنصر غير موجود' };
 
-  const photoUrl = await resolvePhotoUrl(formData, existing.photoUrl);
+  const photoUrlResult = await resolvePhotoUrl(formData, existing.photoUrl);
+  if ('error' in photoUrlResult) return { error: photoUrlResult.error };
+  const photoUrl = photoUrlResult.url;
 
   await prisma.speaker.update({
     where: { id },
