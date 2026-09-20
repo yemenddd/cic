@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import ConferenceBadge from '@/components/ui/ConferenceBadge';
 import { downloadBadgePDF } from '@/lib/download-badge-pdf';
 import { CATEGORIES, type Lang } from '@/lib/categories';
+import { DEFAULT_COUNTRY, countryByCode, countryOptions, flagOf } from '@/lib/countries';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
@@ -30,7 +31,14 @@ export default function RegisterForm() {
   const l = lang as Lang;
   const [selected, setSelected] = useState(CATEGORIES[0].id);
   const [track, setTrack] = useState('');
-  const [fields, setFields] = useState({ fullName: '', email: '', phone: '', country: '', organization: '' });
+  const [fields, setFields] = useState({ fullName: '', email: '', organization: '' });
+  // Held as an ISO code, not a name: the name is looked up for display and for
+  // storage, so the two can never drift apart.
+  const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY);
+  // The dialling code follows the country by default but is its own field —
+  // plenty of people live in one country and carry another country's number.
+  const [dialCode, setDialCode] = useState(DEFAULT_COUNTRY);
+  const [localPhone, setLocalPhone] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -41,6 +49,21 @@ export default function RegisterForm() {
 
   const set = (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setFields(prev => ({ ...prev, [k]: e.target.value }));
+
+  const countries = countryOptions(l);
+  const dial = countryByCode(dialCode)?.dial ?? '';
+  // Stored in Arabic whatever language the visitor is browsing in — see
+  // lib/countries.ts for why.
+  const countryName = countryByCode(countryCode)?.ar ?? '';
+  // One field for the organisers to read and dial, rather than a bare local
+  // number whose country they would have to infer.
+  const phone = localPhone.trim() ? `${dial} ${localPhone.trim()}` : '';
+
+  const onCountryChange = (code: string) => {
+    setCountryCode(code);
+    // Only follows while the visitor has not chosen a code themselves.
+    if (!localPhone) setDialCode(code);
+  };
 
   const trackOptions = [p.trackOpt1, p.trackOpt2, p.trackOpt3, p.trackOpt4];
 
@@ -64,7 +87,7 @@ export default function RegisterForm() {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...fields, category: selected, track, password }),
+        body: JSON.stringify({ ...fields, phone, country: countryName, category: selected, track, password }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
@@ -225,7 +248,7 @@ export default function RegisterForm() {
                 />
               </div>
 
-              {/* Email + Phone row */}
+              {/* Email + country — two single controls, side by side */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
@@ -242,47 +265,70 @@ export default function RegisterForm() {
                 </div>
                 <div>
                   <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-                    {p.fieldPhone} <span style={{ color: '#ef4444' }}>*</span>
+                    {p.fieldCountry} <span style={{ color: '#ef4444' }}>*</span>
                   </label>
+                  <select
+                    required
+                    value={countryCode}
+                    onChange={e => onCountryChange(e.target.value)}
+                    className="input-glass"
+                  >
+                    {countries.map(c => (
+                      <option key={c.code} value={c.code}>
+                        {flagOf(c.code)} {c[l]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* The phone takes a full row on its own: it carries two
+                  controls, and sharing one left the number about 110px wide —
+                  too narrow to read back a number you had just typed. */}
+              <div>
+                <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                  {p.fieldPhone} <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                {/* Scoped to ltr so the code sits to the left of the number and
+                    reads the way a phone number is written, whatever the page
+                    direction is. */}
+                <div className="flex gap-2" dir="ltr">
+                  <select
+                    value={dialCode}
+                    onChange={e => setDialCode(e.target.value)}
+                    aria-label={p.fieldPhoneCode ?? 'رمز الدولة'}
+                    className="input-glass shrink-0"
+                    style={{ width: '7.5rem' }}
+                  >
+                    {countries.map(c => (
+                      <option key={c.code} value={c.code}>
+                        {flagOf(c.code)} {c.dial}
+                      </option>
+                    ))}
+                  </select>
                   <input
                     required
                     type="tel"
-                    value={fields.phone}
-                    onChange={set('phone')}
+                    inputMode="tel"
+                    value={localPhone}
+                    onChange={e => setLocalPhone(e.target.value)}
                     placeholder={p.phPhone}
-                    className="input-glass"
-                    dir="ltr"
+                    className="input-glass min-w-0 flex-1"
                   />
                 </div>
               </div>
 
-              {/* Country + Org row */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-                    {p.fieldCountry} <span style={{ color: '#ef4444' }}>*</span>
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    value={fields.country}
-                    onChange={set('country')}
-                    placeholder={p.phCountry}
-                    className="input-glass"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-                    {p.fieldOrg}
-                  </label>
-                  <input
-                    type="text"
-                    value={fields.organization}
-                    onChange={set('organization')}
-                    placeholder={p.phOrg}
-                    className="input-glass"
-                  />
-                </div>
+              <div>
+                <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                  {p.fieldOrg}
+                </label>
+                <input
+                  type="text"
+                  value={fields.organization}
+                  onChange={set('organization')}
+                  placeholder={p.phOrg}
+                  className="input-glass"
+                />
               </div>
 
               {/* Password — registering creates the attendee's account */}
