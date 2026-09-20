@@ -3,7 +3,7 @@
 import { useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { Loader2, Sun, Moon, Eye, EyeOff, TriangleAlert, CalendarClock, MapPin } from 'lucide-react';
+import { Loader2, Sun, Moon, Eye, EyeOff, TriangleAlert } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Image from 'next/image';
 import CICTLogo from '@/components/ui/CICTLogo';
@@ -26,9 +26,6 @@ export interface AuthScreenProps {
   submitLabel: string;
   /** Where to go once the credentials are accepted. */
   redirectTo: string;
-  /** Conference context for the side panel, computed on the server so the
-   *  countdown cannot differ between the server render and hydration. */
-  conference: { countdown: string; range: string; venue: string };
   footer?: React.ReactNode;
 }
 
@@ -38,7 +35,6 @@ export default function AuthScreen({
   submitIcon: SubmitIcon,
   submitLabel,
   redirectTo,
-  conference,
   footer,
 }: AuthScreenProps) {
   const router = useRouter();
@@ -142,25 +138,30 @@ export default function AuthScreen({
             <CICTLogo height={44} />
           </span>
 
-          <div className="max-w-lg">
-            <h2 className="font-outfit font-bold text-[26px] xl:text-[32px] leading-snug text-white">
+          {/* One statement and one line under it. The panel previously also
+              carried a description of the platform, the date range and the
+              venue — four competing blocks on a photograph, none of which a
+              person signing in needs: they already know when and where the
+              conference is, and they are here to type a password, not to read
+              a brochure. */}
+          <div className="max-w-2xl">
+            {/* The display face, not the panel's UI face. The shell sets
+                `font-platform`, which forces IBM Plex Sans Arabic across
+                everything inside it — right for dense panel chrome, wrong for
+                the one line on this screen that is purely brand. Inline, so it
+                wins against that rule without another specificity contest. */}
+            <h2
+              className="font-bold text-[34px] xl:text-[46px] text-white"
+              style={{ fontFamily: 'var(--font-thmanyah), serif', lineHeight: 1.3 }}
+            >
               منصة مؤتمر الإبداع والابتكار
             </h2>
-            <p className="mt-3.5 text-[14px] xl:text-[15px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.74)' }}>
-              مساحة واحدة للتسجيل والبرنامج والبطاقات والابتكارات المقدَّمة.
+            <p
+              className="mt-5 text-[16px] xl:text-[18px] leading-relaxed"
+              style={{ color: 'rgba(255,255,255,0.72)' }}
+            >
+              نحوّل الأفكار إلى أثر مستدام.
             </p>
-
-            <div className="mt-8 space-y-2.5">
-              <p className="flex items-center gap-2.5 text-[13px]" style={{ color: 'rgba(255,255,255,0.88)' }}>
-                <CalendarClock className="h-4 w-4 shrink-0" style={{ color: 'var(--accent-violet)' }} />
-                {conference.range}
-                <span style={{ color: 'rgba(255,255,255,0.55)' }}>· {conference.countdown}</span>
-              </p>
-              <p className="flex items-center gap-2.5 text-[13px]" style={{ color: 'rgba(255,255,255,0.88)' }}>
-                <MapPin className="h-4 w-4 shrink-0" style={{ color: 'var(--accent-violet)' }} />
-                {conference.venue}
-              </p>
-            </div>
           </div>
 
           <p className="text-[11.5px]" style={{ color: 'rgba(255,255,255,0.5)' }}>

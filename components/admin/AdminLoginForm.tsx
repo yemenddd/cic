@@ -2,15 +2,11 @@
 
 import Link from 'next/link';
 import { Lock } from 'lucide-react';
-import AuthScreen, { type AuthScreenProps } from '@/components/platform/AuthScreen';
+import AuthScreen from '@/components/platform/AuthScreen';
 
 // Thin wrapper: everything that is not the wording or the destination lives in
 // AuthScreen, so the two sign-in screens cannot drift apart again.
-export default function AdminLoginForm({
-  conference,
-}: {
-  conference: AuthScreenProps['conference'];
-}) {
+export default function AdminLoginForm() {
   return (
     <AuthScreen
       heading="لوحة تحكم CICT"
@@ -18,7 +14,6 @@ export default function AdminLoginForm({
       submitIcon={Lock}
       submitLabel="دخول"
       redirectTo="/admin"
-      conference={conference}
       footer={
         // The attendee sign-in has carried this since password recovery was
         // built; this screen was left without a footer at all, so an organizer
