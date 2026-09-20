@@ -66,8 +66,16 @@ export async function currentUser(): Promise<GuardedUser | null> {
     }
   }
 
-  const { passwordChangedAt: _ignored, ...guarded } = user;
-  return guarded;
+  // Rebuilt field by field rather than spread: passwordChangedAt was selected
+  // only for the comparison above, and naming the fields is what keeps it from
+  // being handed to callers by accident.
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    category: user.category,
+  };
 }
 
 /** The signed-in user, but only if they are still an admin right now. */

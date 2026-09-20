@@ -100,7 +100,15 @@ model User {
   scansRecorded       Attendance[]         @relation("AttendanceRecorder")
   passwordResetTokens PasswordResetToken[]
 
-  @@index([role])
+  /**
+   * The admin directory's default order — admins first, then newest signups.
+   * A plain index on `role` could not serve the `createdAt` half, so every
+   * page load sorted the whole table to show twenty-five rows.
+   *
+   * This replaces that index rather than joining it: `role` is the leading
+   * column, so a lookup by role alone still uses this one.
+   */
+  @@index([role, createdAt])
 }
 
 // Counts failed sign-ins and registration attempts so they can be slowed down.

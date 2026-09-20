@@ -2,7 +2,7 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db/client';
 import { sendEmail } from '@/lib/email';
-import { LOGIN_BY_EMAIL, clearFailures } from '@/lib/rate-limit';
+import { clearFailures } from '@/lib/rate-limit';
 import { siteUrl } from '@/lib/site';
 
 /**

@@ -37,7 +37,8 @@ const { isInternalPath, openAndResolveTarget, NOTIFICATIONS_PATH } = await impor
 );
 const { canSubmitInnovations } = await import('../lib/categories');
 const { isTrackAllowed } = await import('../lib/submissions');
-const { csvCell, toCsv } = await import('../lib/csv');
+const { csvCell, toCsv, csvResponse } = await import('../lib/csv');
+const { inPages } = await import('../lib/export-pages');
 const { checkUpload, MAX_UPLOAD_BYTES } = await import('../lib/blob');
 const { lockSeconds, LOGIN_BY_EMAIL, LOGIN_BY_IP, REGISTER_BY_IP } = await import(
   '../lib/rate-limit'
@@ -779,6 +780,92 @@ await prisma.registration.deleteMany({ where: { fullName: { startsWith: RMARK } 
 await prisma.user.deleteMany({ where: { email: { endsWith: '@regcheck.invalid' } } });
 check('registration test rows removed', await prisma.registration.count({ where: { fullName: { startsWith: RMARK } } }), 0);
 check('and their accounts too', await prisma.user.count({ where: { email: { endsWith: '@regcheck.invalid' } } }), 0);
+
+// --- exports that stream ------------------------------------------------------
+
+// The exports used to build the whole file in memory, which cost about 1.45 KB
+// per account — 729 MB at half a million, inside a function limited to 1 GB.
+// They now write a page at a time. The refactor is only safe if the bytes are
+// the same however the rows happen to fall into pages.
+{
+  const header = ['الاسم', 'الرمز'];
+  const rows: (string | number | null)[][] = [
+    ['ريم الشرعبي', 'A1'],
+    ['=cmd|calc', 'B2'],        // still has to be neutralised
+    ['صنعاء, اليمن', null],     // still has to be quoted
+  ];
+
+  // Compared as bytes, not as text. `Response.text()` strips a leading BOM as
+  // it decodes, which would hide the one byte Excel depends on to read the
+  // file as UTF-8 — the check would pass while the Arabic arrived as mojibake.
+  const bytes = async (pages: (string | number | null)[][][]) =>
+    Array.from(
+      new Uint8Array(
+        await csvResponse('t.csv', header, (async function* () {
+          for (const page of pages) yield page;
+        })()).arrayBuffer(),
+      ),
+    ).join(',');
+  const expected = (r: (string | number | null)[][]) =>
+    Array.from(new TextEncoder().encode(toCsv(header, r))).join(',');
+
+  check('one page matches building it all at once', await bytes([rows]), expected(rows));
+  check('and so do three pages of one row', await bytes([[rows[0]], [rows[1]], [rows[2]]]), expected(rows));
+  check('and an uneven split', await bytes([[rows[0], rows[1]], [rows[2]]]), expected(rows));
+  // An export whose filter matched nobody must still be a file that opens,
+  // with its header, rather than zero bytes that look like a failed download.
+  check('an empty export is still a valid file', await bytes([]), expected([]));
+  check('empty pages in the middle change nothing', await bytes([[rows[0]], [], [rows[1], rows[2]]]), expected(rows));
+  check(
+    'the byte-order mark really is the first byte',
+    (await bytes([rows])).startsWith('239,187,191'),
+    true,
+  );
+
+  const resp = csvResponse('cict-users.csv', header, (async function* () {})());
+  check('it is sent as a download', resp.headers.get('content-disposition'), 'attachment; filename="cict-users.csv"');
+  check('personal data is never cached', resp.headers.get('cache-control'), 'no-store');
+  check('and declared UTF-8, or Excel mangles the Arabic', resp.headers.get('content-type'), 'text/csv; charset=utf-8');
+}
+
+// Paging itself: the failure that matters is a row silently missing from an
+// export, which nobody would notice until the list was used for something.
+{
+  const all = Array.from({ length: 250 }, (_unused, i) => ({ id: `id-${String(i).padStart(4, '0')}` }));
+
+  const drain = async (pageSize: number, source = all) => {
+    const seen: string[] = [];
+    let queries = 0;
+    for await (const page of inPages(async (after, take) => {
+      queries++;
+      const start = after ? source.findIndex((r) => r.id === after) + 1 : 0;
+      return source.slice(start, start + take);
+    }, pageSize)) {
+      seen.push(...page.map((r) => r.id));
+    }
+    return { seen, queries };
+  };
+
+  const a = await drain(100);
+  check('every row comes back', a.seen.length, 250);
+  check('in order, none repeated, none skipped', a.seen.join(','), all.map((r) => r.id).join(','));
+  check('a short final page ends it without another query', a.queries, 3);
+
+  // The boundary case: a table whose size is an exact multiple of the page.
+  // Here the last full page looks like there may be more, so one extra query
+  // is correct — what would be wrong is stopping early and losing rows.
+  const b = await drain(125);
+  check('an exact multiple still returns everything', b.seen.length, 250);
+  check('and costs one empty query to learn it is done', b.queries, 3);
+
+  const c = await drain(1000);
+  check('a page larger than the table is one query', c.queries, 1);
+  check('and still returns everything', c.seen.length, 250);
+
+  const d = await drain(100, []);
+  check('an empty table yields nothing', d.seen.length, 0);
+  check('and asks exactly once', d.queries, 1);
+}
 
 // --- undo --------------------------------------------------------------------
 

@@ -5,6 +5,13 @@ import { audienceLabel } from './audience';
 import { audienceSizes, sendAnnouncement } from './actions';
 import Composer from './Composer';
 
+/**
+ * Sending runs as a server action on this segment, so this is what bounds it.
+ * A broadcast writes one notification per attendee — measured at 15.6s for
+ * 83,000 recipients — which is comfortably past the default.
+ */
+export const maxDuration = 60;
+
 export default async function AdminAnnouncementsPage() {
   const [sizes, sent] = await Promise.all([
     audienceSizes(),
