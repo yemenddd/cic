@@ -1,7 +1,6 @@
 'use client';
 
 import { useId, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { Loader2, Sun, Moon, Eye, EyeOff, TriangleAlert } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -37,7 +36,6 @@ export default function AuthScreen({
   redirectTo,
   footer,
 }: AuthScreenProps) {
-  const router = useRouter();
   const { theme, toggle } = useTheme();
 
   // Generated ids, so the labels below are actually tied to their inputs.
@@ -63,8 +61,23 @@ export default function AuthScreen({
       setStatus('error');
       return;
     }
-    router.push(redirectTo);
-    router.refresh();
+    // A full page load, deliberately — not router.push() followed by
+    // router.refresh().
+    //
+    // That pair raced. `push` starts navigating to the panel while `refresh`
+    // re-fetches whatever route is still mounted, which at that moment is this
+    // login page — and a login page, now that the sign-in has succeeded,
+    // answers every request with a redirect to the panel. Whichever call lost
+    // the race decided the outcome: usually the push landed and all was well,
+    // and sometimes the refresh hit the redirecting route instead and bounced
+    // between the two, writing a history entry each time until Chrome cut it
+    // off with "Throttling navigation to prevent the browser from hanging".
+    // What the person saw was a white page that never finished loading.
+    //
+    // A full load has no race to lose, and is the honest thing to do here in
+    // any case: the session cookie has just changed, so every payload the
+    // client router has cached was fetched as somebody else — signed out.
+    window.location.assign(redirectTo);
   };
 
   return (

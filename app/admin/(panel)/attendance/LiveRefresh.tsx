@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Radio } from 'lucide-react';
 
@@ -22,15 +22,27 @@ export default function LiveRefresh({ intervalMs = 15_000 }: { intervalMs?: numb
   const router = useRouter();
   const [live, setLive] = useState(true);
 
+  // Held in a ref, and deliberately kept out of the effect's dependencies.
+  // `useRouter()` hands back a new object whenever the router's state changes,
+  // and a refresh *is* such a change — so listing it below meant every tick
+  // tore the interval down and started a fresh one. The countdown restarted
+  // from zero each time, which is not the fifteen seconds this claims to be,
+  // and on a page whose state changes for any other reason the tick could be
+  // pushed back indefinitely and never arrive at all.
+  const routerRef = useRef(router);
+  useEffect(() => {
+    routerRef.current = router;
+  }, [router]);
+
   useEffect(() => {
     if (!live) return;
 
     const timer = setInterval(() => {
-      if (document.visibilityState === 'visible') router.refresh();
+      if (document.visibilityState === 'visible') routerRef.current.refresh();
     }, intervalMs);
 
     return () => clearInterval(timer);
-  }, [live, intervalMs, router]);
+  }, [live, intervalMs]);
 
   return (
     <button
