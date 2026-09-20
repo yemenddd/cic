@@ -587,6 +587,32 @@ if (resetSubject) {
   check('and no reset tokens are left behind', await prisma.passwordResetToken.count({ where: { userId: resetSubject.id } }), 0);
 }
 
+// The admin sign-in now offers a recovery link, which is only honest if the
+// flow does not quietly filter by role. It does not — but that is the kind of
+// thing a later "admins are special" clause would break silently, and the
+// person locked out would be the only one who could have fixed it.
+const tempAdmin = await prisma.user.create({
+  data: {
+    email: 'reset-admin-check@regcheck.invalid',
+    passwordHash: 'x',
+    name: 'Reset Check',
+    role: 'ADMIN',
+    category: 'visitor',
+  },
+});
+await requestPasswordReset('reset-admin-check@regcheck.invalid');
+check(
+  'an admin can be sent a reset link too, not just attendees',
+  await prisma.passwordResetToken.count({ where: { userId: tempAdmin.id } }),
+  1,
+);
+await prisma.user.delete({ where: { id: tempAdmin.id } });
+check(
+  'and its token goes with the account',
+  await prisma.passwordResetToken.count({ where: { userId: tempAdmin.id } }),
+  0,
+);
+
 // Reported, not asserted: mail being switched off is a valid configuration,
 // and the reset flow is built to behave identically either way.
 console.log(`  (email ${emailConfigured() ? 'is configured' : 'is NOT configured — reset links will not be delivered'})`);

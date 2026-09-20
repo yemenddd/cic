@@ -273,10 +273,14 @@ export default function AuthScreen({
               </p>
             )}
 
+            {/* Set apart from the fields above it. With the form's own
+                `space-y-4` the action sat exactly as far from the password box
+                as the two boxes sat from each other, so it read as a third
+                field rather than as the thing the form is for. */}
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-[14px] font-semibold transition-opacity disabled:opacity-60"
+              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-[15px] font-semibold transition-opacity disabled:opacity-60"
               style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
             >
               {status === 'loading' ? (
