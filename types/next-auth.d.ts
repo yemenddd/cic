@@ -11,6 +11,8 @@ declare module 'next-auth' {
     user: {
       id: string;
       role: Role;
+      /** Unix seconds when the session token was issued (the JWT `iat`). */
+      tokenIssuedAt?: number;
     } & DefaultSession['user'];
   }
 }

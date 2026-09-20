@@ -109,6 +109,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as 'ADMIN' | 'ATTENDEE';
+        // `iat` is the standard claim Auth.js stamps when the token is minted.
+        // lib/auth-guards.ts compares it with the account's passwordChangedAt,
+        // which is how a password reset ends sessions that already exist —
+        // there is no server-side session store to delete from.
+        session.user.tokenIssuedAt = typeof token.iat === 'number' ? token.iat : undefined;
       }
       return session;
     },

@@ -80,7 +80,10 @@ export async function resetUserPassword(userId: string): Promise<ResetResult> {
   const password = generatePassword();
   await prisma.user.update({
     where: { id: userId },
-    data: { passwordHash: await bcrypt.hash(password, 12) },
+    // Stamped so the account's existing sessions stop working — see
+    // lib/auth-guards.ts. An organiser resetting a compromised account must
+    // not leave whoever compromised it signed in.
+    data: { passwordHash: await bcrypt.hash(password, 12), passwordChangedAt: new Date() },
   });
 
   revalidatePath(`/admin/users/${userId}`);

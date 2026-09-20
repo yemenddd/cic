@@ -39,10 +39,35 @@ export async function currentUser(): Promise<GuardedUser | null> {
   // re-checked here rather than inferred from the session.
   const user = await prisma.user.findUnique({
     where: { id },
-    select: { id: true, email: true, name: true, role: true, category: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      category: true,
+      passwordChangedAt: true,
+    },
   });
 
-  return user ?? null;
+  if (!user) return null;
+
+  // Sessions are JWTs, so there is no server-side record to delete when
+  // somebody resets a password they have lost control of — the token an
+  // attacker holds would otherwise keep working for its full 30 days. Any
+  // token minted before the password changed is refused here instead.
+  //
+  // `iat` is in seconds and the column in milliseconds. A token issued in the
+  // same second as the change is accepted: that is the session of the person
+  // who just reset it, and rounding it out would sign them straight back out.
+  const issuedAt = session.user?.tokenIssuedAt;
+  if (user.passwordChangedAt && typeof issuedAt === 'number') {
+    if (issuedAt * 1000 < Math.floor(user.passwordChangedAt.getTime() / 1000) * 1000) {
+      return null;
+    }
+  }
+
+  const { passwordChangedAt: _ignored, ...guarded } = user;
+  return guarded;
 }
 
 /** The signed-in user, but only if they are still an admin right now. */

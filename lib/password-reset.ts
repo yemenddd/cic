@@ -2,6 +2,7 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db/client';
 import { sendEmail } from '@/lib/email';
+import { LOGIN_BY_EMAIL, clearFailures } from '@/lib/rate-limit';
 import { siteUrl } from '@/lib/site';
 
 /**
@@ -165,13 +166,25 @@ export async function completePasswordReset(
   const state = await checkResetToken(rawToken);
   if (!state.valid) return { status: 'invalid-token' };
 
+  const account = await prisma.user.findUnique({
+    where: { id: state.userId },
+    select: { email: true },
+  });
+  if (!account) return { status: 'invalid-token' };
+
   const passwordHash = await bcrypt.hash(newPassword, 12);
 
   // One transaction: a password changed without the token being spent leaves a
   // live link in an inbox, and a token spent without the password changing
   // locks the person out of their own reset.
   await prisma.$transaction([
-    prisma.user.update({ where: { id: state.userId }, data: { passwordHash } }),
+    prisma.user.update({
+      where: { id: state.userId },
+      // Stamped so lib/auth-guards.ts can refuse tokens minted before now. A
+      // reset means "somebody else may have my password" — leaving their
+      // existing session alive for its full 30 days would defeat the point.
+      data: { passwordHash, passwordChangedAt: new Date() },
+    }),
     prisma.passwordResetToken.updateMany({
       where: { tokenHash: hashToken(rawToken.trim()) },
       data: { usedAt: new Date() },
@@ -179,6 +192,10 @@ export async function completePasswordReset(
     // Every other outstanding link for this account dies with it.
     prisma.passwordResetToken.deleteMany({ where: { userId: state.userId, usedAt: null } }),
   ]);
+
+  // Whoever just proved they own the address should not then be told to wait
+  // fifteen minutes because of the failed guesses that sent them here.
+  await clearFailures('login:email', account.email);
 
   return { status: 'ok' };
 }

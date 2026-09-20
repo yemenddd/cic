@@ -82,6 +82,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /**
+   * When the password last changed. Sessions are JWTs with no server-side
+   * store, so this is what lets a reset end the ones already issued: a token
+   * minted before this moment is refused by lib/auth-guards.ts.
+   */
+  passwordChangedAt DateTime?
+
   registrations       Registration[]
   savedSessions       SavedSession[]
   submissions         ProjectSubmission[]

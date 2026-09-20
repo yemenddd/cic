@@ -30,7 +30,10 @@ export async function changePassword(_prev: ActionResult, formData: FormData): P
 
   await prisma.user.update({
     where: { email },
-    data: { passwordHash: await bcrypt.hash(next, 12) },
+    // Stamped so the account's existing sessions stop working — see
+    // lib/auth-guards.ts. An organiser resetting a compromised account must
+    // not leave whoever compromised it signed in.
+    data: { passwordHash: await bcrypt.hash(next, 12), passwordChangedAt: new Date() },
   });
 
   return { success: 'تم تغيير كلمة المرور بنجاح' };

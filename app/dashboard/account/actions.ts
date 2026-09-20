@@ -93,7 +93,9 @@ export async function changePassword(_prev: ActionResult, formData: FormData): P
 
   await prisma.user.update({
     where: { id: account.id },
-    data: { passwordHash: await bcrypt.hash(next, 12) },
+    // Same stamp as the reset path: changing a password ends the sessions that
+    // existed before it, including this one's older siblings on other devices.
+    data: { passwordHash: await bcrypt.hash(next, 12), passwordChangedAt: new Date() },
   });
 
   await clearFailures(scope, account.id);

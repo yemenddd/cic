@@ -60,7 +60,9 @@ const {
   requestPasswordReset, checkResetToken, completePasswordReset, isTokenShape, resetLink,
 } = await import('../lib/password-reset');
 const { emailConfigured } = await import('../lib/email');
-const { RESET_BY_IP } = await import('../lib/rate-limit');
+const { RESET_BY_IP, recordFailure, throttleState, clearFailures } = await import(
+  '../lib/rate-limit'
+);
 const { auditServerActions } = await import('../lib/guard-audit');
 const { reconcileRegistrationAccount } = await import('../lib/registration-accounts');
 
@@ -546,7 +548,7 @@ check('an empty token is refused', (await checkResetToken('')).valid, false);
 
 const resetSubject = await prisma.user.findFirst({
   where: { role: 'ATTENDEE' },
-  select: { id: true, email: true, passwordHash: true },
+  select: { id: true, email: true, passwordHash: true, passwordChangedAt: true },
 });
 
 if (resetSubject) {
@@ -603,24 +605,66 @@ if (resetSubject) {
   check('a short password is refused', (await completePasswordReset(live, 'short')).status, 'weak-password');
   check('and refusing it did not spend the token', (await checkResetToken(live)).valid, true);
 
+  // Lock the account first, the way five wrong guesses would. Somebody who has
+  // forgotten their password has usually guessed at it several times before
+  // reaching for the reset link, so this is the ordinary case, not a corner.
+  for (let i = 0; i < LOGIN_BY_EMAIL.limit + 1; i++) {
+    await recordFailure('login:email', resetSubject.email, LOGIN_BY_EMAIL);
+  }
+  check('wrong guesses lock the account', (await throttleState('login:email', resetSubject.email)).blocked, true);
+
   check('a good password is accepted', (await completePasswordReset(live, 'a-long-enough-password')).status, 'ok');
   check('the token is spent immediately after', (await checkResetToken(live)).valid, false);
   check('and cannot be replayed', (await completePasswordReset(live, 'another-long-password')).status, 'invalid-token');
 
-  const changed = await prisma.user.findUnique({ where: { id: resetSubject.id }, select: { passwordHash: true } });
+  const changed = await prisma.user.findUnique({
+    where: { id: resetSubject.id },
+    select: { passwordHash: true, passwordChangedAt: true },
+  });
   check('the password really changed', changed?.passwordHash !== resetSubject.passwordHash, true);
+
+  // The two things a reset has to do beyond setting a password.
+
+  // Sessions are JWTs with no server-side store, so there is nothing to delete
+  // to sign somebody out. This stamp is the whole mechanism: lib/auth-guards.ts
+  // refuses any token minted before it. Without it a reset leaves whoever
+  // prompted it signed in for the full 30-day life of their cookie — which is
+  // the one thing a reset exists to stop.
+  const stampedAt = changed?.passwordChangedAt?.getTime() ?? 0;
+  check('it stamps passwordChangedAt', stampedAt > (resetSubject.passwordChangedAt?.getTime() ?? 0), true);
+  check('and stamps it to now, not some later date', stampedAt <= Date.now(), true);
+
+  // Otherwise recovery fails at exactly the moment it is needed: the person has
+  // just proved they own the address, and would still be told to wait fifteen
+  // minutes because of the failed guesses that sent them to the reset form.
+  check('it frees the login lock', (await throttleState('login:email', resetSubject.email)).blocked, false);
 
   // Put the account back exactly as it was — this runs against the real
   // database, and the person it belongs to must still be able to sign in.
+  // passwordChangedAt is restored too: leaving the stamp advanced would sign
+  // them out of a live session merely because the checks were run.
   await prisma.user.update({
     where: { id: resetSubject.id },
-    data: { passwordHash: resetSubject.passwordHash },
+    data: {
+      passwordHash: resetSubject.passwordHash,
+      passwordChangedAt: resetSubject.passwordChangedAt,
+    },
   });
   await prisma.passwordResetToken.deleteMany({ where: { userId: resetSubject.id } });
+  await clearFailures('login:email', resetSubject.email);
 
-  const restored = await prisma.user.findUnique({ where: { id: resetSubject.id }, select: { passwordHash: true } });
+  const restored = await prisma.user.findUnique({
+    where: { id: resetSubject.id },
+    select: { passwordHash: true, passwordChangedAt: true },
+  });
   check('the original password hash is restored', restored?.passwordHash, resetSubject.passwordHash);
+  check(
+    'and the stamp with it, so nobody is signed out by the checks',
+    restored?.passwordChangedAt?.getTime() ?? null,
+    resetSubject.passwordChangedAt?.getTime() ?? null,
+  );
   check('and no reset tokens are left behind', await prisma.passwordResetToken.count({ where: { userId: resetSubject.id } }), 0);
+  check('and the account is not left locked out', (await throttleState('login:email', resetSubject.email)).blocked, false);
 }
 
 // The admin sign-in now offers a recovery link, which is only honest if the
