@@ -115,31 +115,15 @@ export default function AuthScreen({
           }}
         />
 
-        {/* Blends the photograph into the form's surface along the edge the two
-            share. The panel sits on the right, so the shared edge is its
-            inline-END — putting this on start-0 laid a dark band down the
-            screen's outer edge instead, which is the opposite of the intent.
-            (The gradient direction below is physical, not logical, and is
-            correct only because this screen is always RTL: its own copy is
-            Arabic.)
+        {/* No blend along the edge the panel shares with the form — the two
+            meet at a clean vertical line.
 
-            The ramp is eased rather than linear. A straight fade from the page
-            colour to transparent still sits at half strength a third of the
-            way across, which on the light theme laid a pale grey wash over the
-            faces at the edge of the photograph — it read as a rendering fault
-            rather than as a blend. It now loses most of its weight in the
-            first 20 pixels, so the join is soft without bleaching the image. */}
-        <div
-          aria-hidden
-          className="absolute inset-y-0 end-0 w-20"
-          style={{
-            background:
-              'linear-gradient(to right, var(--bg-base) 0%, ' +
-              'color-mix(in srgb, var(--bg-base) 58%, transparent) 26%, ' +
-              'color-mix(in srgb, var(--bg-base) 20%, transparent) 58%, ' +
-              'transparent 100%)',
-          }}
-        />
+            There used to be a gradient in the page colour here, softening the
+            join. It was the wrong call twice over: it laid a pale wash across
+            the faces at that edge of the photograph, and a soft join between a
+            photograph and a form is read as a rendering fault rather than as a
+            deliberate transition. A hard edge reads as intentional. Please do
+            not put it back. */}
 
         <div className="relative flex h-full flex-col justify-between p-12 xl:p-16">
           {/* The logo's ink follows the theme, but its backdrop here is the
