@@ -148,7 +148,7 @@ export default function AuthScreen({
               الرابعة" line along the bottom — is gone, and with two children
               justify-between would have pinned this to the floor of the panel
               instead of centring it. */}
-          <div className="my-auto max-w-2xl">
+          <div className="my-auto max-w-3xl">
             {/* One heading, broken over two lines with a deliberate jump in
                 size: "منصة" is what this thing *is*, and the conference name
                 qualifies it. Set as two spans inside one h2 rather than as a
@@ -164,8 +164,8 @@ export default function AuthScreen({
               className="font-bold text-white"
               style={{ fontFamily: 'var(--font-thmanyah), serif', lineHeight: 1.12 }}
             >
-              <span className="block text-[46px] xl:text-[68px]">منصة</span>
-              <span className="mt-2 block text-[26px] xl:text-[36px]">
+              <span className="block text-[62px] xl:text-[92px] 2xl:text-[104px]">منصة</span>
+              <span className="mt-2 block text-[32px] xl:text-[48px] 2xl:text-[54px]">
                 مؤتمر الإبداع والابتكار
               </span>
             </h2>
@@ -178,7 +178,7 @@ export default function AuthScreen({
                 inline-block so the block is the width of its words, not of the
                 column. */}
             <p
-              className="mt-7 inline-block px-4 py-2 text-[15px] xl:text-[18px] font-semibold"
+              className="mt-8 inline-block px-5 py-2.5 text-[17px] xl:text-[21px] font-semibold"
               style={{ background: '#ffffff', color: '#1c1c1e' }}
             >
               نحوّل الأفكار إلى أثر مستدام..
