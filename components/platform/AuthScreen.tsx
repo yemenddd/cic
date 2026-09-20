@@ -106,8 +106,13 @@ export default function AuthScreen({
           aria-hidden
           className="absolute inset-0"
           style={{
+            // Warm and close to even, rather than the cool near-black that was
+            // almost transparent at the top and nearly opaque at the bottom.
+            // That ramp lit the top of the photograph and buried its bottom;
+            // an even veil keeps the whole image readable as one picture and
+            // gives the type the same contrast wherever it sits on it.
             background:
-              'linear-gradient(to top, rgba(12,10,22,0.94) 0%, rgba(12,10,22,0.70) 42%, rgba(12,10,22,0.38) 100%)',
+              'linear-gradient(to top, rgba(32,26,21,0.88) 0%, rgba(32,26,21,0.74) 45%, rgba(32,26,21,0.64) 100%)',
           }}
         />
 
@@ -121,7 +126,7 @@ export default function AuthScreen({
             deliberate transition. A hard edge reads as intentional. Please do
             not put it back. */}
 
-        <div className="relative flex h-full flex-col justify-between p-12 xl:p-16">
+        <div className="relative flex h-full flex-col p-12 xl:p-16">
           {/* The logo's ink follows the theme, but its backdrop here is the
               photo's dark overlay in both themes — left alone it turned navy
               on navy under the light theme. Pinning the variables locally is
@@ -138,35 +143,47 @@ export default function AuthScreen({
             <CICTLogo height={44} />
           </span>
 
-          {/* One statement and one line under it. The panel previously also
-              carried a description of the platform, the date range and the
-              venue — four competing blocks on a photograph, none of which a
-              person signing in needs: they already know when and where the
-              conference is, and they are here to type a password, not to read
-              a brochure. */}
-          <div className="max-w-2xl">
-            {/* The display face, not the panel's UI face. The shell sets
+          {/* `my-auto` rather than `justify-between` on the column: the third
+              slot that arrangement balanced against — a "CICT 2026 · النسخة
+              الرابعة" line along the bottom — is gone, and with two children
+              justify-between would have pinned this to the floor of the panel
+              instead of centring it. */}
+          <div className="my-auto max-w-2xl">
+            {/* One heading, broken over two lines with a deliberate jump in
+                size: "منصة" is what this thing *is*, and the conference name
+                qualifies it. Set as two spans inside one h2 rather than as a
+                heading plus a subheading, because it is one sentence and a
+                screen reader should read it as one.
+
+                The display face, not the panel's UI face. The shell sets
                 `font-platform`, which forces IBM Plex Sans Arabic across
                 everything inside it — right for dense panel chrome, wrong for
-                the one line on this screen that is purely brand. Inline, so it
-                wins against that rule without another specificity contest. */}
+                the one element on this screen that is purely brand. Inline, so
+                it wins against that rule without another specificity contest. */}
             <h2
-              className="font-bold text-[34px] xl:text-[46px] text-white"
-              style={{ fontFamily: 'var(--font-thmanyah), serif', lineHeight: 1.3 }}
+              className="font-bold text-white"
+              style={{ fontFamily: 'var(--font-thmanyah), serif', lineHeight: 1.12 }}
             >
-              منصة مؤتمر الإبداع والابتكار
+              <span className="block text-[46px] xl:text-[68px]">منصة</span>
+              <span className="mt-2 block text-[26px] xl:text-[36px]">
+                مؤتمر الإبداع والابتكار
+              </span>
             </h2>
+
+            {/* Reversed out on a white block — the one element on the panel
+                that is not the photograph or white type over it, so it is
+                where the eye lands last and stays. Square corners: the panel
+                already meets the form at a hard edge, and a rounded chip in
+                the middle of that would be the only soft shape on the screen.
+                inline-block so the block is the width of its words, not of the
+                column. */}
             <p
-              className="mt-5 text-[16px] xl:text-[18px] leading-relaxed"
-              style={{ color: 'rgba(255,255,255,0.72)' }}
+              className="mt-7 inline-block px-4 py-2 text-[15px] xl:text-[18px] font-semibold"
+              style={{ background: '#ffffff', color: '#1c1c1e' }}
             >
-              نحوّل الأفكار إلى أثر مستدام.
+              نحوّل الأفكار إلى أثر مستدام..
             </p>
           </div>
-
-          <p className="text-[11.5px]" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            CICT 2026 · النسخة الرابعة
-          </p>
         </div>
       </aside>
 
