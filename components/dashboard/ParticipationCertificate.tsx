@@ -36,6 +36,21 @@ export interface ParticipationCertificateProps {
   location: string;
   /** Registration date, already formatted as a plain Arabic string server-side. */
   issuedAt: string;
+  /**
+   * Draw it, but do not issue it.
+   *
+   * Used before the conference has happened, so somebody can see their own
+   * name and track set on the real document and correct them while there is
+   * still time — the page has always told them to check those values and then
+   * shown a list, which is not the same thing at all.
+   *
+   * It also withholds the capture id. `downloadCertificatePDF` finds its
+   * target by the hardcoded `cict-certificate`, so a preview that kept the id
+   * would be a certificate anybody could save early by calling the helper from
+   * a console — which is the one thing the whole "issued only after the event"
+   * rule exists to prevent.
+   */
+  preview?: boolean;
 }
 
 function wording(categoryId: string, categoryLabel: string, date: string, location: string) {
@@ -83,7 +98,7 @@ function Flourish({ width = 300 }: { width?: number }) {
 }
 
 export default function ParticipationCertificate({
-  name, categoryId, categoryLabel, track, code, date, location, issuedAt,
+  name, categoryId, categoryLabel, track, code, date, location, issuedAt, preview = false,
 }: ParticipationCertificateProps) {
   const w = wording(categoryId, categoryLabel, date, location);
 
@@ -109,11 +124,12 @@ export default function ParticipationCertificate({
       <div ref={measureRef} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         {/* Clip box at the scaled size, so the shrunken sheet takes real layout space. */}
         <div dir="ltr" style={{ width: CERT_W * scale, height: CERT_H * scale, overflow: 'hidden' }}>
-          <div style={{ width: CERT_W, height: CERT_H, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+          <div style={{ width: CERT_W, height: CERT_H, transform: `scale(${scale})`, transformOrigin: 'top left', position: 'relative' }}>
 
             {/* ── THE CERTIFICATE ─────────────────────────────────────── */}
             <div
-              id="cict-certificate"
+              // Withheld in preview, so the PDF helper cannot find it.
+              id={preview ? undefined : 'cict-certificate'}
               dir="rtl"
               style={{
                 width: CERT_W,
@@ -319,6 +335,51 @@ export default function ParticipationCertificate({
             </div>
             {/* ── END CERTIFICATE ─────────────────────────────────────── */}
 
+            {/* Sits over the sheet, outside it, so nothing here is part of the
+                document itself. A preview that merely looked faint would be
+                screenshotted and passed off as the real thing; a band across
+                the face cannot be mistaken, and it is honest about why —
+                the certificate says in the past tense that its holder
+                attended, and the conference has not happened yet. */}
+            {preview && (
+              <div
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  overflow: 'hidden',
+                  pointerEvents: 'none',
+                }}
+              >
+                {/* A corner ribbon, not a band across the middle.
+                    The first version of this ran through the centre of the
+                    sheet and landed squarely on the holder's name — on the one
+                    page whose entire purpose is letting somebody proofread
+                    that name before it is printed. The corner carries only
+                    frame. */}
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: 46,
+                    left: -96,
+                    width: 380,
+                    transform: 'rotate(-45deg)',
+                    transformOrigin: 'center',
+                    padding: '11px 0',
+                    textAlign: 'center',
+                    background: GOLD,
+                    color: PARCHMENT,
+                    fontFamily: FONT_STACK,
+                    fontWeight: 800,
+                    fontSize: 21,
+                    letterSpacing: '0.04em',
+                    boxShadow: '0 6px 22px rgba(22,35,63,0.28)',
+                  }}
+                >
+                  معاينة · لم تصدر بعد
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -327,7 +388,7 @@ export default function ParticipationCertificate({
       <div
         className="badge-no-print"
         dir="rtl"
-        style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}
+        style={{ display: preview ? 'none' : 'flex', justifyContent: 'center', marginTop: 20 }}
       >
         <button
           onClick={handleDownload}

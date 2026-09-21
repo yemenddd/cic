@@ -68,6 +68,7 @@ const { RESET_BY_IP, recordFailure, throttleState, clearFailures } = await impor
 );
 const { auditServerActions } = await import('../lib/guard-audit');
 const { profileCompleteness } = await import('../lib/profile-completeness');
+const { certificateReadiness } = await import('../lib/certificate-readiness');
 const { passwordStrength } = await import('../lib/password-strength');
 const { reconcileRegistrationAccount } = await import('../lib/registration-accounts');
 
@@ -941,6 +942,46 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
 
   check('a weak password is told why', passwordStrength('password12345678').advice !== null, true);
   check('a strong one is not nagged', passwordStrength('mountain river lantern').advice, null);
+}
+
+// --- would the certificate come out right? -----------------------------------
+
+// It states in the past tense that its holder attended and carries the
+// committee's seal, so the values printed on it are the whole document. The
+// severities are a real distinction: a certificate awarded to nobody is
+// worthless, a certificate missing its track line is merely thinner.
+{
+  const full = certificateReadiness({
+    name: 'ريم الشرعبي', track: 'البحث العلمي', confirmationCode: 'CICT-2026-000001',
+  });
+  check('a complete profile is ready', full.ready, true);
+  check('and not blocked', full.blocked, false);
+  check('with nothing to report', full.issues.length, 0);
+
+  const nameless = certificateReadiness({ track: 'البحث العلمي', confirmationCode: 'X' });
+  check('a missing name blocks', nameless.blocked, true);
+  check('and says what it would produce', nameless.issues[0].consequence.includes('بلا اسم'), true);
+  check('and points at where to fix it', nameless.issues[0].href, '/dashboard/account');
+
+  // A name of spaces is the case that would otherwise print a blank line under
+  // "هذه شهادة تُمنح إلى" and look like a rendering fault rather than a gap.
+  check('whitespace is not a name', certificateReadiness({ name: '   ' }).blocked, true);
+
+  const noTrack = certificateReadiness({ name: 'ريم', confirmationCode: 'X' });
+  check('a missing track does not block', noTrack.blocked, false);
+  check('but is still reported', noTrack.ready, false);
+  check('as degraded, not fatal', noTrack.issues[0].level, 'degraded');
+
+  // Nothing the attendee can do about this one, so it must not be phrased as a
+  // task or given a link to a page that cannot fix it.
+  const noCode = certificateReadiness({ name: 'ريم', track: 'البحث العلمي' });
+  check('an unissued code is pending, not an error', noCode.issues[0].level, 'pending');
+  check('and offers no action', noCode.issues[0].href, null);
+  check('and does not block', noCode.blocked, false);
+
+  const empty = certificateReadiness({});
+  check('an empty profile reports all three', empty.issues.length, 3);
+  check('and is blocked', empty.blocked, true);
 }
 
 // --- undo --------------------------------------------------------------------
