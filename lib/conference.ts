@@ -56,6 +56,22 @@ export function conferenceHasEnded(now: Date = new Date()): boolean {
 }
 
 /**
+ * Have the doors opened?
+ *
+ * Separate from `conferenceHasEnded` because the interesting window for most
+ * of what the dashboard shows is *during* the conference, not after it: an
+ * attendance figure is worth showing from the first session onwards, and is
+ * meaningless — a guaranteed zero — before it.
+ *
+ * Takes `now` as a defaulted parameter rather than reading the clock in the
+ * body, which is the same shape as `daysUntilConference` above. It keeps the
+ * impure call out of any component that renders the result.
+ */
+export function conferenceHasStarted(now: Date = new Date()): boolean {
+  return now.getTime() >= conferenceStart().getTime();
+}
+
+/**
  * Whole days from `now` until the opening session.
  *
  * Negative once the conference has started, which is the caller's cue to stop

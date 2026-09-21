@@ -45,7 +45,9 @@ const { lockSeconds, LOGIN_BY_EMAIL, LOGIN_BY_IP, REGISTER_BY_IP } = await impor
 );
 const { relativeArabicDate } = await import('../lib/relative-time');
 const { arabicCountBare, SESSION } = await import('../lib/arabic-plural');
-const { daysUntilConference, conferenceStart, conferenceEnd, conferenceHasEnded } = await import('../lib/conference');
+const {
+  daysUntilConference, conferenceStart, conferenceEnd, conferenceHasEnded, conferenceHasStarted,
+} = await import('../lib/conference');
 const { badgeToken, verifyBadgeToken } = await import('../lib/badge-token');
 const { qrMatrix, qrPath } = await import('../lib/qr');
 const jsQR = (await import('jsqr')).default;
@@ -865,6 +867,23 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   const d = await drain(100, []);
   check('an empty table yields nothing', d.seen.length, 0);
   check('and asks exactly once', d.queries, 1);
+}
+
+// --- has it started? ---------------------------------------------------------
+
+// The dashboard shows an attendance ring only once there is a door to have
+// walked through. Before that the figure can only be zero, which measures
+// nothing — so the boundary is what decides whether a whole card appears.
+{
+  const opening = conferenceStart();
+  check('the instant it opens counts as started', conferenceHasStarted(opening), true);
+  check('a second before it does not', conferenceHasStarted(new Date(opening.getTime() - 1000)), false);
+  check('a second after it does', conferenceHasStarted(new Date(opening.getTime() + 1000)), true);
+  check('the day before does not', conferenceHasStarted(new Date(opening.getTime() - 86_400_000)), false);
+  // Still "started" long after it is over: the two are different questions,
+  // and an attendance record does not stop being worth showing on the way home.
+  check('it stays started once ended', conferenceHasStarted(conferenceEnd()), true);
+  check('and ended is still its own question', conferenceHasEnded(opening), false);
 }
 
 // --- undo --------------------------------------------------------------------

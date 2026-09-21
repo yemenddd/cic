@@ -5,13 +5,32 @@ import {
 } from 'lucide-react';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
-import { categoryLabel, categoryFeatures, abilitiesFor } from '@/lib/categories';
+import {
+  categoryLabel, categoryFeatures, abilitiesFor, MAX_SUBMISSIONS_PER_ATTENDEE,
+} from '@/lib/categories';
 import { resolveSessionInterval } from '@/lib/ics';
+import { VENUE_UTC_OFFSET_HOURS, conferenceHasStarted } from '@/lib/conference';
 import { relativeArabicDate } from '@/lib/relative-time';
 import { arabicCountBare, SESSION, PROJECT } from '@/lib/arabic-plural';
-import { SUBMISSION_STATUS_COLORS, SUBMISSION_STATUS_LABELS } from '@/lib/submissions';
+import {
+  SUBMISSION_STATUS_COLORS, SUBMISSION_STATUS_LABELS, SUBMISSION_STATUSES,
+} from '@/lib/submissions';
 import WelcomeHero from './WelcomeHero';
 import Readiness, { type ReadinessStep } from './Readiness';
+import StatRings, { type RingStat } from './StatRings';
+import DayTimeline, { type TimelineSession } from './DayTimeline';
+import StatusBar from './StatusBar';
+
+/**
+ * Minutes from midnight at the venue, for a session the .ics resolver could
+ * place. That resolver works in UTC, so the fixed Istanbul offset goes back on
+ * here — reusing it rather than parsing the times a second time is what keeps
+ * the strip on this page and the downloaded calendar from ever disagreeing.
+ */
+function venueMinutes(at: Date): number {
+  const shifted = new Date(at.getTime() + VENUE_UTC_OFFSET_HOURS * 3600_000);
+  return shifted.getUTCHours() * 60 + shifted.getUTCMinutes();
+}
 
 const DAY_LABELS: Record<string, string> = {
   dayOne: 'اليوم الأول',
@@ -53,7 +72,7 @@ export default async function DashboardHomePage() {
 
   // Deliberately un-wrapped by safe(): this is the attendee's own data, and a
   // DB outage must surface as an error rather than an empty "you have nothing".
-  const [user, unreadNotifications, saved] = await Promise.all([
+  const [user, unreadNotifications, saved, program, attendedCount, checkpointCount] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
@@ -77,6 +96,15 @@ export default async function DashboardHomePage() {
         },
       },
     }),
+    // The whole programme, not only what was saved: the strip below shows an
+    // empty schedule against everything that is on, which is what makes it
+    // useful to somebody who has saved nothing yet.
+    prisma.programSession.findMany({
+      orderBy: [{ day: 'asc' }, { order: 'asc' }],
+      select: { id: true, day: true, time: true, titleAr: true, speakerNameAr: true, trackAr: true },
+    }),
+    prisma.attendance.count({ where: { userId: session.user.id } }),
+    prisma.checkpoint.count(),
   ]);
 
   if (!user) redirect('/login');
@@ -149,6 +177,83 @@ export default async function DashboardHomePage() {
     statusCounts.set(s.status, (statusCounts.get(s.status) ?? 0) + 1);
   }
 
+  // --- what the charts are drawn from ---------------------------------------
+
+  const savedIds = new Set(saved.map(({ session: s }) => s.id));
+
+  const timeline: TimelineSession[] = program.map((s) => {
+    const interval = resolveSessionInterval(s);
+    return {
+      id: s.id,
+      day: s.day,
+      time: s.time,
+      titleAr: s.titleAr,
+      speakerNameAr: s.speakerNameAr,
+      trackAr: s.trackAr,
+      startMinutes: interval ? venueMinutes(interval.start) : null,
+      endMinutes: interval ? venueMinutes(interval.end) : null,
+      saved: savedIds.has(s.id),
+    };
+  });
+
+  const started = conferenceHasStarted();
+
+  // A ring has to be a measurement of something that has happened. An empty
+  // one is not "0%", it is "nothing to show yet" — and a row of empty rings is
+  // the exact fault the welcome hero was rebuilt to remove, three stat cards
+  // two of which read zero on a new account. So a ring appears when it has
+  // something to say, and until then the readiness steps and the timeline
+  // below are what ask for the action.
+  const rings: RingStat[] = [
+    {
+      key: 'agenda',
+      value: savedCount,
+      total: program.length,
+      label: 'جدولك',
+      caption: `${arabicCountBare(savedCount, SESSION)} من أصل ${program.length} في البرنامج`,
+      href: '/dashboard/agenda',
+      color: 'var(--accent-cyan)',
+      ariaLabel: `حفظت ${savedCount} جلسة من أصل ${program.length}`,
+    },
+    ...(abilities.submitInnovations
+      ? [
+          {
+            key: 'projects',
+            value: submissionCount,
+            total: MAX_SUBMISSIONS_PER_ATTENDEE,
+            label: 'مشاريعك',
+            caption: `${arabicCountBare(submissionCount, PROJECT)} قيد المتابعة`,
+            href: '/dashboard/innovations',
+            color: 'var(--accent-violet)',
+            ariaLabel: `قدّمت ${submissionCount} مشروعاً من أصل ${MAX_SUBMISSIONS_PER_ATTENDEE} مسموح بها`,
+          },
+        ]
+      : []),
+    // Only once there is a door to have walked through: before the conference
+    // opens this can only ever be zero, which measures nothing.
+    ...(started && checkpointCount > 0
+      ? [
+          {
+            key: 'attendance',
+            value: attendedCount,
+            total: checkpointCount,
+            label: 'حضورك',
+            caption: 'يُسجَّل حضورك بمسح رمز بطاقتك عند البوابة',
+            href: '/dashboard/badge',
+            color: 'var(--accent-blue)',
+            ariaLabel: `سُجّل حضورك في ${attendedCount} من ${checkpointCount} بوابات`,
+          },
+        ]
+      : []),
+  ].filter((r) => r.value > 0);
+
+  const statusSlices = SUBMISSION_STATUSES.map((status) => ({
+    key: status,
+    label: SUBMISSION_STATUS_LABELS[status],
+    count: statusCounts.get(status) ?? 0,
+    color: SUBMISSION_STATUS_COLORS[status],
+  }));
+
   return (
     <div dir="rtl" className="space-y-5">
       <WelcomeHero
@@ -157,7 +262,17 @@ export default async function DashboardHomePage() {
         code={user.confirmationCode}
       />
 
+      <StatRings stats={rings} />
+
       <Readiness steps={steps} />
+
+      {/* The programme on a time axis. Placed above the "next session" card
+          because it answers the same question more completely — that card is
+          the one line you need on the morning itself, this is the shape of
+          both days. */}
+      {timeline.length > 0 && (
+        <DayTimeline sessions={timeline} hasSaved={savedCount > 0} />
+      )}
 
       <div className="grid gap-5 lg:grid-cols-2">
         {/* Next session */}
@@ -269,25 +384,10 @@ export default async function DashboardHomePage() {
           ) : abilities.submitInnovations && submissionCount > 0 ? (
             <>
               <CardHeading title="حالة مشاريعك" href="/dashboard/innovations" linkLabel="ابتكاراتي" />
-              <ul className="space-y-2.5">
-                {[...statusCounts.entries()].map(([status, count]) => (
-                  <li key={status} className="flex items-center justify-between gap-3">
-                    <span className="flex items-center gap-2.5 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
-                      <span
-                        className="h-2 w-2 rounded-full"
-                        style={{
-                          background:
-                            SUBMISSION_STATUS_COLORS[status as keyof typeof SUBMISSION_STATUS_COLORS],
-                        }}
-                      />
-                      {SUBMISSION_STATUS_LABELS[status as keyof typeof SUBMISSION_STATUS_LABELS]}
-                    </span>
-                    <span className="font-outfit font-bold text-[14px]" style={{ color: 'var(--text-primary)' }}>
-                      {count}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              {/* Ordered by the workflow, not by however the counts came back
+                  from the map — the bar reads as a pipeline, so draft has to
+                  sit before review and review before a decision. */}
+              <StatusBar slices={statusSlices} />
             </>
           ) : (
             <>
