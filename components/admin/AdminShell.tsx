@@ -4,7 +4,7 @@ import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, Mic2, CalendarDays, Images, Handshake,
   History, Trophy, Clapperboard, ClipboardList, Lightbulb, Users, BarChart3,
-  LogOut, Megaphone, KeyRound, ExternalLink, ScanLine,
+  LogOut, Megaphone, KeyRound, ExternalLink, ScanLine, PanelsTopLeft,
 } from 'lucide-react';
 import PlatformShell, { type NavGroup, type UtilAction } from '@/components/platform/PlatformShell';
 
@@ -16,7 +16,16 @@ const GROUPS: NavGroup[] = [
     items: [{ href: '/admin', label: 'نظرة عامة', icon: LayoutDashboard, exact: true }],
   },
   {
+    // The seven sections of the public site, behind one entry.
+    //
+    // Listed flat they were half of a fourteen-item sidebar, which defeats the
+    // grouping: a map you scan only works while it is shorter than the list it
+    // replaced. They are also the part an organiser touches least once the
+    // site is written — the day-to-day work is registrations, submissions and
+    // attendance, and those stay in plain sight.
     label: 'محتوى الموقع',
+    collapsible: true,
+    icon: PanelsTopLeft,
     items: [
       { href: '/admin/speakers', label: 'المتحدثون', icon: Mic2 },
       { href: '/admin/program', label: 'البرنامج', icon: CalendarDays },

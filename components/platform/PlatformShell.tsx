@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Sun, Moon } from 'lucide-react';
+import { Menu, X, Sun, Moon, ChevronDown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import CICTLogo from '@/components/ui/CICTLogo';
 import ConfirmProvider from '@/components/platform/ConfirmDialog';
@@ -33,6 +33,22 @@ export interface NavItem {
 export interface NavGroup {
   label?: string;
   items: NavItem[];
+  /**
+   * Collapse the group behind a single entry that opens on demand.
+   *
+   * For a group that is long and only occasionally the thing being worked on.
+   * The organiser panel edits seven separate parts of the public site, and
+   * listing all seven permanently made the sidebar a list of fourteen — at
+   * which point the grouping that was supposed to make it scannable is doing
+   * nothing, because everything is visible at once anyway.
+   *
+   * A collapsed group still shows that it contains the current page, and opens
+   * itself when it does: nothing is ever hidden from the person already
+   * inside it.
+   */
+  collapsible?: boolean;
+  /** The icon on the collapsed entry. Required in spirit when collapsible. */
+  icon?: LucideIcon;
 }
 
 export interface UtilAction {
@@ -47,6 +63,122 @@ export interface UtilAction {
 function isActive(pathname: string | null, item: NavItem): boolean {
   if (!pathname) return false;
   return item.exact ? pathname === item.href : pathname.startsWith(item.href);
+}
+
+function NavItemLink({
+  item,
+  pathname,
+  onNavigate,
+  nested,
+}: {
+  item: NavItem;
+  pathname: string | null;
+  onNavigate?: () => void;
+  nested?: boolean;
+}) {
+  const active = isActive(pathname, item);
+  const Icon = item.icon;
+
+  return (
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      data-active={active}
+      aria-current={active ? 'page' : undefined}
+      className={`platform-nav-link${nested ? ' platform-nav-link--nested' : ''}`}
+    >
+      <Icon className="platform-nav-icon h-4 w-4 shrink-0" />
+      <span className="truncate">{item.label}</span>
+
+      {item.badge ? (
+        <span
+          className="ms-auto inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-bold leading-none"
+          style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+          aria-label={`${item.badge} غير مقروء`}
+        >
+          {item.badge > 99 ? '+99' : item.badge}
+        </span>
+      ) : null}
+    </Link>
+  );
+}
+
+function CollapsibleGroup({
+  group,
+  pathname,
+  onNavigate,
+}: {
+  group: NavGroup;
+  pathname: string | null;
+  onNavigate?: () => void;
+}) {
+  const holdsCurrent = group.items.some((item) => isActive(pathname, item));
+  const panelId = useId();
+
+  // Derived from the route, never set from an effect. `open` is only the
+  // deliberate override, so navigating into the group opens it without the
+  // component having to watch the pathname and write state on a change —
+  // which is how the drawer used to work, and was a cascading render.
+  const [override, setOverride] = useState<boolean | null>(null);
+  const expanded = override ?? holdsCurrent;
+
+  const Icon = group.icon ?? ChevronDown;
+
+  return (
+    <div className="platform-group">
+      <button
+        type="button"
+        onClick={() => setOverride(!expanded)}
+        aria-expanded={expanded}
+        aria-controls={panelId}
+        // Reads as current when it holds the current page and is shut, so a
+        // collapsed group never hides where you are.
+        data-active={holdsCurrent && !expanded}
+        className="platform-nav-link w-full"
+      >
+        <Icon className="platform-nav-icon h-4 w-4 shrink-0" />
+        <span className="truncate">{group.label}</span>
+        <span
+          className="ms-auto flex items-center gap-1.5"
+          style={{ color: 'var(--text-tertiary)' }}
+        >
+          {/* How many are inside, so the entry says what it costs to open. */}
+          <span className="text-[11px] font-semibold tabular-nums">{group.items.length}</span>
+          <ChevronDown
+            className="h-3.5 w-3.5 shrink-0 transition-transform duration-200"
+            style={{ transform: expanded ? 'rotate(180deg)' : 'none' }}
+            aria-hidden
+          />
+        </span>
+      </button>
+
+      {/* Animated with grid-template-rows rather than max-height: the content
+          is a variable number of rows, and a max-height large enough for the
+          longest group makes every shorter one open at the wrong speed. */}
+      <div
+        id={panelId}
+        className="platform-collapse"
+        data-expanded={expanded}
+        // Keeps the shut panel out of the tab order and the accessibility tree
+        // without unmounting it, so the open stays animatable.
+        inert={!expanded}
+      >
+        <div className="platform-collapse-inner">
+          <div className="space-y-0.5 pt-0.5">
+            {group.items.map((item) => (
+              <NavItemLink
+                key={item.href}
+                item={item}
+                pathname={pathname}
+                onNavigate={onNavigate}
+                nested
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function NavLinks({
@@ -64,41 +196,31 @@ function NavLinks({
 
   return (
     <nav className="platform-scroll flex-1 -mx-1 px-1">
-      {visible.map((group, i) => (
-        <div key={group.label ?? `group-${i}`} className="platform-group">
-          {group.label && <p className="platform-group-label">{group.label}</p>}
+      {visible.map((group, i) =>
+        group.collapsible && group.label ? (
+          <CollapsibleGroup
+            key={group.label}
+            group={group}
+            pathname={pathname}
+            onNavigate={onNavigate}
+          />
+        ) : (
+          <div key={group.label ?? `group-${i}`} className="platform-group">
+            {group.label && <p className="platform-group-label">{group.label}</p>}
 
-          <div className="space-y-0.5">
-            {group.items.map((item) => {
-              const active = isActive(pathname, item);
-              const Icon = item.icon;
-              return (
-                <Link
+            <div className="space-y-0.5">
+              {group.items.map((item) => (
+                <NavItemLink
                   key={item.href}
-                  href={item.href}
-                  onClick={onNavigate}
-                  data-active={active}
-                  aria-current={active ? 'page' : undefined}
-                  className="platform-nav-link"
-                >
-                  <Icon className="platform-nav-icon h-4 w-4 shrink-0" />
-                  <span className="truncate">{item.label}</span>
-
-                  {item.badge ? (
-                    <span
-                      className="ms-auto inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-bold leading-none"
-                      style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
-                      aria-label={`${item.badge} غير مقروء`}
-                    >
-                      {item.badge > 99 ? '+99' : item.badge}
-                    </span>
-                  ) : null}
-                </Link>
-              );
-            })}
+                  item={item}
+                  pathname={pathname}
+                  onNavigate={onNavigate}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ),
+      )}
     </nav>
   );
 }

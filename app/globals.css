@@ -983,6 +983,56 @@ html[lang="ar"] .font-platform [class*="font-inter"] {
   outline-offset: 2px;
 }
 
+/* A nav group that opens on demand.
+
+   Animated with grid-template-rows 0fr -> 1fr rather than max-height. The
+   panel holds a variable number of links, and a max-height picked for the
+   longest group makes every shorter one open at the wrong speed and land with
+   a pause; this animates to the content's own height whatever that is. */
+.platform-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.platform-collapse[data-expanded='true'] {
+  grid-template-rows: 1fr;
+}
+
+/* The row of a 0fr grid still shows its overflow, so the clipping lives here
+   rather than on the grid itself. */
+.platform-collapse-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Nested links are indented from the inline-start edge and carry a rail down
+   that same edge, so an open group reads as one block hanging off its heading
+   rather than as seven more top-level entries.
+
+   inline-START, not inline-end. In this RTL shell the start is the right —
+   the side the eye begins on and the side the labels align to — and the first
+   version of this used inline-end, which put the indent and the rail on the
+   left where neither did anything a reader would notice. */
+.platform-nav-link--nested {
+  margin-inline-start: 0.6rem;
+  padding-inline-start: 1.1rem;
+  font-size: 13px;
+  border-inline-start: 1px solid var(--mat-liquid-border);
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+.platform-nav-link--nested[data-active='true'] {
+  border-inline-start-color: var(--nav-active-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .platform-collapse {
+    transition: none;
+  }
+}
+
 .platform-group-label {
   padding: 0 0.7rem;
   margin: 0.85rem 0 0.25rem;
