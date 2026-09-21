@@ -31,8 +31,14 @@ import { siteUrl } from '@/lib/site';
  *  message or a shared screenshot stops working before it matters. */
 const TOKEN_LIFETIME_MS = 60 * 60 * 1000;
 
-/** The shortest password the reset form will set. Matches the account page. */
-export const MIN_PASSWORD_LENGTH = 10;
+/**
+ * Re-exported, not redefined. It lives in lib/password-rules.ts so the account
+ * page's strength meter — which runs in the browser — can read the same number
+ * without pulling this module's crypto and database imports into a client
+ * bundle. Existing callers keep importing it from here.
+ */
+export { MIN_PASSWORD_LENGTH } from './password-rules';
+import { MIN_PASSWORD_LENGTH } from './password-rules';
 
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');

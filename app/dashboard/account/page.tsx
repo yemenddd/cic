@@ -1,12 +1,15 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { Lock, ShieldCheck, QrCode, Mail, BadgeCheck } from 'lucide-react';
+import { Lock, ShieldCheck, QrCode, Mail, BadgeCheck, CalendarPlus, KeyRound } from 'lucide-react';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
 import { TextField, SelectField } from '@/components/admin/fields';
 import AccountForm from '@/components/dashboard/AccountForm';
 import { categoryLabel } from '@/lib/categories';
 import { SUBMISSION_TRACKS } from '@/lib/submissions';
+import { relativeArabicDate } from '@/lib/relative-time';
+import ProfileStrength from './ProfileStrength';
+import PasswordMeter from './PasswordMeter';
 import { updateProfile, changePassword } from './actions';
 
 export const metadata: Metadata = {
@@ -155,6 +158,19 @@ export default async function AccountPage() {
             defaultValue={user.track ?? ''}
             options={trackOptions}
           />
+
+          {/* Inside the form on purpose: it reads the fields above as they are
+              typed, so the ring answers "am I done" before the save rather
+              than after it. */}
+          <ProfileStrength
+            initial={{
+              name: user.name,
+              phone: user.phone,
+              country: user.country,
+              organization: user.organization,
+              track: user.track,
+            }}
+          />
         </AccountForm>
 
         <div className="space-y-5">
@@ -167,7 +183,42 @@ export default async function AccountPage() {
             <TextField name="current" label="كلمة المرور الحالية" type="password" required dir="ltr" />
             <TextField name="next" label="كلمة المرور الجديدة" type="password" required dir="ltr" />
             <TextField name="confirm" label="تأكيد كلمة المرور الجديدة" type="password" required dir="ltr" />
+            <PasswordMeter email={user.email} />
           </AccountForm>
+
+          {/* Two dates the account knows about itself. The second is the one
+              worth having: a password that has never been changed since the
+              account was made is exactly what the browser's breach warning is
+              about, and until now nothing told the person when theirs was. */}
+          <section
+            className="rounded-2xl p-5 space-y-4"
+            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
+          >
+            <h2 className="font-outfit font-semibold text-[14px]" style={{ color: 'var(--text-primary)' }}>
+              عن حسابك
+            </h2>
+
+            <FixedField
+              icon={CalendarPlus}
+              label="تاريخ الانضمام"
+              value={relativeArabicDate(user.createdAt)}
+              note="منذ هذا التاريخ وحسابك على المنصة."
+            />
+            <FixedField
+              icon={KeyRound}
+              label="آخر تغيير لكلمة المرور"
+              value={
+                user.passwordChangedAt
+                  ? relativeArabicDate(user.passwordChangedAt)
+                  : 'لم تُغيَّر منذ إنشاء الحساب'
+              }
+              note={
+                user.passwordChangedAt
+                  ? 'تغيير كلمة المرور يُنهي أي جلسة مفتوحة على حسابك في أجهزة أخرى.'
+                  : 'إن وصلك تنبيه من المتصفح بأنها في تسريب، غيّرها من النموذج أعلاه.'
+              }
+            />
+          </section>
 
           {/* The three values an attendee cannot edit, each said once with its
               reason — rather than one crowded line of small print. */}

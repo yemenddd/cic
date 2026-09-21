@@ -67,6 +67,8 @@ const { RESET_BY_IP, recordFailure, throttleState, clearFailures } = await impor
   '../lib/rate-limit'
 );
 const { auditServerActions } = await import('../lib/guard-audit');
+const { profileCompleteness } = await import('../lib/profile-completeness');
+const { passwordStrength } = await import('../lib/password-strength');
 const { reconcileRegistrationAccount } = await import('../lib/registration-accounts');
 
 let failures = 0;
@@ -884,6 +886,61 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   // and an attendance record does not stop being worth showing on the way home.
   check('it stays started once ended', conferenceHasStarted(conferenceEnd()), true);
   check('and ended is still its own question', conferenceHasEnded(opening), false);
+}
+
+// --- the account page's two meters -------------------------------------------
+
+// What gets printed on a badge and a certificate, and whether it is there.
+{
+  const empty = profileCompleteness({});
+  check('an empty profile is zero complete', empty.filled, 0);
+  check('and knows what it is missing', empty.missingEssential.map((i) => i.key).sort(), ['name', 'track']);
+
+  const full = profileCompleteness({
+    name: 'ريم الشرعبي', phone: '+905551234567', country: 'تركيا',
+    organization: 'جامعة', track: 'البحث العلمي',
+  });
+  check('a filled profile is complete', full.ratio, 1);
+  check('with nothing essential outstanding', full.missingEssential.length, 0);
+
+  // Whitespace is not a value: " " in a name prints as a blank line on a
+  // certificate, and counting it as filled is how that ships.
+  const blank = profileCompleteness({ name: '   ', track: '\t' });
+  check('whitespace does not count as filled', blank.filled, 0);
+  check('and is still reported as missing', blank.missingEssential.length, 2);
+
+  const partial = profileCompleteness({ name: 'ريم', country: 'اليمن' });
+  check('a partial profile counts what is there', partial.filled, 2);
+  check('of the five fields', partial.total, 5);
+  check('and still names the missing essential', partial.missingEssential.map((i) => i.key), ['track']);
+  check('every field explains what it is for', partial.items.every((i) => i.why.length > 0), true);
+}
+
+// The strength meter. It is guidance, not a gate — but wrong guidance is worse
+// than none, so the cases that must not read "strong" are checked.
+{
+  const level = (p: string, email?: string) => passwordStrength(p, email).level;
+
+  check('nothing typed has no verdict', passwordStrength('').label, '');
+  check('under the minimum is too short', level('short'), 'tooShort');
+  check('and says how many characters remain', passwordStrength('short').advice?.includes('5'), true);
+  check('exactly the minimum is not too short', level('abcmnpqrxy') !== 'tooShort', true);
+
+  // Length alone must not rescue a notorious password.
+  check('a long common password is still weak', level('password12345678'), 'weak');
+  check('leetspeak does not save it', level('passw0rd123456789'), 'weak');
+  check('the address is not a password', level('reemalsharabi99', 'reemalsharabi@example.com'), 'weak');
+  check('repeated characters are weak', level('aaaabbbbcccc'), 'weak');
+  check('a run of consecutive characters is weak', level('abcdefghijkl'), 'weak');
+
+  // Length is what actually costs an attacker time, so it outranks symbols.
+  check('a long ordinary phrase is strong', level('mountain river lantern'), 'strong');
+  check('a short complex one is not', level('Xk7#mQ2!p'), 'tooShort');
+  check('thirteen mixed characters are strong', level('Kx7mQpRt2Nvz4'), 'strong');
+  check('a long lowercase-only phrase still rates', level('lanternrivermoth') !== 'weak', true);
+
+  check('a weak password is told why', passwordStrength('password12345678').advice !== null, true);
+  check('a strong one is not nagged', passwordStrength('mountain river lantern').advice, null);
 }
 
 // --- undo --------------------------------------------------------------------
