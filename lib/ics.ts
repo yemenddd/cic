@@ -193,7 +193,7 @@ function eventLines(session: IcsSession, dtstamp: string): string[] {
 
   // UID must be stable across exports so re-importing updates the event instead
   // of duplicating it.
-  lines.push(`UID:${escapeText(session.id)}@cict2026`);
+  lines.push(`UID:${escapeText(session.id)}@cictr`);
   lines.push(`DTSTAMP:${dtstamp}`);
 
   // `date` is known here, so a null interval means only one thing: the time
@@ -233,7 +233,7 @@ export function buildAgendaIcs(sessions: IcsSession[], now: Date = new Date()): 
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//CICT//Creativity & Innovation Conference 2026//AR',
+    'PRODID:-//CIC//Creativity & Innovation Conference 2026//AR',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     `X-WR-CALNAME:${escapeText('جدولي — مؤتمر الإبداع والابتكار 2026')}`,

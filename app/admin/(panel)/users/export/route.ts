@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
   });
 
   return csvResponse(
-    'cict-users.csv',
+    'cic-users.csv',
     ['الاسم', 'البريد', 'الهاتف', 'الدولة', 'الجهة', 'الصلاحية', 'الفئة', 'المسار', 'رمز التأكيد', 'الحضور', 'الابتكارات', 'الجلسات المحفوظة', 'تاريخ الانضمام'],
     (async function* () {
       for await (const page of pages) {

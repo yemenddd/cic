@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, Sun, Moon, ChevronDown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import CICTLogo from '@/components/ui/CICTLogo';
+import CICLogo from '@/components/ui/CICLogo';
 import ConfirmProvider from '@/components/platform/ConfirmDialog';
 import { useTheme } from '@/lib/theme-context';
 
@@ -311,7 +311,7 @@ function Brand({ title, height = 26 }: { title: string; height?: number }) {
     <div className="flex items-center gap-2.5">
       {/* The symbol only: the full lockup carries its own Arabic wordmark,
           which at sidebar size is unreadable and repeats the title beside it. */}
-      <CICTLogo variant="mark" height={height} />
+      <CICLogo variant="mark" height={height} />
       <span
         className="font-outfit font-bold text-[13.5px] tracking-tight"
         style={{ color: 'var(--text-primary)' }}

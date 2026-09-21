@@ -118,19 +118,19 @@ export default function ConferenceBadge({
           @page { size: A5 portrait; margin: 6mm; }
           *, *::before, *::after { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           body * { visibility: hidden !important; }
-          #cict-badge, #cict-badge * { visibility: visible !important; }
+          #cic-badge, #cic-badge * { visibility: visible !important; }
           .badge-no-print { display: none !important; }
-          #cict-badge { position: fixed !important; inset: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+          #cic-badge { position: fixed !important; inset: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; }
         }
       `}</style>
 
-      <div id="cict-badge" className="flex flex-col items-center w-full">
+      <div id="cic-badge" className="flex flex-col items-center w-full">
 
         {/* ── THE TICKET ─────────────────────────────────────────────── */}
         {/* Entrance is CSS, not framer-motion: an `initial` opacity of 0 left
             the pass invisible rather than unanimated when the JS failed. */}
         <div
-          id="cict-badge-card"
+          id="cic-badge-card"
           dir={dir}
           className="badge-rise w-full overflow-hidden"
           style={{
@@ -171,7 +171,7 @@ export default function ConferenceBadge({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/logos/card_logo.png"
-                alt="CICT"
+                alt="CIC"
                 style={{ height: 36, width: 'auto', objectFit: 'contain', maxWidth: '70%' }}
               />
               <span style={{

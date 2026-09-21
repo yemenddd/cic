@@ -69,7 +69,7 @@ function resetMessage(name: string | null, link: string): string {
   const greeting = name?.trim() ? `مرحباً ${name.trim()}،` : 'مرحباً،';
   return `${greeting}
 
-وصلنا طلب لإعادة تعيين كلمة مرور حسابك في منصة مؤتمر CICT.
+وصلنا طلب لإعادة تعيين كلمة مرور حسابك في منصة مؤتمر CIC.
 
 افتح الرابط التالي لاختيار كلمة مرور جديدة:
 ${link}
@@ -78,7 +78,7 @@ ${link}
 
 إن لم تطلب هذا، تجاهل هذه الرسالة — لم يتغيّر شيء في حسابك، وكلمة مرورك الحالية ما زالت تعمل.
 
-فريق مؤتمر CICT`;
+فريق مؤتمر CIC`;
 }
 
 /**
@@ -117,7 +117,7 @@ export async function requestPasswordReset(rawEmail: string): Promise<void> {
 
   await sendEmail({
     to: user.email,
-    subject: 'إعادة تعيين كلمة المرور — منصة مؤتمر CICT',
+    subject: 'إعادة تعيين كلمة المرور — منصة مؤتمر CIC',
     text: resetMessage(user.name, resetLink(token)),
   });
 }

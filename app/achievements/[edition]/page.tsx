@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ed = await findEdition(edition);
   if (!ed) return {};
   return pageMetadata({
-    title: `إنجازات الدورة ${ed.number === 1 ? 'الأولى' : ed.number === 2 ? 'الثانية' : 'الثالثة'} | CICT`,
+    title: `إنجازات الدورة ${ed.number === 1 ? 'الأولى' : ed.number === 2 ? 'الثانية' : 'الثالثة'} | CIC`,
     description: `استعرض إنجازات الطلاب المبتكرين والمشاركين في الدورة ${ed.year}.`,
   });
 }

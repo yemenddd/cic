@@ -45,7 +45,7 @@ export async function GET() {
   );
 
   return csvResponse(
-    'cict-attendance.csv',
+    'cic-attendance.csv',
     ['الاسم', 'البريد', 'الهاتف', 'الجهة', 'الفئة', 'رمز التأكيد', 'نقطة الحضور', 'اليوم', 'وقت التسجيل', 'الطريقة', 'سجّله'],
     (async function* () {
       for await (const page of pages) {

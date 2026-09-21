@@ -74,7 +74,7 @@ export default function AdminShell({
   ];
 
   return (
-    <PlatformShell title="لوحة CICT" groups={GROUPS} actions={actions} name={name} email={email}>
+    <PlatformShell title="لوحة CIC" groups={GROUPS} actions={actions} name={name} email={email}>
       {children}
     </PlatformShell>
   );

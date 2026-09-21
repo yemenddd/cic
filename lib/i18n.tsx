@@ -34,7 +34,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>('ar');
 
   useEffect(() => {
-    const saved = (typeof window !== 'undefined' && localStorage.getItem('cict-lang')) as Lang | null;
+    // Reads the previous key too — see the note in lib/theme-context.tsx.
+    const saved = (typeof window !== 'undefined' &&
+      (localStorage.getItem('cic-lang') ?? localStorage.getItem('cict-lang'))) as Lang | null;
     if (saved === 'ar' || saved === 'en' || saved === 'tr') setLangState(saved);
   }, []);
 
@@ -43,7 +45,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     el.lang = lang;
     el.dir = lang === 'ar' ? 'rtl' : 'ltr';
     try {
-      localStorage.setItem('cict-lang', lang);
+      localStorage.setItem('cic-lang', lang);
     } catch {
       /* ignore */
     }

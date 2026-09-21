@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import CICTLogo from '@/components/ui/CICTLogo';
+import CICLogo from '@/components/ui/CICLogo';
 
 /**
  * The frame around the short auth screens — asking for a reset link, and
@@ -31,7 +31,7 @@ export default function AuthCard({
     >
       <main className="w-full" style={{ maxWidth: '25rem' }}>
         <Link href="/" className="mb-8 flex justify-center" aria-label="الصفحة الرئيسية">
-          <CICTLogo variant="mark" height={44} />
+          <CICLogo variant="mark" height={44} />
         </Link>
 
         <div

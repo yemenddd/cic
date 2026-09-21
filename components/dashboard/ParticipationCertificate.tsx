@@ -45,7 +45,7 @@ export interface ParticipationCertificateProps {
    * shown a list, which is not the same thing at all.
    *
    * It also withholds the capture id. `downloadCertificatePDF` finds its
-   * target by the hardcoded `cict-certificate`, so a preview that kept the id
+   * target by the hardcoded `cic-certificate`, so a preview that kept the id
    * would be a certificate anybody could save early by calling the helper from
    * a console — which is the one thing the whole "issued only after the event"
    * rule exists to prevent.
@@ -103,7 +103,7 @@ export default function ParticipationCertificate({
   const w = wording(categoryId, categoryLabel, date, location);
 
   // Scale the on-screen copy to fit narrow viewports. The transform lives on a
-  // wrapper, never on #cict-certificate, so the capture stays at full size.
+  // wrapper, never on #cic-certificate, so the capture stays at full size.
   const measureRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
@@ -117,7 +117,7 @@ export default function ParticipationCertificate({
     return () => ro.disconnect();
   }, []);
 
-  const handleDownload = useCallback(() => { void downloadCertificatePDF(name || 'CICT-Certificate'); }, [name]);
+  const handleDownload = useCallback(() => { void downloadCertificatePDF(name || 'CIC-Certificate'); }, [name]);
 
   return (
     <div style={{ width: '100%' }}>
@@ -129,7 +129,7 @@ export default function ParticipationCertificate({
             {/* ── THE CERTIFICATE ─────────────────────────────────────── */}
             <div
               // Withheld in preview, so the PDF helper cannot find it.
-              id={preview ? undefined : 'cict-certificate'}
+              id={preview ? undefined : 'cic-certificate'}
               dir="rtl"
               style={{
                 width: CERT_W,
@@ -172,7 +172,7 @@ export default function ParticipationCertificate({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/images/logos/logo_colored.png"
-                  alt="CICT"
+                  alt="CIC"
                   style={{ height: 62, width: 'auto', objectFit: 'contain', marginBottom: 10 }}
                 />
                 <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: INK_SOFT, letterSpacing: '0.01em' }}>
@@ -185,7 +185,7 @@ export default function ParticipationCertificate({
                     letterSpacing: '0.34em', textTransform: 'uppercase',
                   }}
                 >
-                  CICT 2026 · Istanbul
+                  CIC 2026 · Istanbul
                 </p>
 
                 {/* ── Title ── */}
@@ -304,7 +304,7 @@ export default function ParticipationCertificate({
                       }}
                     >
                       <span dir="ltr" style={{ fontSize: 17, fontWeight: 700, letterSpacing: '0.12em', color: INK }}>
-                        CICT
+                        CIC
                       </span>
                       <span style={{ fontSize: 9, fontWeight: 600, color: GOLD, letterSpacing: '0.06em' }}>
                         ختم المؤتمر

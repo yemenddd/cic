@@ -14,7 +14,7 @@ import { siteUrl } from "@/lib/site";
 const eventJsonLd = {
   "@context": "https://schema.org",
   "@type": "Event",
-  name: "مؤتمر الإبداع والابتكار 2026 (CICT 2026)",
+  name: "مؤتمر الإبداع والابتكار 2026 (CIC 2026)",
   startDate: "2026-10-02",
   endDate: "2026-10-03",
   eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
@@ -27,7 +27,7 @@ const eventJsonLd = {
   image: [`${siteUrl}/opengraph-image`],
   description:
     "انضم إلينا في مؤتمر الإبداع والابتكار الرابع يومي ٢–٣ أكتوبر ٢٠٢٦. اكتشف مستقبل الابتكار.",
-  organizer: { "@type": "Organization", name: "CICT", url: siteUrl },
+  organizer: { "@type": "Organization", name: "CIC", url: siteUrl },
 };
 
 export default async function Home() {

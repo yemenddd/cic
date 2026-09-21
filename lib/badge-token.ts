@@ -3,7 +3,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 /**
  * The string a badge's QR code actually carries.
  *
- * Shape: `CICT1.<userId>.<signature>` — a version tag, the account it belongs
+ * Shape: `CIC1.<userId>.<signature>` — a version tag, the account it belongs
  * to, and an HMAC of the two over AUTH_SECRET.
  *
  * Why a signature rather than the bare user id, or the confirmation code that
@@ -30,7 +30,21 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
  */
 
 /** Version tag, so a future payload shape can be told apart from this one. */
-const PREFIX = 'CICT1';
+const PREFIX = 'CIC1';
+
+/**
+ * The tag this used to carry, still accepted when verifying.
+ *
+ * The prefix is not decoration: it is fed into the HMAC, so renaming it
+ * changes every signature. A badge is a physical object somebody may have
+ * printed weeks earlier, and a rename that only emitted the new shape would
+ * stop those scanning at the door with no way to tell why.
+ *
+ * Only ever verified, never issued. It can be deleted once no badge printed
+ * before the rename can still turn up — which, for a two-day conference, is
+ * after it has happened.
+ */
+const LEGACY_PREFIX = 'CICT1';
 
 /**
  * 22 base64url characters ≈ 132 bits of the digest. Far past the point where
@@ -40,7 +54,9 @@ const PREFIX = 'CICT1';
 const SIGNATURE_LENGTH = 22;
 
 /** Only the shapes above — anything else is not one of our badges. */
-const TOKEN_PATTERN = new RegExp(`^${PREFIX}\\.([A-Za-z0-9_-]{1,64})\\.([A-Za-z0-9_-]{${SIGNATURE_LENGTH}})$`);
+const TOKEN_PATTERN = new RegExp(
+  `^(${PREFIX}|${LEGACY_PREFIX})\\.([A-Za-z0-9_-]{1,64})\\.([A-Za-z0-9_-]{${SIGNATURE_LENGTH}})$`,
+);
 
 function secret(): string {
   const value = process.env.AUTH_SECRET;
@@ -50,9 +66,9 @@ function secret(): string {
   return value;
 }
 
-function sign(userId: string): string {
+function sign(userId: string, prefix: string = PREFIX): string {
   return createHmac('sha256', secret())
-    .update(`${PREFIX}:${userId}`)
+    .update(`${prefix}:${userId}`)
     .digest('base64url')
     .slice(0, SIGNATURE_LENGTH);
 }
@@ -72,8 +88,10 @@ export function verifyBadgeToken(raw: string): string | null {
   const match = TOKEN_PATTERN.exec(raw.trim());
   if (!match) return null;
 
-  const [, userId, signature] = match;
-  const expected = Buffer.from(sign(userId));
+  const [, prefix, userId, signature] = match;
+  // Signed with whichever tag the token actually carries, so a badge printed
+  // before the rename verifies against the secret that signed it.
+  const expected = Buffer.from(sign(userId, prefix));
   const actual = Buffer.from(signature);
 
   if (expected.length !== actual.length) return null;

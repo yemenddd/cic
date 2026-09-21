@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db/client';
 import { DAY_KEYS, DAY_LABELS, dayLabel } from '@/lib/attendance';
 import NewCheckpointForm, { type SessionOption } from './NewCheckpointForm';
 
-export const metadata = { title: 'نقاط الحضور | لوحة CICT' };
+export const metadata = { title: 'نقاط الحضور | لوحة CIC' };
 
 export default async function NewCheckpointPage() {
   const sessions = await prisma.programSession.findMany({

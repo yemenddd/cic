@@ -1,5 +1,5 @@
-export async function downloadBadgePDF(name = 'CICT-Badge') {
-  const card = document.getElementById('cict-badge-card');
+export async function downloadBadgePDF(name = 'CIC-Badge') {
+  const card = document.getElementById('cic-badge-card');
   if (!card) return;
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -31,7 +31,7 @@ export async function downloadBadgePDF(name = 'CICT-Badge') {
       // PDF blob URLs show blank pages on iOS Safari, PNG is the reliable option
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.download = `${safeName}-CICT2026.png`;
+      a.download = `${safeName}-CIC2026.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -56,7 +56,7 @@ export async function downloadBadgePDF(name = 'CICT-Badge') {
       const y = Math.max(MARGIN, (A4_H - imgH) / 2);
 
       pdf.addImage(dataUrl, 'PNG', MARGIN, y, imgW, imgH);
-      pdf.save(`${safeName}-CICT2026.pdf`);
+      pdf.save(`${safeName}-CIC2026.pdf`);
     }
   } catch (err) {
     console.error('Badge download failed:', err);

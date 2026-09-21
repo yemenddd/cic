@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'لوحة تحكم CICT',
+  title: 'لوحة تحكم CIC',
   robots: { index: false, follow: false },
 };
 

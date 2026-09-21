@@ -4,7 +4,7 @@ import { currentUser } from '@/lib/auth-guards';
 import AdminLoginForm from '@/components/admin/AdminLoginForm';
 
 export const metadata: Metadata = {
-  title: 'تسجيل دخول الإدمن | CICT',
+  title: 'تسجيل دخول الإدمن | CIC',
   robots: { index: false, follow: false },
 };
 

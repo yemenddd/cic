@@ -1,8 +1,8 @@
 // Certificate export — same machinery as `download-badge-pdf.ts` (rasterise the
 // DOM node with html-to-image, then drop the PNG onto a jsPDF page), but with
 // its own DOM id and an A4 *landscape* page, since a certificate is wide.
-export async function downloadCertificatePDF(name = 'CICT-Certificate') {
-  const card = document.getElementById('cict-certificate');
+export async function downloadCertificatePDF(name = 'CIC-Certificate') {
+  const card = document.getElementById('cic-certificate');
   if (!card) return;
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -35,7 +35,7 @@ export async function downloadCertificatePDF(name = 'CICT-Certificate') {
       // PDF blob URLs show blank pages on iOS Safari, PNG is the reliable option
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.download = `${safeName}-CICT2026.png`;
+      a.download = `${safeName}-CIC2026.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -69,7 +69,7 @@ export async function downloadCertificatePDF(name = 'CICT-Certificate') {
       const y = (A4_H - imgH) / 2;
 
       pdf.addImage(dataUrl, 'PNG', x, y, imgW, imgH);
-      pdf.save(`${safeName}-CICT2026.pdf`);
+      pdf.save(`${safeName}-CIC2026.pdf`);
     }
   } catch (err) {
     console.error('Certificate download failed:', err);

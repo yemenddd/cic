@@ -287,7 +287,7 @@ check('the same account always gets the same token', badgeToken(SUBJECT), TOKEN)
 check('a different account gets a different one', badgeToken('ckuser000000000000000001') === TOKEN, false);
 check('a tampered signature is refused', verifyBadgeToken(TOKEN.slice(0, -1) + (TOKEN.endsWith('A') ? 'B' : 'A')), null);
 check('a swapped subject is refused', verifyBadgeToken(TOKEN.replace(SUBJECT, 'ckuser000000000000000002')), null);
-check('an unsigned lookalike is refused', verifyBadgeToken('CICT1.ckuser000000000000000000.AAAAAAAAAAAAAAAAAAAAAA'), null);
+check('an unsigned lookalike is refused', verifyBadgeToken('CIC1.ckuser000000000000000000.AAAAAAAAAAAAAAAAAAAAAA'), null);
 check('a random string is refused', verifyBadgeToken('hello'), null);
 check('an empty string is refused', verifyBadgeToken(''), null);
 
@@ -334,13 +334,13 @@ check('a signed token is read as a token', parseScanInput(TOKEN), { kind: 'token
 check('surrounding whitespace is tolerated', parseScanInput(`  ${TOKEN}\n`), { kind: 'token', userId: SUBJECT });
 check(
   'a token wrapped in a URL by a generic camera app still reads',
-  parseScanInput(`https://cict2026.com/b/${TOKEN}`),
+  parseScanInput(`https://cictr.org/b/${TOKEN}`),
   { kind: 'token', userId: SUBJECT },
 );
-check('a confirmation code is read as a code', parseScanInput('CICT-2026-ABC234'), { kind: 'code', code: 'CICT-2026-ABC234' });
-check('a code typed in lowercase is accepted', parseScanInput('cict-2026-abc234'), { kind: 'code', code: 'CICT-2026-ABC234' });
-check('a code with the ambiguous glyphs is refused', parseScanInput('CICT-2026-ABC01O'), { kind: 'unreadable' });
-check('a forged token is not downgraded to a code lookup', parseScanInput('CICT1.ckuser000000000000000000.AAAAAAAAAAAAAAAAAAAAAA'), { kind: 'unreadable' });
+check('a confirmation code is read as a code', parseScanInput('CIC-2026-ABC234'), { kind: 'code', code: 'CIC-2026-ABC234' });
+check('a code typed in lowercase is accepted', parseScanInput('cic-2026-abc234'), { kind: 'code', code: 'CIC-2026-ABC234' });
+check('a code with the ambiguous glyphs is refused', parseScanInput('CIC-2026-ABC01O'), { kind: 'unreadable' });
+check('a forged token is not downgraded to a code lookup', parseScanInput('CIC1.ckuser000000000000000000.AAAAAAAAAAAAAAAAAAAAAA'), { kind: 'unreadable' });
 check('a product barcode is unreadable', parseScanInput('5901234123457'), { kind: 'unreadable' });
 check('an empty scan is unreadable', parseScanInput('   '), { kind: 'unreadable' });
 
@@ -483,7 +483,7 @@ if (scanned) {
     'a forged badge counts nobody',
     (await recordAttendance({
       checkpointId: gate.id,
-      raw: 'CICT1.ckuser000000000000000000.AAAAAAAAAAAAAAAAAAAAAA',
+      raw: 'CIC1.ckuser000000000000000000.AAAAAAAAAAAAAAAAAAAAAA',
       method: 'QR',
       recordedById: admin.id,
     })).status,
@@ -494,7 +494,7 @@ if (scanned) {
     'a well-formed code nobody holds counts nobody',
     (await recordAttendance({
       checkpointId: gate.id,
-      raw: 'CICT-2026-ZZZZZZ',
+      raw: 'CIC-2026-ZZZZZZ',
       method: 'QR',
       recordedById: admin.id,
     })).status,
@@ -759,7 +759,7 @@ const madeUser = await prisma.user.findUnique({
 check('the account carries the registration\'s own details', [madeUser?.name, madeUser?.phone, madeUser?.country, madeUser?.track], [`${RMARK} بلا حساب`, '555', 'تركيا', 'البحث العلمي']);
 check('the tier is taken from the registration', madeUser?.category, 'participant');
 check('and it is an attendee, never an admin', madeUser?.role, 'ATTENDEE');
-check('it gets a badge code, so it can be scanned', /^CICT-2026-[A-Z0-9]{6}$/.test(madeUser?.confirmationCode ?? ''), true);
+check('it gets a badge code, so it can be scanned', /^CIC-2026-[A-Z0-9]{6}$/.test(madeUser?.confirmationCode ?? ''), true);
 
 const linkedBack = await prisma.registration.findUnique({ where: { id: orphan.id }, select: { userId: true } });
 check('the registration is attached in the same breath', linkedBack?.userId, madeUser?.id);
@@ -828,8 +828,8 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
     true,
   );
 
-  const resp = csvResponse('cict-users.csv', header, (async function* () {})());
-  check('it is sent as a download', resp.headers.get('content-disposition'), 'attachment; filename="cict-users.csv"');
+  const resp = csvResponse('cic-users.csv', header, (async function* () {})());
+  check('it is sent as a download', resp.headers.get('content-disposition'), 'attachment; filename="cic-users.csv"');
   check('personal data is never cached', resp.headers.get('cache-control'), 'no-store');
   check('and declared UTF-8, or Excel mangles the Arabic', resp.headers.get('content-type'), 'text/csv; charset=utf-8');
 }
@@ -953,7 +953,7 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
 // worthless, a certificate missing its track line is merely thinner.
 {
   const full = certificateReadiness({
-    name: 'ريم الشرعبي', track: 'البحث العلمي', confirmationCode: 'CICT-2026-000001',
+    name: 'ريم الشرعبي', track: 'البحث العلمي', confirmationCode: 'CIC-2026-000001',
   });
   check('a complete profile is ready', full.ready, true);
   check('and not blocked', full.blocked, false);
@@ -1003,7 +1003,7 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('empty stays empty', cleanUrl(''), '');
   check('null is handled', cleanUrl(null), '');
 
-  check('a real address survives', cleanEmail('Hello@CICT2026.com'), 'hello@cict2026.com');
+  check('a real address survives', cleanEmail('Hello@CICTR.org'), 'hello@cictr.org');
   check('an address with no domain is refused', cleanEmail('hello@localhost'), '');
   check('an address with a space is refused', cleanEmail('a b@example.com'), '');
   check('a bare word is refused', cleanEmail('hello'), '');
@@ -1034,6 +1034,37 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   // A column that has never been written reads as undefined, not false.
   check('undefined keeps it open', resolveSettings({ registrationOpen: undefined }).registrationOpen, true);
   check('a closed note always has text', resolveSettings({}).registrationClosedNote.length > 0, true);
+}
+
+// --- the CICT -> CIC rename ---------------------------------------------------
+
+// The badge token's version tag is fed into the HMAC, so renaming it changes
+// every signature. A badge is a physical object somebody may have printed
+// before the rename, and it has to keep scanning at the door.
+{
+  const { createHmac } = await import('node:crypto');
+  const userId = 'ckuser000000000000000000';
+
+  const issued = badgeToken(userId);
+  check('new badges carry the new tag', issued.startsWith('CIC1.'), true);
+  check('and not the old one', issued.startsWith('CICT1.'), false);
+  check('a new badge verifies', verifyBadgeToken(issued), userId);
+
+  // Forged exactly the way the old code signed them.
+  const legacySig = createHmac('sha256', process.env.AUTH_SECRET!)
+    .update(`CICT1:${userId}`)
+    .digest('base64url')
+    .slice(0, 22);
+  const legacy = `CICT1.${userId}.${legacySig}`;
+  check('a badge printed before the rename still scans', verifyBadgeToken(legacy), userId);
+
+  // The tag is part of what is signed, so the two are not interchangeable.
+  const swapped = issued.replace('CIC1.', 'CICT1.');
+  check('a new signature under the old tag is refused', verifyBadgeToken(swapped), null);
+  const swappedBack = legacy.replace('CICT1.', 'CIC1.');
+  check('and an old signature under the new tag is refused', verifyBadgeToken(swappedBack), null);
+
+  check('nonsense is still refused', verifyBadgeToken('CIC1.x.y'), null);
 }
 
 // --- undo --------------------------------------------------------------------

@@ -40,7 +40,7 @@ export type ScanInput =
   | { kind: 'unreadable' };
 
 /** Confirmation codes as issued by app/api/register/route.ts. */
-const CODE_PATTERN = /^CICT-2026-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
+const CODE_PATTERN = /^CIC-2026-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
 
 /**
  * Turn whatever came out of the camera (or the manual-entry box) into one of

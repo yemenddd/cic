@@ -8,7 +8,7 @@ import ToggleField from './ToggleField';
 import { saveSiteSettings } from './actions';
 
 export const metadata = {
-  title: 'إعدادات الموقع | لوحة CICT',
+  title: 'إعدادات الموقع | لوحة CIC',
 };
 
 export default async function SiteSettingsPage() {

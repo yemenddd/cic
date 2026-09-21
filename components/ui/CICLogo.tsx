@@ -12,7 +12,7 @@ const SVG_CONTENT = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http:/
  */
 const MARK_VIEWBOX = '369 13 147 147';
 
-export default function CICTLogo({
+export default function CICLogo({
   height = 60,
   variant = 'full',
   className = '',

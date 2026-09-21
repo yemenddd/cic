@@ -62,7 +62,7 @@ export default function DashboardShell({
 
   return (
     <PlatformShell
-      title="حسابي في CICT"
+      title="حسابي في CIC"
       groups={groups}
       actions={actions}
       name={name}

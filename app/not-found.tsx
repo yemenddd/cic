@@ -163,7 +163,7 @@ export default function NotFound() {
 
           {/* Footer branding */}
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/20">
-            CICT 2026
+            CIC 2026
           </p>
         </Empty>
       </motion.div>

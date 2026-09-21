@@ -9,7 +9,7 @@ import AuthScreen from '@/components/platform/AuthScreen';
 export default function AdminLoginForm() {
   return (
     <AuthScreen
-      heading="لوحة تحكم CICT"
+      heading="لوحة تحكم CIC"
       subheading="سجّل الدخول لإدارة المؤتمر"
       submitIcon={Lock}
       submitLabel="دخول"

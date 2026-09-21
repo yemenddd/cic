@@ -20,7 +20,7 @@ const ISSUE_STYLE: Record<CertificateIssueLevel, { icon: typeof Award; color: st
 };
 
 export const metadata: Metadata = {
-  title: 'شهادتي | CICT 2026',
+  title: 'شهادتي | CIC 2026',
   robots: { index: false, follow: false },
 };
 
@@ -292,7 +292,7 @@ export default async function CertificatePage() {
       )}
 
       {/* Exactly one certificate on the page — downloadCertificatePDF targets
-          the hardcoded DOM id `cict-certificate`. */}
+          the hardcoded DOM id `cic-certificate`. */}
       <div className="py-2">
         <ParticipationCertificate
           name={user.name ?? ''}

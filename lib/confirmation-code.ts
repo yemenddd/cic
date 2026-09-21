@@ -25,7 +25,7 @@ export function generateConfirmationCode(): string {
   const size = CODE_ALPHABET.length;
   // 32 divides 256 evenly, so `% size` is uniform with no bytes to discard.
   const code = Array.from(randomBytes(6), (b) => CODE_ALPHABET[b % size]).join('');
-  return `CICT-2026-${code}`;
+  return `CIC-2026-${code}`;
 }
 
 /** Did a unique-constraint failure come from the confirmation code column? */

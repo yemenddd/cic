@@ -286,7 +286,7 @@ export default async function AgendaPage({
           // file, so it must leave the client router and hit the network.
           <a
             href="/dashboard/agenda/export"
-            download="cict-2026-agenda.ics"
+            download="cic-2026-agenda.ics"
             className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[13px] font-semibold"
             style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
           >

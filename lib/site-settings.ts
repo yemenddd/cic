@@ -25,7 +25,7 @@ export interface SiteSettingsValues {
 
 /** What the site said before any of this was editable. */
 export const DEFAULT_SETTINGS: SiteSettingsValues = {
-  contactEmail: 'hello@cict2026.com',
+  contactEmail: 'hello@cictr.org',
   facebookUrl: 'https://www.facebook.com/yemenddd',
   instagramUrl: 'https://www.instagram.com/yemen.ddd',
   youtubeUrl: 'https://www.youtube.com/channel/UCwnyiuNKFCSQpvk50-m1sWg',

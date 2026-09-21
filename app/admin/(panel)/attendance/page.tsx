@@ -18,7 +18,7 @@ import { ensureDefaultCheckpoints } from '@/lib/attendance-record';
 import LiveRefresh from './LiveRefresh';
 import CheckpointControls from './CheckpointControls';
 
-export const metadata = { title: 'الحضور | لوحة CICT' };
+export const metadata = { title: 'الحضور | لوحة CIC' };
 
 const TIME = new Intl.DateTimeFormat('ar-u-nu-latn', { timeStyle: 'short' });
 

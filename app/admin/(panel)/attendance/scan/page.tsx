@@ -3,7 +3,7 @@ import { CHECKPOINT_KIND_LABELS, dayLabel, suggestedCheckpoint } from '@/lib/att
 import { ensureDefaultCheckpoints } from '@/lib/attendance-record';
 import Scanner, { type ScannerCheckpoint } from './Scanner';
 
-export const metadata = { title: 'مسح الحضور | لوحة CICT' };
+export const metadata = { title: 'مسح الحضور | لوحة CIC' };
 
 export default async function ScanPage() {
   // The scanner has to work the first time it is opened, at a desk, with a

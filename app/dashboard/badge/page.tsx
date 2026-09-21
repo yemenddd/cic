@@ -14,7 +14,7 @@ import DashboardBadge from '@/components/dashboard/DashboardBadge';
 import GatePass from './GatePass';
 
 export const metadata = {
-  title: 'بطاقتي | CICT 2026',
+  title: 'بطاقتي | CIC 2026',
 };
 
 const DAY_ONLY = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric' });
@@ -128,7 +128,7 @@ export default async function BadgePage() {
 
       <div className="grid gap-6 lg:grid-cols-[auto_1fr] lg:items-start">
         {/* Exactly one badge on the page — downloadBadgePDF targets the
-            hardcoded DOM id `cict-badge-card`. */}
+            hardcoded DOM id `cic-badge-card`. */}
         <div className="flex justify-center">
           <DashboardBadge
             name={user.name ?? ''}

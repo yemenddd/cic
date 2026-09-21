@@ -15,7 +15,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
-    const stored = localStorage.getItem('cict-theme') as Theme | null;
+    // Falls back to the key this used to use. Renaming the brand must not
+    // silently reset the light/dark choice of everybody who already had one —
+    // a visitor who set light mode last week would open to a dark page and
+    // reasonably conclude the site was broken.
+    const stored = (localStorage.getItem('cic-theme') ??
+      localStorage.getItem('cict-theme')) as Theme | null;
     const resolved = stored ?? 'dark';
     setTheme(resolved);
     document.documentElement.setAttribute('data-theme', resolved);
@@ -25,7 +30,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(prev => {
       const next = prev === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('cict-theme', next);
+      localStorage.setItem('cic-theme', next);
       return next;
     });
   };

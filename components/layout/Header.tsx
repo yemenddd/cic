@@ -103,10 +103,10 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-5 md:px-8 h-14 md:h-[60px] flex items-center justify-between gap-4">
 
           {/* ── Logo ── */}
-          <Link href="/" className="flex items-center gap-3 shrink-0 group" aria-label="CICT Home">
+          <Link href="/" className="flex items-center gap-3 shrink-0 group" aria-label="CIC Home">
             <Image
               src={(overDark || !isLight) ? "/images/logos/logo_white.png" : "/images/logos/logo_colored.png"}
-              alt="CICT"
+              alt="CIC"
               width={32}
               height={32}
               priority
@@ -394,7 +394,7 @@ export default function Header() {
               >
                 <Image
                   src={isLight ? "/images/logos/logo_colored.png" : "/images/logos/logo_white.png"}
-                  alt="CICT"
+                  alt="CIC"
                   width={32}
                   height={32}
                   className="w-[32px] h-[32px] object-contain opacity-90"

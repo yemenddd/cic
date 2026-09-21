@@ -32,7 +32,7 @@ export async function GET() {
   return new Response(ics, {
     headers: {
       'Content-Type': 'text/calendar; charset=utf-8',
-      'Content-Disposition': 'attachment; filename="cict-2026-agenda.ics"',
+      'Content-Disposition': 'attachment; filename="cic-2026-agenda.ics"',
       'Cache-Control': 'no-store',
     },
   });

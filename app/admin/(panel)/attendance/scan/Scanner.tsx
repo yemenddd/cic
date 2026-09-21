@@ -468,7 +468,7 @@ export default function Scanner({
               <input
                 value={manual}
                 onChange={(e) => setManual(e.target.value)}
-                placeholder="CICT-2026-XXXXXX"
+                placeholder="CIC-2026-XXXXXX"
                 className="input-glass flex-1 min-w-[200px]"
                 dir="ltr"
                 autoComplete="off"

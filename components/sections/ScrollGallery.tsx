@@ -48,7 +48,7 @@ export default function ScrollGallery() {
         <motion.div className="absolute inset-0 z-0" style={{ opacity: bgOpacity, filter: bgFilter }}>
           <img
             src="/images/gallery/bg2.jpg"
-            alt="CICT conference hall"
+            alt="CIC conference hall"
             className="absolute inset-0 w-full h-full object-cover"
             style={{ transform: 'scale(1.08)' }}
           />
@@ -71,7 +71,7 @@ export default function ScrollGallery() {
         >
           <img
             src="/images/gallery/feature.jpg"
-            alt="CICT 2025 main stage"
+            alt="CIC 2025 main stage"
             className="absolute inset-0 w-full h-full object-cover"
           />
           <motion.div className="absolute inset-0 bg-black" style={{ opacity: mediaOverlay }} />

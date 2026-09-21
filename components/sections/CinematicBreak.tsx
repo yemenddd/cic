@@ -39,7 +39,7 @@ export default function CinematicBreak() {
         {/* ── Background layer ── */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <iframe
-            title="CICT 2025 background reel"
+            title="CIC 2025 background reel"
             src={`https://www.youtube.com/embed/${BG_VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${BG_VIDEO_ID}&controls=0&showinfo=0&rel=0&disablekb=1&modestbranding=1&playsinline=1&iv_load_policy=3`}
             allow="autoplay; encrypted-media; picture-in-picture"
             sandbox="allow-scripts allow-same-origin allow-presentation"
@@ -77,7 +77,7 @@ export default function CinematicBreak() {
           <motion.div className="flex justify-center mb-8" {...inView(0)}>
             <Image
               src="/images/logos/logo_text_horizonal.png"
-              alt="CICT 2026"
+              alt="CIC 2026"
               width={640}
               height={128}
               className="h-10 sm:h-16 lg:h-24 w-auto object-contain"
@@ -202,7 +202,7 @@ export default function CinematicBreak() {
               <iframe
                 width="100%" height="100%"
                 src={`https://www.youtube.com/embed/${FILM_VIDEO_ID}?autoplay=1&rel=0`}
-                title="CICT 2025 Highlight Reel"
+                title="CIC 2025 Highlight Reel"
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 sandbox="allow-scripts allow-same-origin allow-presentation"
                 allowFullScreen

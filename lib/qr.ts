@@ -11,7 +11,7 @@ import qrcode from 'qrcode-generator';
  *
  * Byte mode is the encoder's default and assumes latin-1, so everything passed
  * through here must be ASCII. That holds: the only thing encoded is a badge
- * token, which is `CICT1.<cuid>.<base64url>`.
+ * token, which is `CIC1.<cuid>.<base64url>`.
  */
 
 export type ErrorCorrection = 'L' | 'M' | 'Q' | 'H';

@@ -5,7 +5,7 @@ import { signIn } from 'next-auth/react';
 import { Loader2, Sun, Moon, Eye, EyeOff, TriangleAlert } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Image from 'next/image';
-import CICTLogo from '@/components/ui/CICTLogo';
+import CICLogo from '@/components/ui/CICLogo';
 import { useTheme } from '@/lib/theme-context';
 import { loginErrorMessage } from '@/lib/login-error';
 
@@ -153,11 +153,11 @@ export default function AuthScreen({
               } as React.CSSProperties
             }
           >
-            <CICTLogo height={44} />
+            <CICLogo height={44} />
           </span>
 
           {/* `my-auto` rather than `justify-between` on the column: the third
-              slot that arrangement balanced against — a "CICT 2026 · النسخة
+              slot that arrangement balanced against — a "CIC 2026 · النسخة
               الرابعة" line along the bottom — is gone, and with two children
               justify-between would have pinned this to the floor of the panel
               instead of centring it. */}
@@ -204,7 +204,7 @@ export default function AuthScreen({
         <div className="w-full max-w-sm">
           <div className="mb-8 flex flex-col items-center lg:items-start">
             <span className="lg:hidden">
-              <CICTLogo height={40} />
+              <CICLogo height={40} />
             </span>
             <h1
               className="mt-5 font-outfit font-bold text-[22px] lg:mt-0"

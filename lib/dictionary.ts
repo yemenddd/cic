@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-//  CICT 2026 — i18n dictionary
+//  CIC 2026 — i18n dictionary
 //  Arabic values are BASELINE placeholders — replace with your
 //  exact, professionally-phrased wording. Search this file by key.
 // ─────────────────────────────────────────────────────────────
@@ -199,7 +199,7 @@ export const dict = {
       ],
     },
     gallery: {
-      caption: 'CICT 2025 · Highlights',
+      caption: 'CIC 2025 · Highlights',
       captionTitle: 'Moments that defined the conference.',
       titleA: 'Moments to',
       titleB: 'remember.',
@@ -237,7 +237,7 @@ export const dict = {
     privacyPage: {
       title: 'Privacy Policy',
       updated: 'Last updated: August 2026',
-      intro: 'This page explains what information the Creativity & Innovation Conference (CICT) collects when you register for the event, and how it is used.',
+      intro: 'This page explains what information the Creativity & Innovation Conference (CIC) collects when you register for the event, and how it is used.',
       s1Title: 'What we collect',
       s1Body: 'When you submit the registration form, we collect your full name, email address, phone/WhatsApp number, country, organization (optional), participation category, and chosen track.',
       s2Title: 'How we use it',
@@ -247,7 +247,7 @@ export const dict = {
       s4Title: 'Your rights',
       s4Body: 'You may request access to, correction of, or deletion of your registration data at any time by contacting us at the email below.',
       contactLabel: 'Contact',
-      contactEmail: 'hello@cict2026.com',
+      contactEmail: 'hello@cictr.org',
     },
     about: {
       heroWord1: 'About',
@@ -329,7 +329,7 @@ export const dict = {
     },
     registerPage: {
       title: 'Conference Registration',
-      subtitle: 'Join 500+ innovators, researchers, and creators at CICT 2026.',
+      subtitle: 'Join 500+ innovators, researchers, and creators at CIC 2026.',
       sectionPersonal: 'Personal Information',
       sectionParticipation: 'Participation Type',
       fieldName: 'Full Name',
@@ -351,7 +351,7 @@ export const dict = {
       catLabel: 'Select your participation type',
       catBadge: 'Most Popular',
       catLearnMore: 'Learn more',
-      cardTitle: 'Why join CICT 2026?',
+      cardTitle: 'Why join CIC 2026?',
       cardDesc: 'Two days of world-class sessions, workshops, and networking designed to turn ideas into real impact.',
       cardF1: '500+ expected attendees',
       cardF2: 'International speakers & experts',
@@ -600,7 +600,7 @@ export const dict = {
     privacyPage: {
       title: 'سياسة الخصوصية',
       updated: 'آخر تحديث: أغسطس 2026',
-      intro: 'توضح هذه الصفحة المعلومات التي يجمعها مؤتمر الإبداع والابتكار (CICT) عند التسجيل في المؤتمر، وكيفية استخدامها.',
+      intro: 'توضح هذه الصفحة المعلومات التي يجمعها مؤتمر الإبداع والابتكار (CIC) عند التسجيل في المؤتمر، وكيفية استخدامها.',
       s1Title: 'ما الذي نجمعه',
       s1Body: 'عند إرسال نموذج التسجيل، نقوم بجمع اسمك الكامل، بريدك الإلكتروني، رقم الواتساب، الدولة، المؤسسة (اختياري)، نوع المشاركة، والمسار المختار.',
       s2Title: 'كيف نستخدمها',
@@ -610,7 +610,7 @@ export const dict = {
       s4Title: 'حقوقك',
       s4Body: 'يمكنك في أي وقت طلب الاطلاع على بيانات تسجيلك أو تصحيحها أو حذفها بالتواصل معنا عبر البريد أدناه.',
       contactLabel: 'التواصل',
-      contactEmail: 'hello@cict2026.com',
+      contactEmail: 'hello@cictr.org',
     },
     about: {
       heroWord1: 'عن',
@@ -714,7 +714,7 @@ export const dict = {
       catLabel: 'اختر نوع مشاركتك',
       catBadge: 'الأكثر طلبًا',
       catLearnMore: 'اعرف أكثر',
-      cardTitle: 'لماذا تنضم إلى CICT 2026؟',
+      cardTitle: 'لماذا تنضم إلى CIC 2026؟',
       cardDesc: 'يومان من الجلسات والورشات والتواصل المصمم لتحويل الأفكار إلى أثر حقيقي.',
       cardF1: '+500 حضور متوقع',
       cardF2: 'متحدثون وخبراء دوليون',
@@ -925,7 +925,7 @@ export const dict = {
       ],
     },
     gallery: {
-      caption: 'CICT 2025 · Öne Çıkanlar',
+      caption: 'CIC 2025 · Öne Çıkanlar',
       captionTitle: 'Konferansı tanımlayan anlar.',
       titleA: 'Unutulmaz',
       titleB: 'anlar.',
@@ -960,7 +960,7 @@ export const dict = {
     privacyPage: {
       title: 'Gizlilik Politikası',
       updated: 'Son güncelleme: Ağustos 2026',
-      intro: 'Bu sayfa, Yaratıcılık ve İnovasyon Konferansı\'na (CICT) kaydolduğunuzda hangi bilgilerin toplandığını ve nasıl kullanıldığını açıklar.',
+      intro: 'Bu sayfa, Yaratıcılık ve İnovasyon Konferansı\'na (CIC) kaydolduğunuzda hangi bilgilerin toplandığını ve nasıl kullanıldığını açıklar.',
       s1Title: 'Ne topluyoruz',
       s1Body: 'Kayıt formunu gönderdiğinizde adınızı, e-posta adresinizi, WhatsApp numaranızı, ülkenizi, kurumunuzu (isteğe bağlı), katılım kategorinizi ve seçtiğiniz alanı topluyoruz.',
       s2Title: 'Nasıl kullanıyoruz',
@@ -970,7 +970,7 @@ export const dict = {
       s4Title: 'Haklarınız',
       s4Body: 'Aşağıdaki e-posta üzerinden bizimle iletişime geçerek kayıt verilerinize erişim, düzeltme veya silme talebinde her zaman bulunabilirsiniz.',
       contactLabel: 'İletişim',
-      contactEmail: 'hello@cict2026.com',
+      contactEmail: 'hello@cictr.org',
     },
     about: {
       heroWord1: 'Konferans',
@@ -1052,7 +1052,7 @@ export const dict = {
     },
     registerPage: {
       title: 'Konferans Kaydı',
-      subtitle: "CICT 2026'da 500'den fazla yenilikçi, araştırmacı ve yaratıcıya katılın.",
+      subtitle: "CIC 2026'da 500'den fazla yenilikçi, araştırmacı ve yaratıcıya katılın.",
       sectionPersonal: 'Kişisel Bilgiler',
       sectionParticipation: 'Katılım Türü',
       fieldName: 'Ad Soyad',
@@ -1074,7 +1074,7 @@ export const dict = {
       catLabel: 'Katılım türünüzü seçin',
       catBadge: 'En Çok Tercih Edilen',
       catLearnMore: 'Daha fazla bilgi',
-      cardTitle: "Neden CICT 2026'a katılmalısınız?",
+      cardTitle: "Neden CIC 2026'a katılmalısınız?",
       cardDesc: 'Fikirleri etkiye dönüştürmek için tasarlanmış iki günlük dünya standartlarında oturumlar, atölyeler ve ağ kurma.',
       cardF1: '500+ beklenen katılımcı',
       cardF2: 'Uluslararası konuşmacılar ve uzmanlar',

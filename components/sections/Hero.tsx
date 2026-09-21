@@ -221,7 +221,7 @@ export default function Hero() {
           >
             <motion.img
               src={isRtl ? "/images/hero/1-RTL.png" : "/images/hero/1-LTR.png"}
-              alt="CICT 2026"
+              alt="CIC 2026"
               className="w-[75%] lg:w-full h-auto block mx-auto"
               animate={{ y: [0, -16, 0], rotate: [0, -0.6, 0] }}
               transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
