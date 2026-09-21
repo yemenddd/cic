@@ -1,13 +1,17 @@
 import { redirect } from 'next/navigation';
-import { CalendarClock, MapPin, ScanLine, Smartphone, Printer, TriangleAlert } from 'lucide-react';
+import {
+  CalendarClock, MapPin, ScanLine, Smartphone, Printer, TriangleAlert, CircleCheck,
+} from 'lucide-react';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
 import { categoryLabel } from '@/lib/categories';
 import { badgeToken } from '@/lib/badge-token';
 import { dict } from '@/lib/dictionary';
-import { CONFERENCE_DAYS, daysUntilConference } from '@/lib/conference';
+import { CONFERENCE_DAYS, daysUntilConference, conferenceHasStarted } from '@/lib/conference';
 import { arabicCountBare, DAY } from '@/lib/arabic-plural';
+import { dayLabel, ATTENDANCE_METHOD_LABELS } from '@/lib/attendance';
 import DashboardBadge from '@/components/dashboard/DashboardBadge';
+import GatePass from './GatePass';
 
 export const metadata = {
   title: 'بطاقتي | CICT 2026',
@@ -56,18 +60,38 @@ export default async function BadgePage() {
 
   // The attendee's own record — no safe() wrapper, so a DB failure surfaces
   // instead of quietly rendering an empty badge.
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      name: true,
-      category: true,
-      organization: true,
-      track: true,
-      confirmationCode: true,
-    },
-  });
+  const [user, attendance] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        name: true,
+        category: true,
+        organization: true,
+        track: true,
+        confirmationCode: true,
+      },
+    }),
+    // What the badge has actually done. The page explained at length that the
+    // QR records attendance and then never said whether it had — which is the
+    // one question worth asking of it once the doors are open.
+    prisma.attendance.findMany({
+      where: { userId: session.user.id },
+      orderBy: { checkedInAt: 'asc' },
+      select: {
+        id: true,
+        checkedInAt: true,
+        method: true,
+        checkpoint: { select: { nameAr: true, day: true } },
+      },
+    }),
+  ]);
 
   if (!user) redirect('/login');
+
+  const STAMP = new Intl.DateTimeFormat('ar-u-nu-latn', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
   const days = daysUntilConference();
   const start = dateOf(CONFERENCE_DAYS.dayOne);
@@ -123,6 +147,62 @@ export default async function BadgePage() {
         </div>
 
         <div className="space-y-4">
+          {/* The one action this page exists for, and the only one that is
+              wanted while standing in a queue — so it sits above everything
+              explaining the badge rather than below it. */}
+          <GatePass
+            qrValue={badgeToken(session.user.id)}
+            code={user.confirmationCode ?? ''}
+            name={user.name ?? ''}
+          />
+
+          {/* Where the badge has been scanned. Shown once there is a door to
+              have walked through: before that it can only be empty, and an
+              empty list is not a record of anything. */}
+          {(attendance.length > 0 || conferenceHasStarted()) && (
+            <section
+              className="rounded-2xl p-5"
+              style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
+            >
+              <h2 className="font-outfit font-bold text-[14.5px]" style={{ color: 'var(--text-primary)' }}>
+                سجلّ حضورك
+              </h2>
+
+              {attendance.length === 0 ? (
+                <p className="mt-2.5 text-[12.5px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                  لم يُسجَّل حضورك بعد. اعرض رمز QR عند البوابة وسيظهر هنا فوراً.
+                </p>
+              ) : (
+                <ul className="mt-3.5 space-y-3">
+                  {attendance.map((row) => (
+                    <li key={row.id} className="flex items-start gap-3">
+                      <CircleCheck
+                        className="mt-0.5 h-4 w-4 shrink-0"
+                        style={{ color: 'var(--accent-cyan)' }}
+                        aria-hidden
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span
+                          className="block text-[13px] font-semibold"
+                          style={{ color: 'var(--text-primary)' }}
+                        >
+                          {row.checkpoint.nameAr}
+                        </span>
+                        <span
+                          className="mt-0.5 block text-[11.5px]"
+                          style={{ color: 'var(--text-tertiary)' }}
+                        >
+                          {dayLabel(row.checkpoint.day)} · {STAMP.format(row.checkedInAt)} ·{' '}
+                          {ATTENDANCE_METHOD_LABELS[row.method]}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+
           {/* When and where it will be asked for. */}
           <section
             className="rounded-2xl p-5"
