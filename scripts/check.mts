@@ -69,6 +69,7 @@ const { RESET_BY_IP, recordFailure, throttleState, clearFailures } = await impor
 const { auditServerActions } = await import('../lib/guard-audit');
 const { profileCompleteness } = await import('../lib/profile-completeness');
 const { certificateReadiness } = await import('../lib/certificate-readiness');
+const { resolveSettings, cleanUrl, cleanEmail, DEFAULT_SETTINGS } = await import('../lib/site-settings');
 const { passwordStrength } = await import('../lib/password-strength');
 const { reconcileRegistrationAccount } = await import('../lib/registration-accounts');
 
@@ -982,6 +983,57 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   const empty = certificateReadiness({});
   check('an empty profile reports all three', empty.issues.length, 3);
   check('and is blocked', empty.blocked, true);
+}
+
+// --- the settings an organizer can change without a deploy --------------------
+
+// These land on the public site, so the cleaning is a boundary rather than a
+// convenience: the footer renders the links straight into href on every page.
+{
+  check('an https link survives', cleanUrl('https://x.com/yemenddd'), 'https://x.com/yemenddd');
+  check('so does plain http', cleanUrl('http://example.org/').startsWith('http://'), true);
+  // The one that matters. A javascript: URL pasted into the admin form would
+  // be script running on every page of the public site.
+  check('javascript: is refused', cleanUrl('javascript:alert(1)'), '');
+  check('and case does not smuggle it', cleanUrl('JaVaScRiPt:alert(1)'), '');
+  check('data: is refused', cleanUrl('data:text/html,<script>alert(1)</script>'), '');
+  check('vbscript: is refused', cleanUrl('vbscript:msgbox(1)'), '');
+  check('a bare domain is not a link', cleanUrl('facebook.com/yemenddd'), '');
+  check('nonsense is dropped', cleanUrl('not a url at all'), '');
+  check('empty stays empty', cleanUrl(''), '');
+  check('null is handled', cleanUrl(null), '');
+
+  check('a real address survives', cleanEmail('Hello@CICT2026.com'), 'hello@cict2026.com');
+  check('an address with no domain is refused', cleanEmail('hello@localhost'), '');
+  check('an address with a space is refused', cleanEmail('a b@example.com'), '');
+  check('a bare word is refused', cleanEmail('hello'), '');
+
+  // An empty table must render exactly the site that shipped.
+  const empty = resolveSettings(null);
+  check('no row falls back to the shipped values', empty.contactEmail, DEFAULT_SETTINGS.contactEmail);
+  check('and the shipped links', empty.xUrl, DEFAULT_SETTINGS.xUrl);
+  // The most important default on the page: a site that silently stopped
+  // accepting registrations because a table was empty would be the worst
+  // failure available here.
+  check('and registration is OPEN when nothing is stored', empty.registrationOpen, true);
+
+  // Each field falls back on its own, so a partly filled form does not blank
+  // the rest on first save.
+  const partial = resolveSettings({ contactEmail: 'info@example.org' });
+  check('a set field is used', partial.contactEmail, 'info@example.org');
+  check('and the unset ones still default', partial.facebookUrl, DEFAULT_SETTINGS.facebookUrl);
+
+  // Anything stored that is no longer acceptable is treated as absent rather
+  // than rendered — a row written before the cleaning existed, say.
+  check('a stored javascript: link is not served', resolveSettings({ xUrl: 'javascript:alert(1)' }).xUrl, DEFAULT_SETTINGS.xUrl);
+  check('a stored broken address is not served', resolveSettings({ contactEmail: 'broken' }).contactEmail, DEFAULT_SETTINGS.contactEmail);
+  check('whitespace counts as unset', resolveSettings({ contactEmail: '   ' }).contactEmail, DEFAULT_SETTINGS.contactEmail);
+
+  check('only an explicit false closes registration', resolveSettings({ registrationOpen: false }).registrationOpen, false);
+  check('true keeps it open', resolveSettings({ registrationOpen: true }).registrationOpen, true);
+  // A column that has never been written reads as undefined, not false.
+  check('undefined keeps it open', resolveSettings({ registrationOpen: undefined }).registrationOpen, true);
+  check('a closed note always has text', resolveSettings({}).registrationClosedNote.length > 0, true);
 }
 
 // --- undo --------------------------------------------------------------------

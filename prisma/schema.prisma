@@ -489,3 +489,42 @@ model PasswordResetToken {
   @@index([userId])
   @@index([expiresAt])
 }
+
+/**
+ * The handful of site-wide values an organizer needs to change without a
+ * deployment.
+ *
+ * A single row, addressed by a fixed id. A key/value table was the other
+ * option and is worse here: every read would be a string that has to be parsed
+ * and defaulted at the point of use, and "is registration open" would be the
+ * string "false" one careless write away from being truthy.
+ *
+ * Every column is nullable or defaulted, and lib/site-settings.ts falls back
+ * to the values that were hardcoded before it existed — so an empty table
+ * renders exactly the site that shipped, and nothing breaks if the row is
+ * never created.
+ */
+model SiteSettings {
+  /** Always SETTINGS_ID. The row is a singleton; see lib/site-settings.ts. */
+  id String @id
+
+  /** Shown on the public site and in the footer. */
+  contactEmail String?
+
+  facebookUrl  String?
+  instagramUrl String?
+  youtubeUrl   String?
+  xUrl         String?
+
+  /**
+   * Whether the public registration form accepts submissions.
+   *
+   * Enforced in app/api/register/route.ts, not only hidden in the UI — a
+   * closed form that still accepts a posted body is not closed.
+   */
+  registrationOpen Boolean @default(true)
+  /** Shown in place of the form when registration is closed. */
+  registrationClosedNote String?
+
+  updatedAt DateTime @updatedAt
+}

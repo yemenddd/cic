@@ -4,7 +4,7 @@ import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, Mic2, CalendarDays, Images, Handshake,
   History, Trophy, Clapperboard, ClipboardList, Lightbulb, Users, BarChart3,
-  LogOut, Megaphone, KeyRound, ExternalLink, ScanLine, PanelsTopLeft,
+  LogOut, Megaphone, KeyRound, ExternalLink, ScanLine, PanelsTopLeft, Settings,
 } from 'lucide-react';
 import PlatformShell, { type NavGroup, type UtilAction } from '@/components/platform/PlatformShell';
 
@@ -34,6 +34,10 @@ const GROUPS: NavGroup[] = [
       { href: '/admin/history', label: 'رحلة المؤتمر', icon: History },
       { href: '/admin/achievements', label: 'الإنجازات', icon: Trophy },
       { href: '/admin/videos', label: 'الفيديوهات', icon: Clapperboard },
+      // Last in the group: it is the one entry that changes the site's
+      // behaviour rather than its content, and closing registration from here
+      // is the thing an organizer will come looking for.
+      { href: '/admin/settings', label: 'إعدادات الموقع', icon: Settings },
     ],
   },
   {

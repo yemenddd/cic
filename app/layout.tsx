@@ -3,6 +3,7 @@ import { Inter, Outfit, IBM_Plex_Sans_Arabic } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import SiteChrome from "@/components/layout/SiteChrome";
+import { getSiteSettings } from "@/lib/site-settings-server";
 import { LanguageProvider } from "@/lib/i18n";
 import { ThemeProvider } from "@/lib/theme-context";
 import { siteUrl } from "@/lib/site";
@@ -68,11 +69,23 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Read here rather than in the footer, which is a Client Component. Only the
+  // four links it renders are passed down — the rest of the settings are not
+  // the footer's business and would be shipped to every visitor for nothing.
+  const settings = await getSiteSettings();
+  const social = {
+    facebookUrl: settings.facebookUrl,
+    instagramUrl: settings.instagramUrl,
+    youtubeUrl: settings.youtubeUrl,
+    xUrl: settings.xUrl,
+    contactEmail: settings.contactEmail,
+  };
+
   return (
     // Arabic is the official default language → RTL
     <html
@@ -84,7 +97,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-inter" style={{ background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
         <ThemeProvider>
           <LanguageProvider>
-            <SiteChrome>{children}</SiteChrome>
+            <SiteChrome social={social}>{children}</SiteChrome>
           </LanguageProvider>
         </ThemeProvider>
       </body>

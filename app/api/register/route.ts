@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db/client';
 import { generateConfirmationCode, isCodeCollision } from '@/lib/confirmation-code';
 import { REGISTER_BY_IP, clientIp, recordFailure, throttleState } from '@/lib/rate-limit';
+import { getSiteSettings } from '@/lib/site-settings-server';
 
 const RegistrationSchema = z.object({
   fullName: z.string().trim().min(1).max(200),
@@ -17,6 +18,20 @@ const RegistrationSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  // Checked here, not only in the form. Hiding the fields closes the door for
+  // anyone using the page and for nobody else — the route is a public endpoint
+  // and a closed registration that still accepts a posted body is open.
+  //
+  // Before the throttle so a shut form costs nothing to refuse, and returns
+  // 403 rather than 429: this is not "too many", it is "not now".
+  const settings = await getSiteSettings();
+  if (!settings.registrationOpen) {
+    return NextResponse.json(
+      { ok: false, error: settings.registrationClosedNote },
+      { status: 403 },
+    );
+  }
+
   // Anyone can post here, and every accepted call costs a bcrypt hash and a
   // permanent row. Without a ceiling, one script fills the attendee list with
   // thousands of invented people and the real registrations are lost in them.

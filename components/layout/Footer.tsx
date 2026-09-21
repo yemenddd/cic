@@ -36,7 +36,9 @@ function YoutubeIcon({ className }: { className?: string }) {
   );
 }
 
-export default function Footer() {
+import type { SocialLinks } from '@/components/layout/SiteChrome';
+
+export default function Footer({ social }: { social: SocialLinks }) {
   const { t } = useLang();
   const { theme } = useTheme();
 
@@ -56,12 +58,14 @@ export default function Footer() {
     <FooterBase
       logo={C4Logo}
       brandName={t("footer.copyright")}
+      // Set from the panel — see /admin/settings. A link an organizer has
+      // cleared is dropped rather than rendered as a dead icon.
       socialLinks={[
-        { icon: <FacebookIcon className="h-5 w-5" />, href: "https://www.facebook.com/yemenddd", label: "Facebook" },
-        { icon: <InstagramIcon className="h-5 w-5" />, href: "https://www.instagram.com/yemen.ddd", label: "Instagram" },
-        { icon: <YoutubeIcon className="h-5 w-5" />, href: "https://www.youtube.com/channel/UCwnyiuNKFCSQpvk50-m1sWg", label: "YouTube" },
-        { icon: <XIcon className="h-5 w-5" />, href: "https://x.com/yemenddd", label: "X" },
-      ]}
+        { icon: <FacebookIcon className="h-5 w-5" />, href: social.facebookUrl, label: "Facebook" },
+        { icon: <InstagramIcon className="h-5 w-5" />, href: social.instagramUrl, label: "Instagram" },
+        { icon: <YoutubeIcon className="h-5 w-5" />, href: social.youtubeUrl, label: "YouTube" },
+        { icon: <XIcon className="h-5 w-5" />, href: social.xUrl, label: "X" },
+      ].filter((l) => l.href)}
       mainLinks={[
         { href: "/", label: t("nav.home") },
         { href: "/about", label: t("nav.about") },

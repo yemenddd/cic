@@ -9,7 +9,21 @@ import ScrollToTop from '@/components/layout/ScrollToTop';
 // chrome — the marketing site's header/footer would only get in the way.
 const BARE_ROUTES = ['/admin', '/dashboard', '/login', '/forgot-password', '/reset-password'];
 
-export default function SiteChrome({ children }: { children: React.ReactNode }) {
+export interface SocialLinks {
+  facebookUrl: string;
+  instagramUrl: string;
+  youtubeUrl: string;
+  xUrl: string;
+  contactEmail: string;
+}
+
+export default function SiteChrome({
+  children,
+  social,
+}: {
+  children: React.ReactNode;
+  social: SocialLinks;
+}) {
   const pathname = usePathname();
   const isBare = BARE_ROUTES.some((r) => pathname?.startsWith(r));
 
@@ -26,7 +40,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       </a>
       <Header />
       <main id="main-content" className="flex-grow">{children}</main>
-      <Footer />
+      <Footer social={social} />
       <ScrollToTop />
     </>
   );
