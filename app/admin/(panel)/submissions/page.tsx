@@ -6,11 +6,15 @@ import { ListPageHeader, ListTable, EmptyRow } from '@/components/admin/ListPage
 import Pagination from '@/components/admin/Pagination';
 import StatusChip from '@/components/submissions/StatusChip';
 import { LIST_PAGE_SIZE, listHref, pageCountFor, parsePage } from '@/lib/admin-list';
-import { SUBMISSION_STATUSES, SUBMISSION_STATUS_LABELS, isSubmissionStatus } from '@/lib/submissions';
+import {
+  SUBMISSION_STATUSES, SUBMISSION_STATUS_LABELS, SUBMISSION_TRACKS, isSubmissionStatus,
+} from '@/lib/submissions';
+import { queueHealth, waitingSince, WAIT_COLORS } from '@/lib/submission-queue';
+import QueueHealth from './QueueHealth';
 
 interface Props {
   // Next.js 16: searchParams is a Promise and must be awaited.
-  searchParams: Promise<{ status?: string; q?: string; page?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; track?: string; page?: string }>;
 }
 
 export default async function AdminSubmissionsPage({ searchParams }: Props) {
@@ -18,10 +22,15 @@ export default async function AdminSubmissionsPage({ searchParams }: Props) {
 
   const active = params.status && isSubmissionStatus(params.status) ? params.status : null;
   const query = (params.q ?? '').trim().slice(0, 120);
+  // Checked against the offered list rather than passed through: an arbitrary
+  // string here would be a filter that silently matches nothing while looking
+  // like it is working.
+  const track = SUBMISSION_TRACKS.includes(params.track ?? '') ? params.track! : null;
   const page = parsePage(params.page);
 
   const and: Prisma.ProjectSubmissionWhereInput[] = [];
   if (active) and.push({ status: active });
+  if (track) and.push({ track });
   if (query) {
     const contains = { contains: query, mode: 'insensitive' as const };
     // Across the project and the person who submitted it: the committee looks
@@ -39,7 +48,7 @@ export default async function AdminSubmissionsPage({ searchParams }: Props) {
   }
   const where: Prisma.ProjectSubmissionWhereInput = and.length > 0 ? { AND: and } : {};
 
-  const [total, submissions, statusGroups] = await Promise.all([
+  const [total, submissions, statusGroups, trackGroups, queueRows] = await Promise.all([
     prisma.projectSubmission.count({ where }),
     prisma.projectSubmission.findMany({
       where,
@@ -52,17 +61,27 @@ export default async function AdminSubmissionsPage({ searchParams }: Props) {
       include: { user: { select: { name: true, email: true } } },
     }),
     prisma.projectSubmission.groupBy({ by: ['status'], _count: { _all: true } }),
+    prisma.projectSubmission.groupBy({ by: ['track'], _count: { _all: true } }),
+    // Just the two columns the health figures are computed from. Counted from
+    // one projection rather than several aggregates, so the numbers agree with
+    // each other — three counts taken a moment apart do not.
+    prisma.projectSubmission.findMany({ select: { status: true, submittedAt: true } }),
   ]);
+
+  const health = queueHealth(queueRows);
+  const trackCounts = new Map(trackGroups.map((g) => [g.track ?? '', g._count._all]));
 
   const counts = new Map(statusGroups.map((g) => [g.status, g._count._all]));
   const allCount = statusGroups.reduce((sum, g) => sum + g._count._all, 0);
 
   const pageCount = pageCountFor(total);
   const current = Math.min(page, pageCount);
-  const filtered = Boolean(active || query);
+  const filtered = Boolean(active || query || track);
 
   const href = (overrides: Record<string, string | number | undefined>) =>
-    listHref('/admin/submissions', { status: active ?? '', q: query, page: current, ...overrides });
+    listHref('/admin/submissions', {
+      status: active ?? '', q: query, track: track ?? '', page: current, ...overrides,
+    });
 
   const chips = [
     { value: '', label: 'الكل', count: allCount },
@@ -79,6 +98,8 @@ export default async function AdminSubmissionsPage({ searchParams }: Props) {
         title="الابتكارات المقدَّمة"
         description="قائمة مراجعة اللجنة — الأقدم أولاً داخل كل حالة."
       />
+
+      <QueueHealth health={health} />
 
       <form method="GET" className="relative mb-4">
         <Search
@@ -134,6 +155,30 @@ export default async function AdminSubmissionsPage({ searchParams }: Props) {
         )}
       </div>
 
+      {/* The committee divides itself by track, so the queue has to divide the
+          same way. Only tracks that actually have something in them are
+          offered — an empty filter is a dead end dressed as a choice. */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {SUBMISSION_TRACKS.filter((t) => (trackCounts.get(t) ?? 0) > 0).map((t) => {
+          const on = track === t;
+          return (
+            <Link
+              key={t}
+              href={href({ track: on ? '' : t, page: 1 })}
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[12px] font-semibold"
+              style={{
+                background: on ? 'color-mix(in srgb, var(--accent-violet) 16%, transparent)' : 'var(--mat-liquid-bg)',
+                color: on ? 'var(--accent-violet)' : 'var(--text-secondary)',
+                border: `1px solid ${on ? 'color-mix(in srgb, var(--accent-violet) 30%, transparent)' : 'var(--mat-liquid-border)'}`,
+              }}
+            >
+              {t}
+              <span style={{ opacity: 0.65 }}>{trackCounts.get(t)}</span>
+            </Link>
+          );
+        })}
+      </div>
+
       <ListTable>
         <tbody>
           {submissions.length === 0 && (
@@ -159,8 +204,27 @@ export default async function AdminSubmissionsPage({ searchParams }: Props) {
               <td className="p-3 w-28">
                 <StatusChip status={s.status} />
               </td>
-              <td className="p-3 w-28" style={{ color: 'var(--text-tertiary)' }}>
-                {s.submittedAt ? new Date(s.submittedAt).toLocaleDateString('ar') : '—'}
+              {/* How long it has been waiting, not the date it arrived. A
+                  date makes the reader do the subtraction; the queue's whole
+                  question is which of these has waited too long. Only for the
+                  ones actually waiting — a decided project's age is history. */}
+              <td className="p-3 w-32">
+                {(() => {
+                  const wait = waitingSince(s.submittedAt);
+                  if (!wait) {
+                    return <span style={{ color: 'var(--text-tertiary)' }}>مسودة</span>;
+                  }
+                  const pending = s.status === 'PENDING' || s.status === 'UNDER_REVIEW';
+                  return (
+                    <span
+                      className={pending && wait.level !== 'fresh' ? 'font-semibold' : undefined}
+                      style={{ color: pending ? WAIT_COLORS[wait.level] : 'var(--text-tertiary)' }}
+                      title={new Date(s.submittedAt!).toLocaleDateString('ar')}
+                    >
+                      {wait.label}
+                    </span>
+                  );
+                })()}
               </td>
               <td className="p-3 w-16">
                 <div className="flex items-center justify-end">

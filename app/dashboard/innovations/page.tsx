@@ -1,12 +1,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Lightbulb, MessageSquareQuote, Pencil, Plus } from 'lucide-react';
+import { Lightbulb, MessageSquareQuote, Pencil, Plus, Info } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
 import StatusChip from '@/components/submissions/StatusChip';
 import DeleteButton from '@/components/admin/DeleteButton';
 import SubmitForReviewButton from './SubmitForReviewButton';
 import { deleteSubmission } from './actions';
 import { innovationAccess, NotEntitled } from './access';
+import { statusGuidance } from '@/lib/submission-queue';
+import { MAX_SUBMISSIONS_PER_ATTENDEE } from '@/lib/categories';
 
 export default async function DashboardInnovationsPage() {
   const access = await innovationAccess();
@@ -20,9 +22,18 @@ export default async function DashboardInnovationsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-outfit font-bold text-xl" style={{ color: 'var(--text-primary)' }}>
-          ابتكاراتي
-        </h1>
+        <div>
+          <h1 className="font-outfit font-bold text-xl" style={{ color: 'var(--text-primary)' }}>
+            ابتكاراتي
+          </h1>
+          {/* The cap was enforced on submit and never mentioned until it was
+              hit, which is the worst moment to learn about a limit. */}
+          {submissions.length > 0 && (
+            <p className="mt-1 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+              {submissions.length} من {MAX_SUBMISSIONS_PER_ATTENDEE} مشاريع مسموح بها
+            </p>
+          )}
+        </div>
         <Link
           href="/dashboard/innovations/new"
           className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[13.5px] font-semibold"
@@ -102,6 +113,43 @@ export default async function DashboardInnovationsPage() {
                       ? `أُرسل في ${new Date(s.submittedAt).toLocaleDateString('ar')}`
                       : `آخر تعديل ${new Date(s.updatedAt).toLocaleDateString('ar')}`}
                   </p>
+
+                  {/* What the chip above actually means, and whether anything
+                      is expected of them. A chip names a state; it does not
+                      say that a draft has not been seen by anybody, which is
+                      the commonest way to miss a deadline — by believing you
+                      have already met it. */}
+                  {(() => {
+                    const guide = statusGuidance(s.status);
+                    if (!guide.meaning) return null;
+                    return (
+                      <div
+                        className="mt-3 rounded-xl p-3"
+                        style={{
+                          background: 'var(--mat-liquid-bg)',
+                          border: `1px solid ${guide.actionable ? 'color-mix(in srgb, var(--accent-cyan) 26%, transparent)' : 'var(--mat-liquid-border)'}`,
+                        }}
+                      >
+                        <p
+                          className="flex items-start gap-2 text-[12.5px] leading-relaxed"
+                          style={{ color: 'var(--text-secondary)' }}
+                        >
+                          <Info
+                            className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                            style={{ color: guide.actionable ? 'var(--accent-cyan)' : 'var(--text-tertiary)' }}
+                          />
+                          <span>
+                            {guide.meaning}
+                            {guide.next && (
+                              <span className="mt-1 block" style={{ color: 'var(--text-tertiary)' }}>
+                                {guide.next}
+                              </span>
+                            )}
+                          </span>
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 

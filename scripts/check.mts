@@ -38,6 +38,7 @@ const { isInternalPath, openAndResolveTarget, NOTIFICATIONS_PATH } = await impor
 );
 const { canSubmitInnovations } = await import('../lib/categories');
 const { isTrackAllowed } = await import('../lib/submissions');
+const { waitingSince, queueHealth, statusGuidance } = await import('../lib/submission-queue');
 const { csvCell, toCsv, csvResponse } = await import('../lib/csv');
 const { inPages } = await import('../lib/export-pages');
 const { checkUpload, MAX_UPLOAD_BYTES } = await import('../lib/blob');
@@ -1132,6 +1133,61 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
     await prisma.notification.deleteMany({ where: { title: { startsWith: AMARK } } });
     check('edit test rows removed', await prisma.announcement.count({ where: { title: { startsWith: AMARK } } }), 0);
   }
+}
+
+// --- the review queue, from both ends -----------------------------------------
+
+// The committee's page showed a status and a date, and the attendee's showed
+// the same status. Neither answered the question each side actually has.
+{
+  const NOW = new Date('2026-09-22T12:00:00Z');
+  const daysAgo = (n: number) => new Date(NOW.getTime() - n * 86_400_000);
+
+  check('a draft has no wait', waitingSince(null, NOW), null);
+  check('submitted today reads as today', waitingSince(daysAgo(0), NOW)?.label, 'اليوم');
+  check('one day uses the singular', waitingSince(daysAgo(1), NOW)?.label, 'منذ يوم');
+  check('two days uses the dual', waitingSince(daysAgo(2), NOW)?.label, 'منذ يومين');
+  check('three to ten take the few form', waitingSince(daysAgo(5), NOW)?.label, 'منذ 5 أيام');
+  check('eleven and up take the many form', waitingSince(daysAgo(20), NOW)?.label, 'منذ 20 يوماً');
+
+  check('under a week is fresh', waitingSince(daysAgo(6), NOW)?.level, 'fresh');
+  check('a week is aging', waitingSince(daysAgo(7), NOW)?.level, 'aging');
+  check('a fortnight is overdue', waitingSince(daysAgo(14), NOW)?.level, 'overdue');
+  // A row written a moment ago, or a clock a little ahead. Never negative days.
+  check('a future date is not negative days', waitingSince(new Date(NOW.getTime() + 60_000), NOW)?.days, 0);
+
+  const health = queueHealth([
+    { status: 'DRAFT', submittedAt: null },
+    { status: 'DRAFT', submittedAt: null },
+    { status: 'PENDING', submittedAt: daysAgo(20) },
+    { status: 'PENDING', submittedAt: daysAgo(3) },
+    { status: 'UNDER_REVIEW', submittedAt: daysAgo(16) },
+    { status: 'APPROVED', submittedAt: daysAgo(30) },
+    { status: 'REJECTED', submittedAt: daysAgo(30) },
+  ], NOW);
+
+  check('it counts what is waiting on the committee', health.awaiting, 3);
+  check('and how long the oldest has waited', health.oldestWaitDays, 20);
+  check('and how many are past a fortnight', health.overdue, 2);
+  check('decided is decided', health.decided, 2);
+  // Drafts are somebody's unfinished work, not a queue the committee is behind
+  // on. Folding them in would show the panel permanently in arrears over
+  // projects nobody has submitted.
+  check('drafts are counted apart', health.drafts, 2);
+  check('and are not waiting on anybody', health.awaiting + health.decided + health.drafts, 7);
+
+  const empty = queueHealth([], NOW);
+  check('an empty queue has no oldest wait', empty.oldestWaitDays, 0);
+  check('and nothing overdue', empty.overdue, 0);
+
+  // The distinction that matters most: a draft looks submitted and is not.
+  check('a draft says it has not been seen', statusGuidance('DRAFT').meaning.includes('لم تره اللجنة'), true);
+  check('and tells them to send it', statusGuidance('DRAFT').actionable, true);
+  check('waiting asks nothing of them', statusGuidance('PENDING').next, null);
+  check('being read asks nothing either', statusGuidance('UNDER_REVIEW').actionable, false);
+  check('a decision does', statusGuidance('REJECTED').actionable, true);
+  check('every status says something', (['DRAFT','PENDING','UNDER_REVIEW','APPROVED','REJECTED'] as const)
+    .every((s) => statusGuidance(s).meaning.length > 0), true);
 }
 
 // --- undo --------------------------------------------------------------------
