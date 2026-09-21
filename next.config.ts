@@ -35,6 +35,29 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   compress: true,
 
+  /**
+   * Keep sharp out of the serverless bundles.
+   *
+   * It is not a dependency of this project and no code here imports it — Next
+   * pulls it in for image optimization, and the tracer then copies it into 65
+   * of the 76 functions. Measured at 15.6 MB of a 44 MB bundle: a third of
+   * every deployment, for a library none of those functions call.
+   *
+   * On Vercel, image optimization is the platform's, not the application's:
+   * /_next/image is served by Vercel's own infrastructure rather than by a
+   * function built from this repo. Sharp is only needed for `next start` on a
+   * self-hosted box, which is not how this is deployed.
+   *
+   * Verified after deploying rather than assumed — an optimized image is
+   * fetched from the live site and checked for a real image response.
+   */
+  outputFileTracingExcludes: {
+    '**/*': [
+      'node_modules/sharp/**',
+      'node_modules/@img/**',
+    ],
+  },
+
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
