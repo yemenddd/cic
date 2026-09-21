@@ -131,6 +131,10 @@ export async function deliverAnnouncement(
           body: input.body,
           link,
           kind: 'ANNOUNCEMENT' as const,
+          // What makes the send reversible. Without it the feed entries are
+          // anonymous copies, and withdrawing an announcement from the panel
+          // would leave every one of them in place.
+          announcementId: announcement.id,
         })),
       });
       delivered += page.length;
@@ -150,6 +154,132 @@ export async function deliverAnnouncement(
   await prisma.announcement.update({
     where: { id: announcement.id },
     data: { recipients: delivered },
+  });
+
+  return { sent: delivered };
+}
+
+/**
+ * Correcting an announcement after it has gone out.
+ *
+ * The edit reaches the copies already sitting in people's feeds, which is the
+ * only behaviour that makes sense: an organiser fixing a wrong room number is
+ * fixing it for the people who were told the wrong one. Leaving the delivered
+ * copies alone would mean the correction existed only in the panel.
+ *
+ * Read state is deliberately left untouched. Marking everybody unread again
+ * would re-alert the whole conference over a typo, and an announcement that
+ * re-appears unread each time it is touched trains people to ignore the bell.
+ * `resendAnnouncement` is the explicit way to do that.
+ */
+export async function editAnnouncement(
+  announcementId: string,
+  input: AnnouncementInput,
+): Promise<SendResult> {
+  const invalid = validateAnnouncement(input);
+  if (invalid) return { error: invalid };
+
+  const existing = await prisma.announcement.findUnique({
+    where: { id: announcementId },
+    select: { id: true },
+  });
+  if (!existing) return { error: 'الإعلان غير موجود — ربما حُذف' };
+
+  const link = input.link || null;
+
+  const [, updated] = await prisma.$transaction([
+    prisma.announcement.update({
+      where: { id: announcementId },
+      // The audience is not editable here: it decided who received this, and
+      // changing it after the fact would describe a send that never happened.
+      data: { title: input.title, body: input.body, link },
+    }),
+    prisma.notification.updateMany({
+      where: { announcementId },
+      data: { title: input.title, body: input.body, link },
+    }),
+  ]);
+
+  return { sent: updated.count };
+}
+
+/**
+ * Withdrawing one entirely.
+ *
+ * The notifications go with it, by the cascade on the relation — so an
+ * announcement sent in error stops being visible to the people who received
+ * it, rather than merely disappearing from the panel that sent it.
+ */
+export async function deleteAnnouncement(
+  announcementId: string,
+): Promise<{ error: string } | { removed: number }> {
+  const existing = await prisma.announcement.findUnique({
+    where: { id: announcementId },
+    select: { id: true, _count: { select: { notifications: true } } },
+  });
+  if (!existing) return { error: 'الإعلان غير موجود — ربما حُذف' };
+
+  await prisma.announcement.delete({ where: { id: announcementId } });
+  return { removed: existing._count.notifications };
+}
+
+/**
+ * Sending it again to whoever has not had it.
+ *
+ * For the case the panel could not answer before: an announcement went out on
+ * Monday and thirty people registered on Tuesday. Re-running the whole send
+ * would give the original recipients a second copy of something they have
+ * already read, so this writes only to accounts in the audience that have no
+ * notification from this announcement yet.
+ */
+export async function resendAnnouncement(announcementId: string): Promise<SendResult> {
+  const announcement = await prisma.announcement.findUnique({
+    where: { id: announcementId },
+    select: { id: true, title: true, body: true, link: true, audience: true, recipients: true },
+  });
+  if (!announcement) return { error: 'الإعلان غير موجود — ربما حُذف' };
+
+  const where = {
+    ...audienceFilter(announcement.audience),
+    // Anybody in the audience with no copy of this one.
+    notifications: { none: { announcementId } },
+  };
+
+  const outstanding = await prisma.user.count({ where });
+  if (outstanding === 0) {
+    return { error: 'وصل هذا الإعلان إلى كل من في الفئة — لا أحد جديد لإرساله له' };
+  }
+
+  let delivered = 0;
+  const pages = inPages(
+    (after, take) =>
+      prisma.user.findMany({
+        where,
+        orderBy: { id: 'asc' },
+        ...(after ? { cursor: { id: after }, skip: 1 } : {}),
+        take,
+        select: { id: true },
+      }),
+    DELIVERY_BATCH,
+  );
+
+  for await (const page of pages) {
+    await prisma.notification.createMany({
+      data: page.map((r) => ({
+        userId: r.id,
+        title: announcement.title,
+        body: announcement.body,
+        link: announcement.link,
+        kind: 'ANNOUNCEMENT' as const,
+        announcementId,
+      })),
+    });
+    delivered += page.length;
+  }
+
+  await prisma.announcement.update({
+    where: { id: announcementId },
+    data: { recipients: announcement.recipients + delivered },
   });
 
   return { sent: delivered };

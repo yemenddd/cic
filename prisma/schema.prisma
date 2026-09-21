@@ -145,6 +145,16 @@ model Announcement {
   sentById String?
   sentBy   User?   @relation(fields: [sentById], references: [id], onDelete: SetNull)
 
+  /**
+   * The feed entries this announcement produced.
+   *
+   * Without this link an announcement could be recalled from the panel and go
+   * on sitting in every recipient's notifications, because nothing connected
+   * the two but identical text. Cascading means withdrawing one actually
+   * withdraws it.
+   */
+  notifications Notification[]
+
   createdAt DateTime @default(now())
 
   @@index([createdAt])
@@ -174,10 +184,21 @@ model Notification {
   // Defaults to GENERAL so rows written before this column keep working.
   kind  NotificationKind @default(GENERAL)
 
+  /**
+   * The announcement this came from, when it came from one.
+   *
+   * Null for anything raised by the platform itself — a committee decision on
+   * a submission, say. Cascades, so deleting an announcement takes the copies
+   * it put in people's feeds with it, and editing one can find them.
+   */
+  announcementId String?
+  announcement   Announcement? @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
 
   @@index([userId, read])
   @@index([userId, createdAt])
+  @@index([announcementId])
 }
 
 // A session an attendee bookmarked into their personal agenda.

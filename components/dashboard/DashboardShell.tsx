@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import PlatformShell, { type NavGroup, type UtilAction } from '@/components/platform/PlatformShell';
 import { abilitiesFor } from '@/lib/categories';
+import { useUnreadCount } from '@/lib/use-unread-count';
 
 export default function DashboardShell({
   name,
@@ -17,12 +18,18 @@ export default function DashboardShell({
 }: {
   name?: string | null;
   email?: string | null;
-  // Fetched by the Server Component layout — this client shell never queries.
+  /**
+   * Counted by the Server Component layout, so the badge is right on first
+   * paint. It is then kept current here — an announcement reaches everybody at
+   * once, and a badge that only updates on navigation would tell somebody
+   * sitting on their own agenda about it whenever they next clicked something.
+   */
   unreadCount?: number;
   category?: string | null;
   children: React.ReactNode;
 }) {
   const abilities = abilitiesFor(category);
+  const unread = useUnreadCount(unreadCount);
 
   const groups: NavGroup[] = [
     {
@@ -49,7 +56,7 @@ export default function DashboardShell({
     {
       label: 'حسابي',
       items: [
-        { href: '/dashboard/notifications', label: 'الإشعارات', icon: Bell, badge: unreadCount },
+        { href: '/dashboard/notifications', label: 'الإشعارات', icon: Bell, badge: unread },
         { href: '/dashboard/account', label: 'بياناتي', icon: UserRound },
       ],
     },

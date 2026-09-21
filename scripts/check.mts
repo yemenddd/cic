@@ -28,9 +28,10 @@ try {
 
 // Imported dynamically: these modules read DATABASE_URL as they load, and a
 // static import would be hoisted above the .env parsing above.
-const { validateAnnouncement, deliverAnnouncement } = await import(
-  '../app/admin/(panel)/announcements/send'
-);
+const {
+  validateAnnouncement, deliverAnnouncement, editAnnouncement, deleteAnnouncement,
+  resendAnnouncement,
+} = await import('../app/admin/(panel)/announcements/send');
 const { prisma } = await import('../lib/db/client');
 const { isInternalPath, openAndResolveTarget, NOTIFICATIONS_PATH } = await import(
   '../app/dashboard/notifications/open'
@@ -1065,6 +1066,72 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('and an old signature under the new tag is refused', verifyBadgeToken(swappedBack), null);
 
   check('nonsense is still refused', verifyBadgeToken('CIC1.x.y'), null);
+}
+
+// --- an announcement after it has gone out ------------------------------------
+
+// The panel could send and then only watch. A wrong room number stayed wrong
+// in every feed it reached, and somebody who registered on Tuesday never saw
+// Monday's notice.
+{
+  const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' }, select: { id: true } });
+  const AMARK = `[edit ${Date.now()}]`;
+
+  if (admin) {
+    const sent = await deliverAnnouncement(admin.id, {
+      title: AMARK, body: 'النص الأول', link: '/program', audience: 'visitor',
+    });
+    const delivered = 'sent' in sent ? sent.sent : 0;
+    check('the announcement is delivered', delivered > 0, true);
+
+    const record = await prisma.announcement.findFirst({ where: { title: AMARK } });
+    check('a record exists', Boolean(record), true);
+
+    // Every copy is linked to it. Without this, withdrawing removes nothing.
+    const linked = await prisma.notification.count({ where: { announcementId: record!.id } });
+    check('every copy is linked to the announcement', linked, delivered);
+
+    // Editing reaches the copies already in people's feeds.
+    const edited = await editAnnouncement(record!.id, {
+      title: `${AMARK} معدّل`, body: 'النص المصحّح', link: '/program', audience: 'visitor',
+    });
+    check('the edit reports how many it reached', 'sent' in edited && edited.sent, delivered);
+    const copy = await prisma.notification.findFirst({ where: { announcementId: record!.id } });
+    check('and the delivered copy carries the correction', copy?.body, 'النص المصحّح');
+    check('and the corrected title', copy?.title, `${AMARK} معدّل`);
+
+    // Read state survives an edit. Re-alerting the conference over a typo is
+    // how people learn to ignore the bell.
+    await prisma.notification.updateMany({ where: { announcementId: record!.id }, data: { read: true } });
+    await editAnnouncement(record!.id, {
+      title: `${AMARK} معدّل`, body: 'تصحيح ثانٍ', link: '', audience: 'visitor',
+    });
+    check('editing does not mark it unread again',
+      await prisma.notification.count({ where: { announcementId: record!.id, read: false } }), 0);
+
+    // Resending reaches only those without a copy — nobody here, so it refuses
+    // rather than sending everyone a duplicate.
+    const again = await resendAnnouncement(record!.id);
+    check('resending to a fully covered audience is refused', 'error' in again, true);
+
+    // Withdrawing takes the feed entries with it.
+    const removed = await deleteAnnouncement(record!.id);
+    check('withdrawing reports what it removed', 'removed' in removed && removed.removed, delivered);
+    check('the record is gone', await prisma.announcement.count({ where: { id: record!.id } }), 0);
+    check('and so is every copy it delivered',
+      await prisma.notification.count({ where: { announcementId: record!.id } }), 0);
+
+    // A second attempt is reported, not thrown — two organizers with the page
+    // open is the ordinary case.
+    check('withdrawing a missing one is reported', 'error' in (await deleteAnnouncement(record!.id)), true);
+    check('editing a missing one is reported', 'error' in (await editAnnouncement(record!.id, {
+      title: 'x', body: 'y', link: '', audience: 'visitor',
+    })), true);
+
+    await prisma.announcement.deleteMany({ where: { title: { startsWith: AMARK } } });
+    await prisma.notification.deleteMany({ where: { title: { startsWith: AMARK } } });
+    check('edit test rows removed', await prisma.announcement.count({ where: { title: { startsWith: AMARK } } }), 0);
+  }
 }
 
 // --- undo --------------------------------------------------------------------

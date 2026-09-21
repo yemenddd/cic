@@ -2,7 +2,10 @@ import { Megaphone } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
 import { ListPageHeader } from '@/components/admin/ListPage';
 import { audienceLabel } from './audience';
-import { audienceSizes, sendAnnouncement } from './actions';
+import {
+  audienceSizes, sendAnnouncement, updateAnnouncement, removeAnnouncement, sendToNewRecipients,
+} from './actions';
+import SentAnnouncementCard from './SentAnnouncement';
 import Composer from './Composer';
 
 /**
@@ -18,7 +21,13 @@ export default async function AdminAnnouncementsPage() {
     prisma.announcement.findMany({
       orderBy: { createdAt: 'desc' },
       take: 30,
-      include: { sentBy: { select: { name: true, email: true } } },
+      include: {
+        sentBy: { select: { name: true, email: true } },
+        // How many of the delivered copies have been opened. The recipient
+        // count says how many were written to, which on its own says nothing
+        // about whether the notice was seen.
+        _count: { select: { notifications: { where: { read: true } } } },
+      },
     }),
   ]);
 
@@ -55,37 +64,26 @@ export default async function AdminAnnouncementsPage() {
       ) : (
         <div className="space-y-3">
           {sent.map((a) => (
-            <div
+            <SentAnnouncementCard
               key={a.id}
-              className="rounded-2xl p-5"
-              style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <h3 className="font-outfit font-bold text-[14.5px]" style={{ color: 'var(--text-primary)' }}>
-                  {a.title}
-                </h3>
-                <span
-                  className="rounded-lg px-2.5 py-1 text-[11.5px] font-semibold shrink-0"
-                  style={{ background: 'var(--mat-liquid-bg)', color: 'var(--text-secondary)' }}
-                >
-                  {a.recipients} مستلم
-                </span>
-              </div>
-
-              <p
-                className="mt-2 text-[13px] leading-relaxed whitespace-pre-line"
-                style={{ color: 'var(--text-secondary)' }}
-              >
-                {a.body}
-              </p>
-
-              <p className="mt-3 text-[11.5px]" style={{ color: 'var(--text-tertiary)' }}>
-                {audienceLabel(a.audience)} · {a.createdAt.toLocaleDateString('ar')}
-                {/* The sender is null only if that admin account was deleted
-                    later — the record of the send survives them. */}
-                {a.sentBy && ` · ${a.sentBy.name || a.sentBy.email}`}
-              </p>
-            </div>
+              announcement={{
+                id: a.id,
+                title: a.title,
+                body: a.body,
+                link: a.link,
+                audience: a.audience,
+                audienceLabel: audienceLabel(a.audience),
+                recipients: a.recipients,
+                readCount: a._count.notifications,
+                sentAt: a.createdAt.toLocaleDateString('ar'),
+                // The sender is null only if that admin account was deleted
+                // later — the record of the send survives them.
+                sentBy: a.sentBy ? a.sentBy.name || a.sentBy.email : null,
+              }}
+              updateAction={updateAnnouncement}
+              removeAction={removeAnnouncement}
+              resendAction={sendToNewRecipients}
+            />
           ))}
         </div>
       )}

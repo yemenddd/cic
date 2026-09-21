@@ -92,9 +92,17 @@ function NavItemLink({
 
       {item.badge ? (
         <span
-          className="ms-auto inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-bold leading-none"
+          className="ms-auto inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-bold leading-none platform-badge"
           style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
-          aria-label={`${item.badge} غير مقروء`}
+          // Announced rather than only drawn: the count changes while the page
+          // is sitting still, and a screen reader user gets nothing from a
+          // number quietly going up in the corner.
+          aria-live="polite"
+          aria-label={`${item.badge} إشعار غير مقروء`}
+          // Re-keyed on the value so the arrival animation actually replays
+          // when it changes — without this React updates the text in place and
+          // the animation, having already run once, never runs again.
+          key={item.badge}
         >
           {item.badge > 99 ? '+99' : item.badge}
         </span>
