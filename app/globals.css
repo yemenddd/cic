@@ -278,8 +278,8 @@
   body {
     background: var(--bg-base);
     color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
-                 var(--font-inter), "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--font-ibm), 'IBM Plex Sans Arabic', -apple-system,
+                 BlinkMacSystemFont, var(--font-inter), "Helvetica Neue", Arial, sans-serif;
     font-size: 1rem;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
@@ -314,19 +314,42 @@
 }
 
 /* ── 4. Arabic Typography ────────────────────────────────────── */
+
+/* Two faces, each doing the job it is good at.
+   
+   Thmanyah is a serif display face. It was set on `body`, so every word on
+   the public site was in it — including paragraphs, labels, form fields and
+   captions. A display face is drawn to be read at a glance in a large size;
+   at 13 or 15px across several lines it is harder work than it needs to be.
+   
+   So: running text in IBM Plex Sans Arabic, which is a text face and is
+   already the one the panels use, and Thmanyah kept for the headings, which
+   is where it earns its place. */
 html[lang="ar"] body {
-  font-family: var(--font-thmanyah), -apple-system, "Helvetica Neue", sans-serif;
+  font-family: var(--font-ibm), 'IBM Plex Sans Arabic', -apple-system,
+               "Helvetica Neue", sans-serif;
   font-feature-settings: "kern" 1;
 }
 
+/* The heading face. `font-outfit` is how a heading is marked throughout this
+   codebase — it is the Latin display face, and Arabic swaps it for Thmanyah. */
 html[lang="ar"] [class*="font-outfit"],
 html[lang="ar"] .font-outfit {
   font-family: var(--font-thmanyah), system-ui, serif;
 }
 
+/* And headings that carry no class at all, of which the marketing sections
+   have several. */
+html[lang="ar"] h1,
+html[lang="ar"] h2,
+html[lang="ar"] h3 {
+  font-family: var(--font-thmanyah), system-ui, serif;
+}
+
+/* Running text. This used to be Thmanyah too. */
 html[lang="ar"] [class*="font-inter"],
 html[lang="ar"] .font-inter {
-  font-family: var(--font-thmanyah), system-ui, serif;
+  font-family: var(--font-ibm), 'IBM Plex Sans Arabic', system-ui, sans-serif;
 }
 
 /* ── 5. Liquid Glass Utility Classes ─────────────────────────── */
@@ -891,14 +914,25 @@ html[dir="rtl"] ::-webkit-scrollbar {
    — specificity (0,2,1). A plain `.font-platform .font-outfit` is (0,2,0) and
    quietly lost, which left panel *headings* on the display face while the body
    text around them was IBM Plex. Matching the scope wins it back. */
+/* The bare h1/h2/h3 rule added in section 4 is a *direct* rule on those
+   elements, and a direct rule beats an inherited value however specific the
+   inherited one was. Without naming the headings here too, every panel
+   heading would have taken the display face the moment that rule existed —
+   inheriting IBM from .font-platform is not enough to hold them. */
 .font-platform,
 .font-platform .font-outfit,
 .font-platform [class*="font-outfit"],
 .font-platform [class*="font-inter"],
+.font-platform h1,
+.font-platform h2,
+.font-platform h3,
 html[lang="ar"] .font-platform,
 html[lang="ar"] .font-platform .font-outfit,
 html[lang="ar"] .font-platform [class*="font-outfit"],
-html[lang="ar"] .font-platform [class*="font-inter"] {
+html[lang="ar"] .font-platform [class*="font-inter"],
+html[lang="ar"] .font-platform h1,
+html[lang="ar"] .font-platform h2,
+html[lang="ar"] .font-platform h3 {
   font-family: var(--font-ibm), 'IBM Plex Sans Arabic', system-ui, sans-serif;
 }
 
