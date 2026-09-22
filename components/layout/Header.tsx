@@ -136,9 +136,14 @@ export default function Header() {
                   onMouseEnter={() => setHovered(link.key)}
                   className="relative px-3.5 py-2 rounded-lg text-[13px] font-medium select-none"
                   style={{
+                    // Raised from .52/tertiary, which measured 4.55:1 over the
+                    // hero and 2.69:1 on the solid dark header — the second of
+                    // those fails WCAG AA for 13px text, which needs 4.5:1.
+                    // Now 8.42:1 and 5.86:1. Idle links are still quieter than
+                    // the active one; they are no longer nearly invisible.
                     color: overDark
-                    ? (active ? '#ffffff' : hovered === link.key ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.52)')
-                    : (active ? 'var(--text-primary)' : hovered === link.key ? 'var(--text-secondary)' : 'var(--text-tertiary)'),
+                    ? (active ? '#ffffff' : hovered === link.key ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.80)')
+                    : (active ? 'var(--text-primary)' : hovered === link.key ? 'var(--text-primary)' : 'var(--text-secondary)'),
                     transition: 'color 0.15s ease',
                   }}
                 >
@@ -188,7 +193,7 @@ export default function Header() {
               <Sun
                 size={13}
                 style={{
-                  color:      overDark ? 'rgba(255,255,255,0.55)' : 'var(--text-tertiary)',
+                  color:      overDark ? 'rgba(255,255,255,0.80)' : 'var(--text-secondary)',
                   transition: 'color 0.2s',
                   flexShrink: 0,
                 }}
@@ -228,7 +233,7 @@ export default function Header() {
               <Moon
                 size={13}
                 style={{
-                  color:      overDark ? 'rgba(255,255,255,0.55)' : 'var(--text-tertiary)',
+                  color:      overDark ? 'rgba(255,255,255,0.80)' : 'var(--text-secondary)',
                   transition: 'color 0.2s',
                   flexShrink: 0,
                 }}
@@ -243,7 +248,7 @@ export default function Header() {
                 aria-expanded={langOpen}
                 className="flex items-center gap-1.5 px-3 py-[6px] rounded-full text-[11px] font-semibold select-none"
                 style={{
-                  color:                overDark ? (langOpen ? '#ffffff' : 'rgba(255,255,255,0.62)') : (langOpen ? 'var(--text-primary)' : 'var(--text-tertiary)'),
+                  color:                overDark ? (langOpen ? '#ffffff' : 'rgba(255,255,255,0.85)') : (langOpen ? 'var(--text-primary)' : 'var(--text-secondary)'),
                   background:           overDark ? 'rgba(255,255,255,0.10)' : 'var(--mat-liquid-bg)',
                   backdropFilter:       'blur(20px) saturate(180%)',
                   WebkitBackdropFilter: 'blur(20px) saturate(180%)',
@@ -352,8 +357,8 @@ export default function Header() {
                 className="relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium select-none"
                 style={{
                   color: overDark
-                    ? (accountActive ? '#ffffff' : accountHover ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.52)')
-                    : (accountActive ? 'var(--text-primary)' : accountHover ? 'var(--text-secondary)' : 'var(--text-tertiary)'),
+                    ? (accountActive ? '#ffffff' : accountHover ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.80)')
+                    : (accountActive ? 'var(--text-primary)' : accountHover ? 'var(--text-primary)' : 'var(--text-secondary)'),
                   transition: 'color 0.15s ease',
                 }}
               >
@@ -496,9 +501,12 @@ export default function Header() {
                         className="font-outfit font-bold tracking-tight"
                         style={{
                           fontSize: 'clamp(1.55rem, 5.5vw, 2rem)',
+                          // Inactive was .35 in both themes: 2.42:1 on the
+                          // light sheet, which fails even the 3:1 that large
+                          // bold type is allowed. 4.63:1 and 7.25:1 now.
                           color: active
                             ? (isLight ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.9)')
-                            : (isLight ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.35)'),
+                            : (isLight ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.60)'),
                           transition: 'color 0.2s ease',
                         }}
                       >
