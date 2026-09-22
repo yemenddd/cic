@@ -11,6 +11,7 @@ import { dict } from '@/lib/dictionary';
 import { CONFERENCE_DAYS, conferenceHasEnded, daysUntilConference } from '@/lib/conference';
 import { arabicCountBare, DAY } from '@/lib/arabic-plural';
 import { certificateReadiness, type CertificateIssueLevel } from '@/lib/certificate-readiness';
+import { totalHours } from '@/lib/volunteering';
 import ParticipationCertificate from '@/components/dashboard/ParticipationCertificate';
 
 const ISSUE_STYLE: Record<CertificateIssueLevel, { icon: typeof Award; color: string }> = {
@@ -79,6 +80,20 @@ export default async function CertificatePage() {
 
   const isVolunteer = user.category === 'volunteer';
   const kind = isVolunteer ? 'شهادة التطوع' : 'شهادة المشاركة';
+
+  // The hours a volunteering certificate attests to, summed from the rota by
+  // the same helper the rota page uses. Asked only for volunteers — for the
+  // other categories the answer would be zero and change nothing on the sheet.
+  const volunteerHours = isVolunteer
+    ? totalHours(
+        (
+          await prisma.volunteerAssignment.findMany({
+            where: { userId: session.user.id },
+            select: { shift: { select: { day: true, startTime: true, endTime: true } } },
+          })
+        ).map((a) => a.shift),
+      ).hours
+    : 0;
 
   /**
    * The certificate states in the past tense that its holder attended, and
@@ -182,6 +197,7 @@ export default async function CertificatePage() {
             categoryLabel={categoryLabel(user.category, 'ar')}
             track={user.track ?? ''}
             code={user.confirmationCode ?? '—'}
+            volunteerHours={volunteerHours}
             date={dict.ar.registerPage.date}
             location={dict.ar.registerPage.location}
             issuedAt={issuedAt}
@@ -300,6 +316,7 @@ export default async function CertificatePage() {
           categoryLabel={categoryLabel(user.category, 'ar')}
           track={user.track ?? ''}
           code={user.confirmationCode ?? '—'}
+          volunteerHours={volunteerHours}
           date={dict.ar.registerPage.date}
           location={dict.ar.registerPage.location}
           issuedAt={issuedAt}

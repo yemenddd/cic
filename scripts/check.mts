@@ -1302,6 +1302,157 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
     route.indexOf("recordFailure('register:ip'") > route.indexOf('prisma.user.create'), true);
 }
 
+// --- the volunteer rota -------------------------------------------------------
+//
+// The volunteer tier advertised "المساهمة في تنظيم المؤتمر" and delivered an
+// attendee's dashboard with a section removed. The rota is what makes the tier
+// real, so the rules behind it are checked here rather than by claiming shifts
+// in the panel and hoping.
+
+{
+  const {
+    minutesOfDay, shiftsOverlap, canClaim, rosterHealth, totalHours, byStartTime,
+  } = await import('../lib/volunteering');
+  const { canVolunteer, MAX_SHIFTS_PER_VOLUNTEER } = await import('../lib/categories');
+
+  check('volunteers have a rota', canVolunteer('volunteer'), true);
+  check('participants do not', canVolunteer('participant'), false);
+  check('visitors do not', canVolunteer('visitor'), false);
+  check('an unknown category does not', canVolunteer('vip'), false);
+  check('a missing category does not', canVolunteer(null), false);
+  check('the rota ceiling is a real number', MAX_SHIFTS_PER_VOLUNTEER > 0, true);
+
+  check('09:00 reads as 540', minutesOfDay('09:00'), 540);
+  check('a single-digit hour reads', minutesOfDay('9:00'), 540);
+  check('stray spaces read', minutesOfDay(' 09:00 '), 540);
+  check('an invented hour does not', minutesOfDay('25:00'), null);
+  check('an invented minute does not', minutesOfDay('09:75'), null);
+  check('Arabic free text does not', minutesOfDay('التاسعة صباحاً'), null);
+  check('an empty time does not', minutesOfDay(''), null);
+
+  const nine = { day: 'dayOne', startTime: '09:00', endTime: '12:00' };
+  check('an overlap is an overlap',
+    shiftsOverlap(nine, { day: 'dayOne', startTime: '11:00', endTime: '14:00' }), true);
+  // Back-to-back is a long day, not a clash — and treating it as one would
+  // refuse the volunteers who actually do work the morning and the afternoon.
+  check('touching ends do not clash',
+    shiftsOverlap(nine, { day: 'dayOne', startTime: '12:00', endTime: '15:00' }), false);
+  check('the same hours on another day do not clash',
+    shiftsOverlap(nine, { day: 'dayTwo', startTime: '09:00', endTime: '12:00' }), false);
+  // A typo must not silently make one shift clash with everything, nor stop it
+  // clashing with anything in a way that quietly overbooks somebody.
+  check('an unreadable time never invents a clash',
+    shiftsOverlap(nine, { day: 'dayOne', startTime: 'صباحاً', endTime: '12:00' }), false);
+
+  const open = { id: 's1', day: 'dayOne', startTime: '09:00', endTime: '12:00', capacity: 2, isOpen: true, taken: 1 };
+  check('an open shift with room may be claimed', canClaim(open, []), { ok: true });
+  check('a full one may not',
+    canClaim({ ...open, taken: 2 }, []).ok === false && canClaim({ ...open, taken: 2 }, []),
+    { ok: false, reason: 'full' });
+  check('a closed one may not',
+    canClaim({ ...open, isOpen: false }, []), { ok: false, reason: 'closed' });
+  // Closed is reported ahead of full: "we have settled the rota" is the truer
+  // answer, and telling somebody it is full invites them to keep checking.
+  check('closed outranks full',
+    canClaim({ ...open, isOpen: false, taken: 9 }, []), { ok: false, reason: 'closed' });
+  check('the same shift twice is not two pairs of hands',
+    canClaim(open, [{ id: 's1', titleAr: 'الاستقبال', day: 'dayOne', startTime: '09:00', endTime: '12:00' }]),
+    { ok: false, reason: 'already' });
+  check('a clashing shift is refused by name',
+    canClaim(open, [{ id: 's2', titleAr: 'القاعة', day: 'dayOne', startTime: '11:00', endTime: '13:00' }]),
+    { ok: false, reason: 'clash', clashesWith: 'القاعة' });
+  check('a shift later the same day is fine',
+    canClaim(open, [{ id: 's2', titleAr: 'القاعة', day: 'dayOne', startTime: '13:00', endTime: '15:00' }]),
+    { ok: true });
+
+  // Counted in people, not in shifts: "four shifts unfilled" and "four people
+  // short" are different problems and only the second can be acted on.
+  const rota = [
+    { ...open, id: 'a', capacity: 3, taken: 1 },
+    { ...open, id: 'b', capacity: 2, taken: 2 },
+    { ...open, id: 'c', capacity: 4, taken: 0 },
+    // Closed, and short — but a settled rota is not a gap.
+    { ...open, id: 'd', capacity: 5, taken: 1, isOpen: false },
+  ];
+  const health = rosterHealth(rota);
+  check('the shortfall counts people', health.stillNeeded, 2 + 0 + 4);
+  check('a closed shift is not a shortfall', health.stillNeeded, 6);
+  check('empty shifts are counted', health.empty, 1);
+  check('full shifts are counted', health.full, 1);
+  check('places count only the open shifts', health.places, 3 + 2 + 4);
+  check('filled counts only the open shifts', health.filled, 1 + 2 + 0);
+
+  check('hours are summed from the readable shifts',
+    totalHours([
+      { day: 'dayOne', startTime: '09:00', endTime: '12:00' },
+      { day: 'dayOne', startTime: '13:00', endTime: '14:30' },
+    ]),
+    { hours: 4.5, countedShifts: 2 });
+  // A certificate states these hours, so an unreadable shift is left out and
+  // said to be left out rather than counted as zero.
+  check('an unreadable shift is left out of the hours',
+    totalHours([
+      { day: 'dayOne', startTime: '09:00', endTime: '12:00' },
+      { day: 'dayOne', startTime: 'صباحاً', endTime: '14:30' },
+    ]),
+    { hours: 3, countedShifts: 1 });
+  check('a shift that ends before it starts is left out',
+    totalHours([{ day: 'dayOne', startTime: '14:00', endTime: '09:00' }]),
+    { hours: 0, countedShifts: 0 });
+
+  check('shifts sort by day then by clock',
+    byStartTime([
+      { id: 'x', day: 'dayTwo', startTime: '09:00', endTime: '10:00' },
+      { id: 'y', day: 'dayOne', startTime: '13:00', endTime: '14:00' },
+      { id: 'z', day: 'dayOne', startTime: '09:00', endTime: '10:00' },
+    ] as Array<{ id: string; day: string; startTime: string; endTime: string }>).map((s) => s.id),
+    ['z', 'y', 'x']);
+  check('an unreadable time sorts last, not first',
+    byStartTime([
+      { id: 'bad', day: 'dayOne', startTime: 'صباحاً', endTime: '10:00' },
+      { id: 'ok', day: 'dayOne', startTime: '09:00', endTime: '10:00' },
+    ] as Array<{ id: string; day: string; startTime: string; endTime: string }>).map((s) => s.id),
+    ['ok', 'bad']);
+
+  // --- and the same rules against real rows ---------------------------------
+  //
+  // The claim action holds its check and its write in one Serializable
+  // transaction, and leans on the unique index as the last line. Both are
+  // database behaviour, so both are checked against the database.
+  const shift = await prisma.volunteerShift.create({
+    data: {
+      titleAr: `${marker} فترة فحص`, teamAr: 'فحص', day: 'dayOne',
+      startTime: '09:00', endTime: '12:00', capacity: 1,
+    },
+  });
+  const vol = await prisma.user.create({
+    data: {
+      email: `volunteer-check@regcheck.invalid`,
+      passwordHash: 'x', name: `${marker} متطوع`, role: 'ATTENDEE', category: 'volunteer',
+    },
+  });
+
+  await prisma.volunteerAssignment.create({ data: { shiftId: shift.id, userId: vol.id } });
+
+  let duplicateRefused = false;
+  try {
+    await prisma.volunteerAssignment.create({ data: { shiftId: shift.id, userId: vol.id } });
+  } catch (err) {
+    duplicateRefused = (err as { code?: string }).code === 'P2002';
+  }
+  check('the database refuses the same volunteer twice on one shift', duplicateRefused, true);
+
+  // Deleting a shift is offered in the panel with a warning about how many
+  // people are on it; that warning is only honest if the rows actually go.
+  await prisma.volunteerShift.delete({ where: { id: shift.id } });
+  check('deleting a shift takes its assignments with it',
+    await prisma.volunteerAssignment.count({ where: { shiftId: shift.id } }), 0);
+
+  await prisma.user.delete({ where: { id: vol.id } });
+  check('no rota rows survive the check',
+    await prisma.volunteerShift.count({ where: { titleAr: { startsWith: marker } } }), 0);
+}
+
 // --- undo --------------------------------------------------------------------
 
 await prisma.notification.deleteMany({ where: { title: marker } });

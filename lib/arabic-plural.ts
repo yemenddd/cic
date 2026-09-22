@@ -19,14 +19,25 @@ export interface ArabicUnit {
   few: string;
   /** e.g. دقيقة — the singular again, for 11 and above */
   many: string;
+  /**
+   * The word for "one" that agrees with this noun's gender.
+   *
+   * Most units here are feminine (جلسة واحدة), which is why that is the
+   * default — but "متطوع واحدة" is wrong in the same way "one sessions" is,
+   * and a masculine unit has to say so rather than rely on every caller
+   * remembering to avoid arabicCount().
+   */
+  oneWord?: string;
 }
 
 export const MINUTE: ArabicUnit = { one: 'دقيقة', two: 'دقيقتين', few: 'دقائق', many: 'دقيقة' };
 export const HOUR: ArabicUnit = { one: 'ساعة', two: 'ساعتين', few: 'ساعات', many: 'ساعة' };
-export const DAY: ArabicUnit = { one: 'يوم', two: 'يومين', few: 'أيام', many: 'يوماً' };
+export const DAY: ArabicUnit = { one: 'يوم', two: 'يومين', few: 'أيام', many: 'يوماً', oneWord: 'واحد' };
 export const SESSION: ArabicUnit = { one: 'جلسة', two: 'جلستين', few: 'جلسات', many: 'جلسة' };
-export const CLASH: ArabicUnit = { one: 'تعارض', two: 'تعارضين', few: 'تعارضات', many: 'تعارضاً' };
-export const PROJECT: ArabicUnit = { one: 'مشروع', two: 'مشروعين', few: 'مشاريع', many: 'مشروعاً' };
+export const CLASH: ArabicUnit = { one: 'تعارض', two: 'تعارضين', few: 'تعارضات', many: 'تعارضاً', oneWord: 'واحد' };
+export const PROJECT: ArabicUnit = { one: 'مشروع', two: 'مشروعين', few: 'مشاريع', many: 'مشروعاً', oneWord: 'واحد' };
+export const SHIFT: ArabicUnit = { one: 'فترة', two: 'فترتين', few: 'فترات', many: 'فترة' };
+export const VOLUNTEER: ArabicUnit = { one: 'متطوع', two: 'متطوعَين', few: 'متطوعين', many: 'متطوعاً', oneWord: 'واحد' };
 
 /**
  * "4 جلسات", "جلستين", "جلسة واحدة".
@@ -36,7 +47,7 @@ export const PROJECT: ArabicUnit = { one: 'مشروع', two: 'مشروعين', f
  * just the noun for the caller to prefix with a digit.
  */
 export function arabicCount(n: number, unit: ArabicUnit): string {
-  if (n === 1) return `${unit.one} واحدة`;
+  if (n === 1) return `${unit.one} ${unit.oneWord ?? 'واحدة'}`;
   if (n === 2) return unit.two;
   if (n <= 10) return `${n} ${unit.few}`;
   return `${n} ${unit.many}`;

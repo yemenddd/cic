@@ -2,16 +2,19 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import {
   IdCard, CalendarDays, Lightbulb, ArrowLeft, CircleCheck, Bell, UserCheck, Sparkles, Clock,
+  HandHeart, MapPin,
 } from 'lucide-react';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
 import {
-  categoryLabel, categoryFeatures, abilitiesFor, MAX_SUBMISSIONS_PER_ATTENDEE,
+  categoryLabel, categoryFeatures, abilitiesFor,
+  MAX_SUBMISSIONS_PER_ATTENDEE, MAX_SHIFTS_PER_VOLUNTEER,
 } from '@/lib/categories';
 import { resolveSessionInterval } from '@/lib/ics';
 import { VENUE_UTC_OFFSET_HOURS, conferenceHasStarted } from '@/lib/conference';
 import { relativeArabicDate } from '@/lib/relative-time';
-import { arabicCountBare, SESSION, PROJECT } from '@/lib/arabic-plural';
+import { arabicCountBare, SESSION, PROJECT, SHIFT } from '@/lib/arabic-plural';
+import { byStartTime } from '@/lib/volunteering';
 import {
   SUBMISSION_STATUS_COLORS, SUBMISSION_STATUS_LABELS, SUBMISSION_STATUSES,
 } from '@/lib/submissions';
@@ -79,7 +82,7 @@ export default async function DashboardHomePage() {
         name: true,
         category: true,
         confirmationCode: true,
-        _count: { select: { savedSessions: true, submissions: true } },
+        _count: { select: { savedSessions: true, submissions: true, volunteerShifts: true } },
         submissions: { select: { status: true } },
       },
     }),
@@ -118,6 +121,28 @@ export default async function DashboardHomePage() {
 
   const savedCount = user._count.savedSessions;
   const submissionCount = user._count.submissions;
+  const shiftCount = user._count.volunteerShifts;
+
+  // Only for the people who have a rota at all. Queried after the category is
+  // known rather than alongside everything else: for the other two categories
+  // the answer is always "none", and asking anyway would put a query on every
+  // attendee's dashboard to render nothing.
+  const nextShift = abilities.volunteerShifts && shiftCount > 0
+    ? byStartTime(
+        (
+          await prisma.volunteerAssignment.findMany({
+            where: { userId: session.user.id },
+            select: {
+              shift: {
+                select: { id: true, titleAr: true, teamAr: true, day: true, startTime: true, endTime: true, location: true },
+              },
+            },
+          })
+        ).map((a) => a.shift),
+        // Ordered by the same helper the rota page uses, so "next" means the
+        // same thing in both places.
+      )[0] ?? null
+    : null;
 
   // The soonest saved session, by the same resolver the .ics export uses — so
   // "next" here and the downloaded calendar can never disagree. Sessions whose
@@ -166,6 +191,23 @@ export default async function DashboardHomePage() {
             href: '/dashboard/innovations',
             icon: Lightbulb,
             done: submissionCount > 0,
+          },
+        ]
+      : []),
+    // The rota is the volunteer tier's whole point, so for a volunteer this is
+    // the step that matters most — and the one nobody else sees.
+    ...(abilities.volunteerShifts
+      ? [
+          {
+            key: 'volunteering',
+            title: 'اخترت فترات تطوّعك',
+            desc:
+              shiftCount > 0
+                ? `${arabicCountBare(shiftCount, SHIFT)} في جدول التطوّع`
+                : 'اختر الفترات التي ستعمل فيها مع فريق التنظيم',
+            href: '/dashboard/volunteering',
+            icon: HandHeart,
+            done: shiftCount > 0,
           },
         ]
       : []),
@@ -229,6 +271,20 @@ export default async function DashboardHomePage() {
           },
         ]
       : []),
+    ...(abilities.volunteerShifts
+      ? [
+          {
+            key: 'shifts',
+            value: shiftCount,
+            total: MAX_SHIFTS_PER_VOLUNTEER,
+            label: 'تطوّعك',
+            caption: `${arabicCountBare(shiftCount, SHIFT)} في جدول التطوّع`,
+            href: '/dashboard/volunteering',
+            color: 'var(--accent-violet)',
+            ariaLabel: `سجّلت في ${shiftCount} فترة تطوّع من أصل ${MAX_SHIFTS_PER_VOLUNTEER} مسموح بها`,
+          },
+        ]
+      : []),
     // Only once there is a door to have walked through: before the conference
     // opens this can only ever be zero, which measures nothing.
     ...(started && checkpointCount > 0
@@ -265,6 +321,55 @@ export default async function DashboardHomePage() {
       <StatRings stats={rings} />
 
       <Readiness steps={steps} />
+
+      {/* The volunteer's own next duty, above the programme: on the morning
+          itself this is the one line they need, and it is not in the agenda —
+          the agenda is what they would be watching if they were not working. */}
+      {nextShift && (
+        <Card>
+          <CardHeading title="فترة تطوّعك القادمة" href="/dashboard/volunteering" linkLabel="جدول التطوّع" />
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className="rounded-lg px-2.5 py-1 text-[11.5px] font-semibold"
+              style={{
+                background: 'color-mix(in srgb, var(--accent-violet) 16%, transparent)',
+                color: 'var(--accent-violet)',
+              }}
+            >
+              {DAY_LABELS[nextShift.day] ?? nextShift.day}
+            </span>
+            <span
+              className="inline-flex items-center gap-1.5 text-[12px] tabular-nums"
+              dir="ltr"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              {nextShift.startTime} — {nextShift.endTime}
+            </span>
+            {nextShift.location && (
+              <span
+                className="inline-flex items-center gap-1.5 text-[12px]"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                {nextShift.location}
+              </span>
+            )}
+          </div>
+
+          <p
+            className="mt-3 font-outfit font-bold text-[15px] leading-relaxed"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            {nextShift.titleAr}
+          </p>
+          <p className="mt-1.5 text-[12.5px]" style={{ color: 'var(--text-tertiary)' }}>
+            {nextShift.teamAr}
+            {shiftCount > 1 && ` · و${arabicCountBare(shiftCount - 1, SHIFT)} أخرى في جدولك`}
+          </p>
+        </Card>
+      )}
 
       {/* The programme on a time axis. Placed above the "next session" card
           because it answers the same question more completely — that card is

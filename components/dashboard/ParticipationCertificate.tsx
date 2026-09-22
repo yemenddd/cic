@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Download } from 'lucide-react';
 import { downloadCertificatePDF } from '@/lib/download-certificate-pdf';
+import { arabicCountBare, HOUR } from '@/lib/arabic-plural';
 
 /* A4 landscape proportions (297 × 210 mm → 1.414). Fixed pixel dimensions so
    the rasterised capture is deterministic; the on-screen copy is scaled down
@@ -51,16 +52,42 @@ export interface ParticipationCertificateProps {
    * rule exists to prevent.
    */
   preview?: boolean;
+  /**
+   * Hours on the volunteer rota, summed server-side.
+   *
+   * Only meaningful for the volunteer tier, whose certificate is the one that
+   * has to say how much work it attests to.
+   */
+  volunteerHours?: number;
 }
 
-function wording(categoryId: string, categoryLabel: string, date: string, location: string) {
+function wording(
+  categoryId: string,
+  categoryLabel: string,
+  date: string,
+  location: string,
+  volunteerHours?: number,
+) {
   const isVolunteer = categoryId === 'volunteer';
+
+  // The hours are what turns "شهادة تطوع معتمدة" from a title into a document
+  // that says something — an employer or a university reads the number, not
+  // the adjective. Stated only when there are hours on the rota to state:
+  // a volunteer who worked no recorded shift gets the sentence without a
+  // figure rather than a certificate claiming zero.
+  //
+  // Counted through the shared helper: Arabic has four forms, and "2 ساعتين"
+  // — which is what writing the number in by hand produces — carries the two
+  // twice.
+  const service = volunteerHours && volunteerHours > 0
+    ? ` بواقع ${arabicCountBare(volunteerHours, HOUR)} من العمل التنظيمي،`
+    : '';
 
   return {
     title: isVolunteer ? 'شهادة تطوع' : 'شهادة مشاركة',
     titleEn: isVolunteer ? 'CERTIFICATE OF VOLUNTEERING' : 'CERTIFICATE OF PARTICIPATION',
     body: isVolunteer
-      ? `قد ساهم ضمن الفريق التطوعي لمؤتمر الإبداع والابتكار 2026، المنعقد يومي ${date} في ${location}، وأدّى مهامه التنظيمية بالتزام وتفانٍ يستحقان التقدير.`
+      ? `قد ساهم ضمن الفريق التطوعي لمؤتمر الإبداع والابتكار 2026، المنعقد يومي ${date} في ${location}،${service} وأدّى مهامه التنظيمية بالتزام وتفانٍ يستحقان التقدير.`
       : `قد شارك في فعاليات مؤتمر الإبداع والابتكار 2026، المنعقد يومي ${date} في ${location}، بصفة ${categoryLabel || 'زائر'}.`,
     kindLabel: isVolunteer ? 'صفة التطوع' : 'صفة المشاركة',
   };
@@ -99,8 +126,9 @@ function Flourish({ width = 300 }: { width?: number }) {
 
 export default function ParticipationCertificate({
   name, categoryId, categoryLabel, track, code, date, location, issuedAt, preview = false,
+  volunteerHours,
 }: ParticipationCertificateProps) {
-  const w = wording(categoryId, categoryLabel, date, location);
+  const w = wording(categoryId, categoryLabel, date, location, volunteerHours);
 
   // Scale the on-screen copy to fit narrow viewports. The transform lives on a
   // wrapper, never on #cic-certificate, so the capture stays at full size.

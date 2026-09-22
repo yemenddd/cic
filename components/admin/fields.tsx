@@ -9,10 +9,13 @@ const fieldWrapper = 'block';
 const labelClass = 'block text-[13px] font-medium mb-1.5';
 
 export function TextField({
-  name, label, defaultValue, required, type = 'text', dir,
+  name, label, defaultValue, required, type = 'text', dir, list,
 }: {
   name: string; label: string; defaultValue?: string | number | null; required?: boolean;
   type?: string; dir?: 'ltr' | 'rtl';
+  // The id of a <datalist> to suggest from, for a field with common answers
+  // that must still accept an uncommon one.
+  list?: string;
 }) {
   return (
     <div className={fieldWrapper}>
@@ -23,6 +26,7 @@ export function TextField({
         defaultValue={defaultValue ?? ''}
         required={required}
         dir={dir}
+        list={list}
         className="input-glass"
       />
     </div>

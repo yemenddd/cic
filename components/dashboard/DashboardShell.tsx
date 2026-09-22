@@ -3,7 +3,7 @@
 import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, IdCard, CalendarDays, Lightbulb, UserRound,
-  LogOut, ExternalLink, Bell, Award,
+  LogOut, ExternalLink, Bell, Award, HandHeart,
 } from 'lucide-react';
 import PlatformShell, { type NavGroup, type UtilAction } from '@/components/platform/PlatformShell';
 import { abilitiesFor } from '@/lib/categories';
@@ -51,6 +51,15 @@ export default function DashboardShell({
       // cosmetic; the pages and the server actions are what enforce this.
       items: abilities.submitInnovations
         ? [{ href: '/dashboard/innovations', label: 'ابتكاراتي', icon: Lightbulb }]
+        : [],
+    },
+    {
+      label: 'تطوّعي',
+      // Only volunteers have a rota — same rule, same place, read as data. The
+      // group disappears entirely for everyone else rather than showing a
+      // heading over nothing.
+      items: abilities.volunteerShifts
+        ? [{ href: '/dashboard/volunteering', label: 'فترات التطوّع', icon: HandHeart }]
         : [],
     },
     {

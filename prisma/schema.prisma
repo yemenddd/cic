@@ -99,6 +99,7 @@ model User {
   // the desk, kept apart from their own attendance.
   scansRecorded       Attendance[]         @relation("AttendanceRecorder")
   passwordResetTokens PasswordResetToken[]
+  volunteerShifts     VolunteerAssignment[]
 
   /**
    * The admin directory's default order — admins first, then newest signups.
@@ -548,4 +549,62 @@ model SiteSettings {
   registrationClosedNote String?
 
   updatedAt DateTime @updatedAt
+}
+
+/**
+ * A slot of work a volunteer signs up for.
+ *
+ * The volunteer tier promises "المساهمة في تنظيم المؤتمر" and "خبرة إدارية
+ * وتنظيمية عملية", and until now the platform delivered neither — a
+ * volunteer's dashboard was an attendee's with the innovations section taken
+ * out. This is the thing that makes the tier real: who is on the door at nine,
+ * who is in the hall at two, and how many are still needed.
+ */
+model VolunteerShift {
+  id String @id @default(cuid())
+
+  titleAr String
+  /** Which team: the desk, the hall, technical, media. Free text so the
+   *  organizers can name their own teams without a migration. */
+  teamAr  String
+  /** 'dayOne' | 'dayTwo' — the same keys the programme uses. */
+  day     String
+  /** Wall-clock at the venue, "09:00". Stored as text for the same reason
+   *  ProgramSession does: it is printed, and a real time would invite a
+   *  timezone conversion nobody asked for. */
+  startTime String
+  endTime   String
+  location  String?
+  notesAr   String?
+
+  /** How many volunteers this slot needs. Claims are refused past it. */
+  capacity Int @default(1)
+
+  /** A closed shift accepts no new claims — the roster is settled. */
+  isOpen Boolean @default(true)
+
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignments VolunteerAssignment[]
+
+  @@index([day, order])
+}
+
+/** One volunteer on one shift. */
+model VolunteerAssignment {
+  id String @id @default(cuid())
+
+  shiftId String
+  shift   VolunteerShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  // Claiming the same shift twice is not a second pair of hands.
+  @@unique([shiftId, userId])
+  @@index([userId])
 }

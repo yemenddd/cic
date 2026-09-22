@@ -70,15 +70,24 @@ export function categoryFeatures(categoryId: string | null | undefined, lang: La
  */
 export interface CategoryAbilities {
   submitInnovations: boolean;
+  /**
+   * Sign up for shifts on the organizing rota.
+   *
+   * The volunteer tier advertises "المساهمة في تنظيم المؤتمر" and "خبرة إدارية
+   * وتنظيمية عملية". Those were words until there was a rota to sign up to, so
+   * this is the ability that makes them true — and it belongs to volunteers
+   * alone, because a rota anybody can join is not a rota.
+   */
+  volunteerShifts: boolean;
 }
 
 const ABILITIES: Record<string, CategoryAbilities> = {
-  visitor: { submitInnovations: false },
-  participant: { submitInnovations: true },
-  volunteer: { submitInnovations: false },
+  visitor: { submitInnovations: false, volunteerShifts: false },
+  participant: { submitInnovations: true, volunteerShifts: false },
+  volunteer: { submitInnovations: false, volunteerShifts: true },
 };
 
-const NO_ABILITIES: CategoryAbilities = { submitInnovations: false };
+const NO_ABILITIES: CategoryAbilities = { submitInnovations: false, volunteerShifts: false };
 
 export function abilitiesFor(categoryId: string | null | undefined): CategoryAbilities {
   return (categoryId && ABILITIES[categoryId]) || NO_ABILITIES;
@@ -87,6 +96,20 @@ export function abilitiesFor(categoryId: string | null | undefined): CategoryAbi
 export function canSubmitInnovations(categoryId: string | null | undefined): boolean {
   return abilitiesFor(categoryId).submitInnovations;
 }
+
+export function canVolunteer(categoryId: string | null | undefined): boolean {
+  return abilitiesFor(categoryId).volunteerShifts;
+}
+
+/**
+ * How many shifts one volunteer may hold.
+ *
+ * A ceiling exists for the same reason the submissions one does — the claim
+ * action is a public POST endpoint — but it is set by the day rather than by
+ * the storage bill: somebody who has taken eight slots has taken them from
+ * other volunteers and is not going to work all of them.
+ */
+export const MAX_SHIFTS_PER_VOLUNTEER = 8;
 
 /**
  * How many projects one account may present.
