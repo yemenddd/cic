@@ -17,6 +17,7 @@ export default async function EditSubmissionPage({ params }: { params: Promise<{
   // like an id that does not exist — no way to probe for someone else's work.
   const submission = await prisma.projectSubmission.findFirst({
     where: { id, userId: access.userId },
+    include: { files: { orderBy: { createdAt: 'asc' } } },
   });
   if (!submission) notFound();
 
@@ -75,7 +76,13 @@ export default async function EditSubmissionPage({ params }: { params: Promise<{
         </div>
       )}
 
-      <SubmissionFields submission={submission} />
+      <SubmissionFields
+        submission={submission}
+        files={submission.files.map((f) => ({
+          id: f.id, url: f.url, name: f.name, sizeBytes: f.sizeBytes,
+        }))}
+        editable={!locked}
+      />
     </FormShell>
   );
 }

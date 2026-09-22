@@ -34,6 +34,23 @@ enum UserRole {
   ATTENDEE
 }
 
+/**
+ * Whether an account may be signed in to.
+ *
+ * Registering and being admitted are two different things. Anybody may fill in
+ * the form; presenting a project or joining the organizing team is something
+ * the committee decides, and until it has decided the account exists but its
+ * door is shut.
+ *
+ * REJECTED is kept distinct from PENDING so a refusal can be told to the
+ * person as a decision rather than as a wait that never ends.
+ */
+enum AccountStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum SubmissionStatus {
   DRAFT
   PENDING
@@ -73,7 +90,26 @@ model User {
   country          String?
   organization     String?
   category         String? // visitor | participant | volunteer
+  /** One of the two paths in lib/submissions.ts, for participants. */
   track            String?
+  /**
+   * Which organizing committee a volunteer works with — one of the six in
+   * lib/committees.ts. Chosen by the volunteer themselves, on their rota page,
+   * and it decides which shifts they may claim.
+   */
+  committee        String?
+
+  /**
+   * Whether this account may be signed in to at all — see AccountStatus.
+   *
+   * Defaults to PENDING because the safe answer for a row created by a path
+   * nobody has thought about yet is "not yet admitted". The registration route
+   * and the organizer's own create-user form both set it deliberately.
+   */
+  status          AccountStatus @default(PENDING)
+  /** The committee's reason, shown to the applicant on the sign-in screen. */
+  statusNote      String?
+  statusChangedAt DateTime?
   // The code printed on their badge and certificate. Unique because two
   // attendees holding the same one makes both documents ambiguous at the
   // door; the registration route retries on the (very rare) collision.
@@ -242,8 +278,39 @@ model ProjectSubmission {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  files SubmissionFile[]
+
   @@index([userId])
   @@index([status])
+}
+
+/**
+ * A document attached to a submission.
+ *
+ * The section was built for innovations, which are shown off with a picture,
+ * so a cover image was all it took. A research paper is not shown off with a
+ * picture — it is the paper — and both paths now need somewhere to put the
+ * work itself: a PDF, a presentation, a manuscript.
+ *
+ * The uploader's own filename is kept for display only. What is stored in blob
+ * storage is a generated name (see lib/blob.ts), because the uploaded one is
+ * attacker-controlled text that would otherwise decide a public URL and how
+ * the file is served back.
+ */
+model SubmissionFile {
+  id           String            @id @default(cuid())
+  submissionId String
+  submission   ProjectSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  url         String
+  /** As the person named it on their own machine. Display only. */
+  name        String
+  contentType String
+  sizeBytes   Int
+
+  createdAt DateTime @default(now())
+
+  @@index([submissionId])
 }
 
 // Every localized text field is stored as 3 columns (Ar/En/Tr) rather than
@@ -564,9 +631,16 @@ model VolunteerShift {
   id String @id @default(cuid())
 
   titleAr String
-  /** Which team: the desk, the hall, technical, media. Free text so the
-   *  organizers can name their own teams without a migration. */
-  teamAr  String
+  /**
+   * Which of the six organizing committees this shift belongs to — the keys in
+   * lib/committees.ts.
+   *
+   * A volunteer belongs to one committee and claims within it, so this is not
+   * a label but the thing that decides who may take the shift. It was free
+   * text when the rota was first built and every organizer would have spelled
+   * the same committee three ways.
+   */
+  committee String
   /** 'dayOne' | 'dayTwo' — the same keys the programme uses. */
   day     String
   /** Wall-clock at the venue, "09:00". Stored as text for the same reason

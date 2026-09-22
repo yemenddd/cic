@@ -126,11 +126,11 @@ check('an unknown type is refused', checkUpload(fakeFile(500, '')) !== null, tru
 
 // --- which track an attendee may store on their certificate ------------------
 
-check('a track from the offered list is accepted', isTrackAllowed('البحث العلمي', null), true);
-check('clearing the track is allowed', isTrackAllowed('', 'البحث العلمي'), true);
-check('an invented track is refused', isTrackAllowed('مسار مخترع', 'البحث العلمي'), false);
+check('a path from the offered list is accepted', isTrackAllowed('مسار البحث العلمي', null), true);
+check('clearing the path is allowed', isTrackAllowed('', 'مسار البحث العلمي'), true);
+check('an invented path is refused', isTrackAllowed('مسار مخترع', 'مسار البحث العلمي'), false);
 check('a legacy value the account already holds is kept', isTrackAllowed('مسار قديم', 'مسار قديم'), true);
-check('but not one held by somebody else', isTrackAllowed('مسار قديم', 'البحث العلمي'), false);
+check('but not one held by somebody else', isTrackAllowed('مسار قديم', 'مسار البحث العلمي'), false);
 
 // --- how hard the login throttle bites ---------------------------------------
 
@@ -1234,15 +1234,26 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
 // refuse every English and Turkish signup; storing the label as posted is what
 // put "Innovation & Technology" on an Arabic certificate.
 {
-  check('an Arabic track passes through', canonicalTrack('البحث العلمي'), 'البحث العلمي');
-  check('an English label becomes the Arabic one', canonicalTrack('Scientific Research'), 'البحث العلمي');
-  check('and a Turkish one', canonicalTrack('Bilimsel Araştırma'), 'البحث العلمي');
-  check('entrepreneurship, English', canonicalTrack('Entrepreneurship'), 'ريادة الأعمال');
-  check('entrepreneurship, Turkish', canonicalTrack('Girişimcilik'), 'ريادة الأعمال');
-  check('AI, English', canonicalTrack('AI & Robotics'), 'الذكاء الاصطناعي والروبوتات');
-  check('innovation, Turkish', canonicalTrack('İnovasyon ve Teknoloji'), 'الابتكار والتقنية');
-  check('case does not matter', canonicalTrack('scientific research'), 'البحث العلمي');
-  check('surrounding space does not matter', canonicalTrack('  Entrepreneurship  '), 'ريادة الأعمال');
+  check('an Arabic path passes through', canonicalTrack('مسار البحث العلمي'), 'مسار البحث العلمي');
+  check('an English label becomes the Arabic one',
+    canonicalTrack('Scientific Research Path'), 'مسار البحث العلمي');
+  check('and a Turkish one',
+    canonicalTrack('Bilimsel Araştırma Yolu'), 'مسار البحث العلمي');
+  check('the invention path, English',
+    canonicalTrack('Invention & Innovation Path'), 'مسار الاختراع والابتكار');
+  check('the invention path, Turkish',
+    canonicalTrack('İcat ve İnovasyon Yolu'), 'مسار الاختراع والابتكار');
+  // The four retired tracks still resolve: a form left open over lunch posts
+  // the label it was rendered with, and refusing it would make a registration
+  // that cannot be completed.
+  check('a retired English label still resolves',
+    canonicalTrack('Entrepreneurship'), 'مسار الاختراع والابتكار');
+  check('a retired Turkish label still resolves',
+    canonicalTrack('Girişimcilik'), 'مسار الاختراع والابتكار');
+  check('case does not matter',
+    canonicalTrack('scientific research path'), 'مسار البحث العلمي');
+  check('surrounding space does not matter',
+    canonicalTrack('  Invention & Innovation Path  '), 'مسار الاختراع والابتكار');
 
   // Empty is a real answer — the track is optional.
   check('empty stays empty', canonicalTrack(''), '');
@@ -1344,26 +1355,46 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('an unreadable time never invents a clash',
     shiftsOverlap(nine, { day: 'dayOne', startTime: 'صباحاً', endTime: '12:00' }), false);
 
-  const open = { id: 's1', day: 'dayOne', startTime: '09:00', endTime: '12:00', capacity: 2, isOpen: true, taken: 1 };
-  check('an open shift with room may be claimed', canClaim(open, []), { ok: true });
+  const MEDIA = 'media';
+  const open = {
+    id: 's1', day: 'dayOne', startTime: '09:00', endTime: '12:00',
+    capacity: 2, isOpen: true, taken: 1, committee: MEDIA,
+  };
+  check('an open shift with room may be claimed', canClaim(open, [], MEDIA), { ok: true });
   check('a full one may not',
-    canClaim({ ...open, taken: 2 }, []).ok === false && canClaim({ ...open, taken: 2 }, []),
-    { ok: false, reason: 'full' });
+    canClaim({ ...open, taken: 2 }, [], MEDIA), { ok: false, reason: 'full' });
   check('a closed one may not',
-    canClaim({ ...open, isOpen: false }, []), { ok: false, reason: 'closed' });
+    canClaim({ ...open, isOpen: false }, [], MEDIA), { ok: false, reason: 'closed' });
   // Closed is reported ahead of full: "we have settled the rota" is the truer
   // answer, and telling somebody it is full invites them to keep checking.
   check('closed outranks full',
-    canClaim({ ...open, isOpen: false, taken: 9 }, []), { ok: false, reason: 'closed' });
+    canClaim({ ...open, isOpen: false, taken: 9 }, [], MEDIA), { ok: false, reason: 'closed' });
   check('the same shift twice is not two pairs of hands',
-    canClaim(open, [{ id: 's1', titleAr: 'الاستقبال', day: 'dayOne', startTime: '09:00', endTime: '12:00' }]),
+    canClaim(open, [{ id: 's1', titleAr: 'الاستقبال', day: 'dayOne', startTime: '09:00', endTime: '12:00' }], MEDIA),
     { ok: false, reason: 'already' });
   check('a clashing shift is refused by name',
-    canClaim(open, [{ id: 's2', titleAr: 'القاعة', day: 'dayOne', startTime: '11:00', endTime: '13:00' }]),
+    canClaim(open, [{ id: 's2', titleAr: 'القاعة', day: 'dayOne', startTime: '11:00', endTime: '13:00' }], MEDIA),
     { ok: false, reason: 'clash', clashesWith: 'القاعة' });
   check('a shift later the same day is fine',
-    canClaim(open, [{ id: 's2', titleAr: 'القاعة', day: 'dayOne', startTime: '13:00', endTime: '15:00' }]),
+    canClaim(open, [{ id: 's2', titleAr: 'القاعة', day: 'dayOne', startTime: '13:00', endTime: '15:00' }], MEDIA),
     { ok: true });
+
+  // A shift belongs to one committee and a volunteer works with one committee.
+  check('another committee\'s shift may not be claimed',
+    canClaim(open, [], 'logistics'), { ok: false, reason: 'committee' });
+  check('nor may any shift before a committee is chosen',
+    canClaim(open, [], null), { ok: false, reason: 'nocommittee' });
+  // Reported ahead of full and closed: telling somebody a slot is full when the
+  // real answer is that it is not theirs sends them back to check it hourly.
+  check('the committee outranks full and closed',
+    canClaim({ ...open, taken: 9, isOpen: false }, [], 'logistics'),
+    { ok: false, reason: 'committee' });
+  // But a shift they already hold still reads as theirs even if an organizer
+  // moved them — otherwise the release button would turn into a refusal and
+  // they could never give it back.
+  check('a held shift stays releasable after a committee change',
+    canClaim(open, [{ id: 's1', titleAr: 'الإعلام', day: 'dayOne', startTime: '09:00', endTime: '12:00' }], 'logistics'),
+    { ok: false, reason: 'already' });
 
   // Counted in people, not in shifts: "four shifts unfilled" and "four people
   // short" are different problems and only the second can be acted on.
@@ -1421,7 +1452,7 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   // database behaviour, so both are checked against the database.
   const shift = await prisma.volunteerShift.create({
     data: {
-      titleAr: `${marker} فترة فحص`, teamAr: 'فحص', day: 'dayOne',
+      titleAr: `${marker} فترة فحص`, committee: 'media', day: 'dayOne',
       startTime: '09:00', endTime: '12:00', capacity: 1,
     },
   });
@@ -1451,6 +1482,160 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   await prisma.user.delete({ where: { id: vol.id } });
   check('no rota rows survive the check',
     await prisma.volunteerShift.count({ where: { titleAr: { startsWith: marker } } }), 0);
+}
+
+// --- being admitted, which is not the same as registering ---------------------
+//
+// Anybody may fill in the form; presenting a project or joining the organizing
+// team is a decision. The rule is checked here because getting it wrong in
+// either direction is serious: too strict and 200 people are locked out of
+// accounts they already use, too loose and the queue is decorative.
+
+{
+  const {
+    needsApproval, initialStatus, signInRefusal, refusalCode, statusFromRefusalCode,
+  } = await import('../lib/account-status');
+  const { loginErrorMessage } = await import('../lib/login-error');
+
+  check('a participant waits', needsApproval('participant'), true);
+  check('a volunteer waits', needsApproval('volunteer'), true);
+  // A visitor is admitted on the spot: attending a public session is what the
+  // form is for, and a queue for it would have nothing at the end.
+  check('a visitor does not wait', needsApproval('visitor'), false);
+  check('an unknown category does not', needsApproval('vip'), false);
+  check('a missing category does not', needsApproval(null), false);
+
+  check('a participant starts pending', initialStatus('participant'), 'PENDING');
+  check('a volunteer starts pending', initialStatus('volunteer'), 'PENDING');
+  check('a visitor starts approved', initialStatus('visitor'), 'APPROVED');
+
+  check('an approved account is not refused', signInRefusal('APPROVED'), null);
+  check('a waiting one is told it is waiting',
+    signInRefusal('PENDING')?.includes('بانتظار موافقة'), true);
+  check('a refused one is told it was refused',
+    signInRefusal('REJECTED')?.includes('لم يُقبل'), true);
+  check('and the committee reason is carried through',
+    signInRefusal('REJECTED', 'الفئة لا تناسب طلبك')?.includes('الفئة لا تناسب طلبك'), true);
+
+  // The status travels through Auth.js as a short code and has to survive the
+  // round trip, or the sign-in screen falls back to "wrong credentials" — the
+  // one message this whole feature exists to stop showing.
+  for (const status of ['PENDING', 'REJECTED'] as const) {
+    check(`the ${status.toLowerCase()} code round-trips`,
+      statusFromRefusalCode(refusalCode(status)), status);
+  }
+  check('an unrelated code is not mistaken for a status',
+    statusFromRefusalCode('throttled-5'), null);
+  check('a waiting account never reads as wrong credentials',
+    loginErrorMessage(refusalCode('PENDING')).includes('بانتظار'), true);
+  check('a real typo still does', loginErrorMessage(undefined), 'بيانات الدخول غير صحيحة');
+  check('and a throttle still does its own thing',
+    loginErrorMessage('throttled-3').includes('3 دقائق'), true);
+
+  // --- against real rows ----------------------------------------------------
+  //
+  // The migration admitted everybody who already had an account. If that had
+  // failed, every existing attendee — and the organizers — would be locked out
+  // the moment this deploys, which is not a thing to take on faith.
+  check('nobody who already had an account was locked out',
+    await prisma.user.count({ where: { status: 'PENDING', createdAt: { lt: new Date('2026-09-22') } } }),
+    0);
+}
+
+// --- the six committees --------------------------------------------------------
+
+{
+  const { COMMITTEES, committeeLabel, isCommittee, canonicalCommittee } = await import(
+    '../lib/committees'
+  );
+
+  check('there are six committees', COMMITTEES.length, 6);
+  check('every committee has a distinct id',
+    new Set(COMMITTEES.map((c) => c.id)).size, COMMITTEES.length);
+  check('and every one says what it does',
+    COMMITTEES.every((c) => c.descriptionAr.length > 10), true);
+
+  check('the media committee resolves', committeeLabel('media'), 'الإعلام');
+  check('an unknown id resolves to nothing', committeeLabel('catering'), '');
+  check('a null id resolves to nothing', committeeLabel(null), '');
+  check('a known id is a committee', isCommittee('logistics'), true);
+  check('an invented one is not', isCommittee('logistcs'), false);
+
+  // The label is accepted as well as the id, so a form built before the ids
+  // existed still resolves rather than being refused.
+  check('the Arabic label maps back to its id',
+    canonicalCommittee('المالية والحسابات'), 'finance');
+  check('an id maps to itself', canonicalCommittee('programs'), 'programs');
+  check('anything else is refused', canonicalCommittee('لجنة الضيافة'), null);
+  check('and so is nothing at all', canonicalCommittee(''), null);
+}
+
+// --- the two paths, and the four they replaced --------------------------------
+
+{
+  const { SUBMISSION_TRACKS, canonicalTrack } = await import('../lib/submissions');
+
+  check('there are two paths', SUBMISSION_TRACKS.length, 2);
+  check('invention is one', SUBMISSION_TRACKS[0], 'مسار الاختراع والابتكار');
+  check('research is the other', SUBMISSION_TRACKS[1], 'مسار البحث العلمي');
+
+  check('the English label resolves',
+    canonicalTrack('Scientific Research Path'), 'مسار البحث العلمي');
+  check('the Turkish label resolves',
+    canonicalTrack('İcat ve İnovasyon Yolu'), 'مسار الاختراع والابتكار');
+
+  // A cached page or a stale tab still posts one of the four retired labels.
+  // Refusing those would turn a form somebody left open over lunch into a
+  // registration that cannot be completed.
+  check('a retired track still resolves',
+    canonicalTrack('الذكاء الاصطناعي والروبوتات'), 'مسار الاختراع والابتكار');
+  check('the retired research track lands on the research path',
+    canonicalTrack('البحث العلمي'), 'مسار البحث العلمي');
+  check('a retired English label resolves',
+    canonicalTrack('AI & Robotics'), 'مسار الاختراع والابتكار');
+  check('empty is still a real answer', canonicalTrack(''), '');
+  check('an invented one is still refused', canonicalTrack('مسار الطبخ'), null);
+
+  // Nothing may be left on a value the form can no longer offer: the track is
+  // printed on a certificate, and its owner could never re-select it.
+  const stray = await prisma.user.findMany({
+    where: { track: { notIn: [...SUBMISSION_TRACKS, ''] }, NOT: { track: null } },
+    select: { track: true },
+    take: 5,
+  });
+  check('no account is left on a retired track', stray.map((u) => u.track), []);
+}
+
+// --- what may be attached to a submission --------------------------------------
+
+{
+  const {
+    checkDocumentUpload, MAX_DOCUMENT_BYTES, MAX_FILES_PER_SUBMISSION, DOCUMENT_ACCEPT,
+  } = await import('../lib/upload-rules');
+
+  const file = (name: string, type: string, size: number) => ({ name, type, size });
+
+  check('a PDF is accepted', checkDocumentUpload(file('paper.pdf', 'application/pdf', 2_000_000)), null);
+  check('a photograph of a prototype is accepted',
+    checkDocumentUpload(file('rig.jpg', 'image/jpeg', 900_000)), null);
+  // Not a format question — a public URL on a domain this site's CSP does not
+  // govern, reachable by anyone signed in.
+  check('an SVG is refused',
+    checkDocumentUpload(file('x.svg', 'image/svg+xml', 1000))?.includes('غير مدعومة'), true);
+  check('an executable is refused',
+    checkDocumentUpload(file('x.exe', 'application/x-msdownload', 1000))?.includes('غير مدعومة'), true);
+  check('an oversized file is refused',
+    checkDocumentUpload(file('big.pdf', 'application/pdf', MAX_DOCUMENT_BYTES + 1))?.includes('الحد الأقصى'),
+    true);
+  check('an empty file is refused',
+    checkDocumentUpload(file('empty.pdf', 'application/pdf', 0))?.includes('فارغ'), true);
+  // Somebody who picked five at once has to be told which of them was wrong.
+  check('the refusal names the file',
+    checkDocumentUpload(file('ملحق.exe', 'application/x-msdownload', 10))?.includes('ملحق.exe'), true);
+
+  check('the picker offers what the server accepts',
+    DOCUMENT_ACCEPT.includes('application/pdf') && !DOCUMENT_ACCEPT.includes('image/svg+xml'), true);
+  check('a submission may carry a handful of files', MAX_FILES_PER_SUBMISSION, 5);
 }
 
 // --- undo --------------------------------------------------------------------

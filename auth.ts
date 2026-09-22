@@ -11,6 +11,7 @@ import {
   recordFailure,
   throttleState,
 } from '@/lib/rate-limit';
+import { refusalCode, type AccountStatus } from '@/lib/account-status';
 
 /**
  * Surfaces a locked-out attempt distinctly from a wrong password, so the login
@@ -23,6 +24,24 @@ class TooManyAttempts extends CredentialsSignin {
   constructor(retryAfterSeconds: number) {
     super();
     this.code = `throttled-${Math.max(1, Math.ceil(retryAfterSeconds / 60))}`;
+  }
+}
+
+/**
+ * The password was right and the account is still not admitted.
+ *
+ * Raised only after the password has been verified, so it tells nobody
+ * anything they could not already learn by registering with that address
+ * themselves — and it means a stranger guessing at addresses learns nothing
+ * about which of them are waiting for a decision.
+ */
+class NotAdmitted extends CredentialsSignin {
+  code: string;
+  constructor(status: AccountStatus, note?: string | null) {
+    super();
+    // The note travels with the refusal because the notification carrying it
+    // sits inside the account, which is the one thing they cannot open.
+    this.code = refusalCode(status, note);
   }
 }
 
@@ -80,6 +99,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (tripped) throw new TooManyAttempts(tripped.retryAfter);
 
           return null;
+        }
+
+        // The password is right; whether the door is open is a separate
+        // question. Checked here rather than in the layouts, because a session
+        // that exists at all is one that proxy.ts will wave through — and
+        // "signed in but allowed nowhere" is a worse experience than being
+        // told plainly at the door.
+        //
+        // An organizer is never held: the role is granted by another organizer,
+        // which is the approval.
+        if (user.role !== 'ADMIN' && user.status !== 'APPROVED') {
+          throw new NotAdmitted(user.status as AccountStatus, user.statusNote);
         }
 
         // A correct password clears the slate — someone who finally remembers

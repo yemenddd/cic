@@ -27,6 +27,8 @@ export interface GuardedUser {
   name: string | null;
   role: 'ADMIN' | 'ATTENDEE';
   category: string | null;
+  /** A volunteer's committee, or null until they have chosen one. */
+  committee: string | null;
 }
 
 /** The signed-in user as the database currently sees them, or null. */
@@ -45,11 +47,22 @@ export async function currentUser(): Promise<GuardedUser | null> {
       name: true,
       role: true,
       category: true,
+      committee: true,
+      status: true,
       passwordChangedAt: true,
     },
   });
 
   if (!user) return null;
+
+  // Admission is re-checked on every guarded request, not only at sign-in.
+  // Sessions are JWTs that live for thirty days, so an account put back to
+  // PENDING — or refused after being approved by mistake — would otherwise
+  // keep working for a month on the token it already holds.
+  //
+  // An organizer is exempt for the same reason as at sign-in: the role is
+  // itself the admission.
+  if (user.role !== 'ADMIN' && user.status !== 'APPROVED') return null;
 
   // Sessions are JWTs, so there is no server-side record to delete when
   // somebody resets a password they have lost control of — the token an
@@ -75,6 +88,7 @@ export async function currentUser(): Promise<GuardedUser | null> {
     name: user.name,
     role: user.role,
     category: user.category,
+    committee: user.committee,
   };
 }
 

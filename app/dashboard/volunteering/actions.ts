@@ -5,11 +5,13 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
 import { canVolunteer, MAX_SHIFTS_PER_VOLUNTEER } from '@/lib/categories';
 import { canClaim, REFUSAL_MESSAGES } from '@/lib/volunteering';
+import { canonicalCommittee, committeeLabel } from '@/lib/committees';
 
 type ActionResult = { error?: string; success?: string };
 
 const SESSION_EXPIRED = 'انتهت الجلسة، سجّل الدخول مرة أخرى';
 const NOT_ENTITLED = 'جدول التطوّع متاح لفئة «متطوع» فقط';
+const NOT_ADMITTED = 'حسابك بانتظار موافقة فريق التنظيم';
 const GONE = 'لم تعد هذه الفترة موجودة';
 const BUSY = 'فترة مزدحمة الآن — حاول مرة أخرى';
 const TOO_MANY = `لا يمكن حجز أكثر من ${MAX_SHIFTS_PER_VOLUNTEER} فترات — ألغِ فترة قبل حجز أخرى`;
@@ -20,16 +22,53 @@ const TOO_MANY = `لا يمكن حجز أكثر من ${MAX_SHIFTS_PER_VOLUNTEER}
 // read from the database rather than the JWT, so an organizer moving somebody
 // out of the volunteer tier takes effect immediately instead of whenever their
 // token happens to refresh.
-async function entitledUserId(): Promise<{ id: string } | { error: string }> {
+async function entitledUserId(): Promise<{ id: string; committee: string | null } | { error: string }> {
   const session = await auth();
   const id = session?.user?.id;
   if (!id) return { error: SESSION_EXPIRED };
 
-  const user = await prisma.user.findUnique({ where: { id }, select: { category: true } });
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { category: true, committee: true, status: true, role: true },
+  });
   if (!user) return { error: SESSION_EXPIRED };
+  // An account put back to pending keeps a valid token for thirty days; every
+  // write re-checks rather than trusting it.
+  if (user.role !== 'ADMIN' && user.status !== 'APPROVED') return { error: NOT_ADMITTED };
   if (!canVolunteer(user.category)) return { error: NOT_ENTITLED };
 
-  return { id };
+  return { id, committee: user.committee };
+}
+
+/**
+ * Join a committee, or move to another one.
+ *
+ * Moving is refused while they still hold shifts: those shifts belong to the
+ * committee they are leaving, and carrying them across would put somebody on a
+ * rota their own committee cannot see. Releasing first is one extra step and
+ * it is the honest one.
+ */
+export async function chooseCommittee(committeeId: string): Promise<ActionResult> {
+  const me = await entitledUserId();
+  if ('error' in me) return { error: me.error };
+
+  const committee = canonicalCommittee(committeeId);
+  if (!committee) return { error: 'اختر لجنة من القائمة' };
+  if (committee === me.committee) return { success: 'لجنتك كما هي' };
+
+  if (me.committee) {
+    const held = await prisma.volunteerAssignment.count({ where: { userId: me.id } });
+    if (held > 0) {
+      return {
+        error: 'ألغِ فتراتك الحالية أولاً — فهي تخصّ لجنتك الحالية ولا تنتقل معك',
+      };
+    }
+  }
+
+  await prisma.user.update({ where: { id: me.id }, data: { committee } });
+
+  revalidate();
+  return { success: `انضممت إلى ${committeeLabel(committee)}` };
 }
 
 function revalidate() {
@@ -60,7 +99,7 @@ export async function claimShift(shiftId: string): Promise<ActionResult> {
           where: { id: shiftId },
           select: {
             id: true, day: true, startTime: true, endTime: true,
-            capacity: true, isOpen: true,
+            capacity: true, isOpen: true, committee: true,
             _count: { select: { assignments: true } },
           },
         });
@@ -80,6 +119,7 @@ export async function claimShift(shiftId: string): Promise<ActionResult> {
         const verdict = canClaim(
           { ...shift, taken: shift._count.assignments },
           mine,
+          me.committee,
         );
         if (!verdict.ok) {
           const message = REFUSAL_MESSAGES[verdict.reason];

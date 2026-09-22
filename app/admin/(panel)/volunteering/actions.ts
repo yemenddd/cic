@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/client';
 import { assertAdmin, requireAdmin } from '@/lib/auth-guards';
 import { minutesOfDay } from '@/lib/volunteering';
+import { canonicalCommittee } from '@/lib/committees';
 
 type ActionResult = { error?: string; success?: string } | void;
 
@@ -20,7 +21,7 @@ function revalidate() {
 function readFields(formData: FormData) {
   return {
     titleAr: String(formData.get('titleAr') || '').trim(),
-    teamAr: String(formData.get('teamAr') || '').trim(),
+    committee: String(formData.get('committee') || '').trim(),
     day: String(formData.get('day') || '').trim(),
     startTime: String(formData.get('startTime') || '').trim(),
     endTime: String(formData.get('endTime') || '').trim(),
@@ -41,7 +42,7 @@ function readFields(formData: FormData) {
  */
 function validate(f: ReturnType<typeof readFields>): string | null {
   if (!f.titleAr) return 'عنوان الفترة مطلوب';
-  if (!f.teamAr) return 'الفريق مطلوب';
+  if (!canonicalCommittee(f.committee)) return 'اللجنة مطلوبة — اخترها من القائمة';
   if (!f.day) return 'اليوم مطلوب';
 
   const start = minutesOfDay(f.startTime);
@@ -68,7 +69,7 @@ export async function createShift(_prev: ActionResult, formData: FormData): Prom
   await prisma.volunteerShift.create({
     data: {
       titleAr: f.titleAr,
-      teamAr: f.teamAr,
+      committee: canonicalCommittee(f.committee)!,
       day: f.day,
       startTime: f.startTime,
       endTime: f.endTime,
@@ -114,7 +115,7 @@ export async function updateShift(id: string, _prev: ActionResult, formData: For
     where: { id },
     data: {
       titleAr: f.titleAr,
-      teamAr: f.teamAr,
+      committee: canonicalCommittee(f.committee)!,
       day: f.day,
       startTime: f.startTime,
       endTime: f.endTime,

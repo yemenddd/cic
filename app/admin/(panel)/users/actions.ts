@@ -236,6 +236,12 @@ export async function createUser(_prev: CreateResult | undefined, form: FormData
           name,
           role,
           category,
+          // An organizer creating an account at the desk has already made the
+          // decision the approval queue exists to capture. Leaving it to the
+          // schema default would put the person they just registered, standing
+          // in front of them, into a queue for their own approval.
+          status: 'APPROVED',
+          statusChangedAt: new Date(),
           confirmationCode,
           ...profile,
           registrations: {

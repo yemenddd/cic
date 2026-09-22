@@ -24,7 +24,7 @@ export default async function DashboardInnovationsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-outfit font-bold text-xl" style={{ color: 'var(--text-primary)' }}>
-            ابتكاراتي
+            أعمالي المقدَّمة
           </h1>
           {/* The cap was enforced on submit and never mentioned until it was
               hit, which is the worst moment to learn about a limit. */}

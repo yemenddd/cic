@@ -1,4 +1,5 @@
 import { put, del } from '@vercel/blob';
+import { ALLOWED_DOCUMENTS, checkDocumentUpload } from '@/lib/upload-rules';
 
 /**
  * Uploads.
@@ -73,6 +74,45 @@ export async function uploadImage(file: File, folder: string): Promise<string> {
     contentType: file.type,
   });
   return blob.url;
+}
+
+// The rules themselves live in lib/upload-rules.ts, which imports nothing —
+// the upload form is a client component, and reading them from here would pull
+// @vercel/blob into the browser bundle. Re-exported so server callers have one
+// import rather than two.
+export {
+  MAX_DOCUMENT_BYTES, MAX_FILES_PER_SUBMISSION, DOCUMENT_ACCEPT, checkDocumentUpload,
+} from '@/lib/upload-rules';
+
+export interface StoredDocument {
+  url: string;
+  /** The uploader's own filename, for display only — never part of the URL. */
+  name: string;
+  contentType: string;
+  sizeBytes: number;
+}
+
+export async function uploadDocument(file: File, folder: string): Promise<StoredDocument> {
+  const problem = checkDocumentUpload(file);
+  if (problem) throw new UploadError(problem);
+
+  // The stored name is generated, exactly as for images: `file.name` is
+  // attacker-controlled text that would otherwise appear verbatim in a public
+  // URL and decide how the file is served back. The original is kept in the
+  // database as a label instead.
+  const extension = ALLOWED_DOCUMENTS[file.type] ?? 'bin';
+  const blob = await put(`${folder}/${crypto.randomUUID()}.${extension}`, file, {
+    access: 'public',
+    addRandomSuffix: false,
+    contentType: file.type,
+  });
+
+  return {
+    url: blob.url,
+    name: file.name.slice(0, 200),
+    contentType: file.type,
+    sizeBytes: file.size,
+  };
 }
 
 export async function deleteImage(url: string): Promise<void> {

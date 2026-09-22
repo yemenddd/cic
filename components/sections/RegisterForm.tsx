@@ -13,6 +13,7 @@ import { CATEGORIES, type Lang } from '@/lib/categories';
 import { DEFAULT_COUNTRY, countryByCode, countryOptions, flagOf } from '@/lib/countries';
 import { signIn } from 'next-auth/react';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-rules';
+import { needsApproval } from '@/lib/account-status';
 import { useRouter } from 'next/navigation';
 
 const CATEGORY_ICONS: Record<string, typeof Award> = {
@@ -47,6 +48,9 @@ export default function RegisterForm() {
   const router = useRouter();
   const [confirmCode, setConfirmCode] = useState('');
   const [copied, setCopied] = useState(false);
+  // Whether this registration waits for the committee. Answered by the server
+  // rather than worked out here, so the form and the door agree.
+  const [pending, setPending] = useState(false);
 
   const set = (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setFields(prev => ({ ...prev, [k]: e.target.value }));
@@ -66,7 +70,10 @@ export default function RegisterForm() {
     if (!localPhone) setDialCode(code);
   };
 
-  const trackOptions = [p.trackOpt1, p.trackOpt2, p.trackOpt3, p.trackOpt4];
+  // Two paths, in whatever language the page is being read in. The values are
+  // canonicalised server-side (lib/submissions.ts), so posting the label the
+  // visitor actually saw is safe and is what they expect to see back.
+  const trackOptions = [p.trackOpt1, p.trackOpt2];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -95,7 +102,14 @@ export default function RegisterForm() {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...fields, phone, country: countryName, category: selected, track, password }),
+        // The path is a participant's answer. Sending one for a visitor who
+        // had selected participant and changed their mind would store a path
+        // the form no longer shows them.
+        body: JSON.stringify({
+          ...fields, phone, country: countryName, category: selected,
+          track: selected === 'participant' ? track : '',
+          password,
+        }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
@@ -104,11 +118,19 @@ export default function RegisterForm() {
         return;
       }
       setConfirmCode(data.code);
+      setPending(Boolean(data.pending));
       setStatus('success');
-      // Registration creates the account, so sign them straight in — the
-      // badge they're about to see is now permanently in their dashboard.
-      await signIn('credentials', { email: fields.email, password, redirect: false });
-      router.refresh();
+
+      // Registration creates the account, so sign them straight in — the badge
+      // they're about to see is now permanently in their dashboard.
+      //
+      // Unless the account is waiting for the committee, in which case the
+      // attempt would be refused and the screen would show a sign-in error on
+      // top of a successful registration.
+      if (!data.pending) {
+        await signIn('credentials', { email: fields.email, password, redirect: false });
+        router.refresh();
+      }
     } catch {
       setErrorMsg(p.errorMsg);
       setStatus('error');
@@ -147,14 +169,35 @@ export default function RegisterForm() {
           onCopyLink={handleCopyLink}
           copied={copied}
         />
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-[14px] font-semibold"
-          style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
-        >
-          {p.goToDashboard ?? 'الذهاب إلى لوحتي'}
-          <ArrowRight className={cn('h-4 w-4', isRtl && 'rotate-180')} />
-        </Link>
+        {/* The badge is issued either way — it is the proof of registration.
+            What differs is whether the account can be used yet. Saying so here
+            is what stops somebody trying to sign in all evening. */}
+        {pending ? (
+          <div
+            className="max-w-md rounded-2xl px-5 py-4 text-center"
+            style={{
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--mat-liquid-border)',
+            }}
+          >
+            <p className="text-[14px] font-semibold" style={{ color: 'var(--text-primary)' }}>
+              {p.pendingTitle ?? 'طلبك وصل — وبانتظار موافقة فريق التنظيم'}
+            </p>
+            <p className="mt-2 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              {p.pendingBody
+                ?? 'احتفظ ببطاقتك ورمزها. سيصلك إشعار فور قبول طلبك، وعندها يمكنك الدخول إلى حسابك.'}
+            </p>
+          </div>
+        ) : (
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-[14px] font-semibold"
+            style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+          >
+            {p.goToDashboard ?? 'الذهاب إلى لوحتي'}
+            <ArrowRight className={cn('h-4 w-4', isRtl && 'rotate-180')} />
+          </Link>
+        )}
       </div>
     );
   }
@@ -376,34 +419,6 @@ export default function RegisterForm() {
                 {p.passwordNote ?? 'ينشئ التسجيل حسابك في المنصة — 8 أحرف على الأقل.'}
               </p>
 
-              {/* Track */}
-              <div>
-                <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-                  {p.fieldTrack} <span style={{ color: '#ef4444' }}>*</span>
-                </label>
-                <div className="relative">
-                  <select
-                    required
-                    value={track}
-                    onChange={e => setTrack(e.target.value)}
-                    className="input-glass appearance-none cursor-pointer"
-                    style={{ direction: isRtl ? 'rtl' : 'ltr' }}
-                  >
-                    <option value="" disabled style={{ background: optionBg }}>—</option>
-                    {trackOptions.map((opt, i) => (
-                      <option key={i} value={opt} style={{ background: optionBg }}>{opt}</option>
-                    ))}
-                  </select>
-                  <div
-                    className={cn('pointer-events-none absolute top-1/2 -translate-y-1/2', isRtl ? 'left-3' : 'right-3')}
-                    style={{ color: 'var(--text-tertiary)' }}
-                  >
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
             </div>
             </div>
 
@@ -512,6 +527,64 @@ export default function RegisterForm() {
                   );
                 })}
               </div>
+
+              {/* The path, asked only of participants and only once they have
+                  said they are one.
+
+                  It used to sit among the personal details, above this choice
+                  and asked of everybody — so a visitor who is attending to
+                  watch had to declare a research path, and it was printed on
+                  their certificate. It belongs here, under the answer that
+                  makes it mean something. */}
+              {selected === 'participant' && (
+                <div className="mt-5">
+                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    {p.fieldTrack} <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      required
+                      value={track}
+                      onChange={e => setTrack(e.target.value)}
+                      className="input-glass appearance-none cursor-pointer"
+                      style={{ direction: isRtl ? 'rtl' : 'ltr' }}
+                    >
+                      <option value="" disabled style={{ background: optionBg }}>—</option>
+                      {trackOptions.map((opt, i) => (
+                        <option key={i} value={opt} style={{ background: optionBg }}>{opt}</option>
+                      ))}
+                    </select>
+                    <div
+                      className={cn('pointer-events-none absolute top-1/2 -translate-y-1/2', isRtl ? 'left-3' : 'right-3')}
+                      style={{ color: 'var(--text-tertiary)' }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+                    {p.trackNote ?? 'يحدّد المسار طريقة مراجعة عملك، ويُطبع على شهادتك.'}
+                  </p>
+                </div>
+              )}
+
+              {/* Which categories wait for a decision, said before they submit
+                  rather than after — the difference between a queue somebody
+                  chose and one that was sprung on them. */}
+              {needsApproval(selected) && (
+                <p
+                  className="mt-5 rounded-xl px-4 py-3 text-[12.5px] leading-relaxed"
+                  style={{
+                    background: 'var(--mat-liquid-bg)',
+                    border: '1px solid var(--mat-liquid-border)',
+                    color: 'var(--text-secondary)',
+                  }}
+                >
+                  {p.approvalNote
+                    ?? 'تُراجع طلبات هذه الفئة من فريق التنظيم — يُنشأ حسابك فوراً ويُفتح الدخول إليه بعد الموافقة.'}
+                </p>
+              )}
             </div>
           </motion.div>
 

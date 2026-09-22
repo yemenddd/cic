@@ -40,7 +40,7 @@ export function NotEntitled({ category }: { category: string | null }) {
   return (
     <div>
       <h1 className="font-outfit font-bold text-xl mb-6" style={{ color: 'var(--text-primary)' }}>
-        ابتكاراتي
+        أعمالي المقدَّمة
       </h1>
 
       <div
@@ -55,7 +55,7 @@ export function NotEntitled({ category }: { category: string | null }) {
         </div>
 
         <p className="font-semibold text-[15px] mb-2" style={{ color: 'var(--text-primary)' }}>
-          تقديم الابتكارات متاح لفئة «مشارك»
+          تقديم الأعمال متاح لفئة «مشارك»
         </p>
         <p className="text-[13.5px] leading-relaxed max-w-md mx-auto" style={{ color: 'var(--text-secondary)' }}>
           {label

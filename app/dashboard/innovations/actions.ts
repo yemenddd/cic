@@ -4,7 +4,10 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
-import { checkUpload, uploadImage } from '@/lib/blob';
+import {
+  checkUpload, uploadImage, uploadDocument, checkDocumentUpload, deleteImage,
+  MAX_FILES_PER_SUBMISSION, type StoredDocument,
+} from '@/lib/blob';
 import { canSubmitInnovations, MAX_SUBMISSIONS_PER_ATTENDEE } from '@/lib/categories';
 
 type ActionResult = { error?: string; success?: string } | void;
@@ -39,7 +42,7 @@ const TOO_MANY = `لا يمكن تقديم أكثر من ${MAX_SUBMISSIONS_PER_A
 const SESSION_EXPIRED = 'انتهت الجلسة، سجّل الدخول مرة أخرى';
 const NOT_FOUND = 'المشروع غير موجود';
 const LOCKED = 'لا يمكن تعديل المشروع بعد إرساله إلى لجنة المراجعة';
-const NOT_ENTITLED = 'تقديم الابتكارات متاح لفئة "مشارك" فقط';
+const NOT_ENTITLED = 'تقديم الأعمال متاح لفئة "مشارك" فقط';
 
 // One name per line — same shape as the admin achievement students form.
 function parseTeamMembers(formData: FormData): string[] {
@@ -80,6 +83,38 @@ async function resolveCoverUrl(
   return { url: await uploadImage(file, 'submissions') };
 }
 
+/**
+ * The attached files, checked before any of them is stored.
+ *
+ * All-or-nothing: a batch where the fourth file is too large uploads nothing,
+ * rather than leaving three paid-for blobs behind and reporting a failure. The
+ * ceiling counts what is already attached, so adding two to an existing four
+ * is refused rather than silently making six.
+ */
+async function resolveFiles(
+  formData: FormData,
+  existingCount: number,
+): Promise<{ files: StoredDocument[] } | { error: string }> {
+  const picked = formData
+    .getAll('files')
+    .filter((f): f is File => f instanceof File && f.size > 0);
+
+  if (picked.length === 0) return { files: [] };
+
+  if (existingCount + picked.length > MAX_FILES_PER_SUBMISSION) {
+    return {
+      error: `لا يمكن إرفاق أكثر من ${MAX_FILES_PER_SUBMISSION} ملفات للمشروع الواحد`,
+    };
+  }
+
+  for (const file of picked) {
+    const problem = checkDocumentUpload(file);
+    if (problem) return { error: problem };
+  }
+
+  return { files: await Promise.all(picked.map((f) => uploadDocument(f, 'submissions/files'))) };
+}
+
 function revalidate() {
   revalidatePath('/dashboard/innovations');
   revalidatePath('/dashboard');
@@ -107,6 +142,9 @@ export async function createSubmission(_prev: ActionResult, formData: FormData):
   if ('error' in cover) return { error: cover.error };
   const coverImageUrl = cover.url;
 
+  const attached = await resolveFiles(formData, 0);
+  if ('error' in attached) return { error: attached.error };
+
   await prisma.projectSubmission.create({
     data: {
       userId,
@@ -118,6 +156,7 @@ export async function createSubmission(_prev: ActionResult, formData: FormData):
       teamMembers: parseTeamMembers(formData),
       coverImageUrl,
       videoId: fields.videoId || null,
+      files: { create: attached.files },
     },
   });
 
@@ -136,13 +175,19 @@ export async function updateSubmission(id: string, _prev: ActionResult, formData
 
   // Scoped read: someone else's submission comes back as null, which is
   // indistinguishable from "does not exist" — no existence oracle either.
-  const existing = await prisma.projectSubmission.findFirst({ where: { id, userId } });
+  const existing = await prisma.projectSubmission.findFirst({
+    where: { id, userId },
+    include: { _count: { select: { files: true } } },
+  });
   if (!existing) return { error: NOT_FOUND };
   if (existing.status !== 'DRAFT') return { error: LOCKED };
 
   const cover = await resolveCoverUrl(formData, existing.coverImageUrl);
   if ('error' in cover) return { error: cover.error };
   const coverImageUrl = cover.url;
+
+  const attached = await resolveFiles(formData, existing._count.files);
+  if ('error' in attached) return { error: attached.error };
 
   // updateMany re-asserts owner AND status in the WHERE clause, so a review
   // that lands between the read above and this write cannot be overwritten.
@@ -161,6 +206,15 @@ export async function updateSubmission(id: string, _prev: ActionResult, formData
   });
   if (count === 0) return { error: LOCKED };
 
+  // Written after the guarded update, and only if it applied: attaching files
+  // to a submission the committee took mid-edit would put them on a project
+  // its owner may no longer change.
+  if (attached.files.length > 0) {
+    await prisma.submissionFile.createMany({
+      data: attached.files.map((f) => ({ ...f, submissionId: id })),
+    });
+  }
+
   revalidate();
   redirect('/dashboard/innovations');
 }
@@ -175,6 +229,31 @@ export async function deleteSubmission(id: string): Promise<void> {
   await prisma.projectSubmission.deleteMany({ where: { id, userId } });
 
   revalidate();
+}
+
+/**
+ * Remove one attached file.
+ *
+ * Scoped to the owner and to DRAFT: once the committee has it, the files are
+ * part of what they are judging and their owner may not quietly take one away.
+ * The blob goes with the row — an orphaned file is storage nobody can reach
+ * and nobody stops paying for.
+ */
+export async function deleteSubmissionFile(fileId: string): Promise<ActionResult> {
+  const me = await entitledUserId();
+  if ('error' in me) return { error: me.error };
+
+  const file = await prisma.submissionFile.findFirst({
+    where: { id: fileId, submission: { userId: me.id, status: 'DRAFT' } },
+    select: { id: true, url: true },
+  });
+  if (!file) return { error: 'تعذّر حذف الملف — تأكد أن المشروع ما زال مسودة' };
+
+  await prisma.submissionFile.delete({ where: { id: file.id } });
+  await deleteImage(file.url);
+
+  revalidate();
+  return { success: 'حُذف الملف' };
 }
 
 export async function submitForReview(id: string): Promise<ActionResult> {

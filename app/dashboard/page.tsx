@@ -15,6 +15,7 @@ import { VENUE_UTC_OFFSET_HOURS, conferenceHasStarted } from '@/lib/conference';
 import { relativeArabicDate } from '@/lib/relative-time';
 import { arabicCountBare, SESSION, PROJECT, SHIFT } from '@/lib/arabic-plural';
 import { byStartTime } from '@/lib/volunteering';
+import { committeeLabel } from '@/lib/committees';
 import {
   SUBMISSION_STATUS_COLORS, SUBMISSION_STATUS_LABELS, SUBMISSION_STATUSES,
 } from '@/lib/submissions';
@@ -134,7 +135,7 @@ export default async function DashboardHomePage() {
             where: { userId: session.user.id },
             select: {
               shift: {
-                select: { id: true, titleAr: true, teamAr: true, day: true, startTime: true, endTime: true, location: true },
+                select: { id: true, titleAr: true, committee: true, day: true, startTime: true, endTime: true, location: true },
               },
             },
           })
@@ -365,7 +366,7 @@ export default async function DashboardHomePage() {
             {nextShift.titleAr}
           </p>
           <p className="mt-1.5 text-[12.5px]" style={{ color: 'var(--text-tertiary)' }}>
-            {nextShift.teamAr}
+            {committeeLabel(nextShift.committee)}
             {shiftCount > 1 && ` · و${arabicCountBare(shiftCount - 1, SHIFT)} أخرى في جدولك`}
           </p>
         </Card>
@@ -488,7 +489,7 @@ export default async function DashboardHomePage() {
             </>
           ) : abilities.submitInnovations && submissionCount > 0 ? (
             <>
-              <CardHeading title="حالة مشاريعك" href="/dashboard/innovations" linkLabel="ابتكاراتي" />
+              <CardHeading title="حالة مشاريعك" href="/dashboard/innovations" linkLabel="أعمالي" />
               {/* Ordered by the workflow, not by however the counts came back
                   from the map — the bar reads as a pipeline, so draft has to
                   sit before review and review before a decision. */}

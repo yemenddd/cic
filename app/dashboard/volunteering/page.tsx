@@ -4,8 +4,11 @@ import { prisma } from '@/lib/db/client';
 import { CONFERENCE_DAYS } from '@/lib/conference';
 import { arabicCountBare, SHIFT, VOLUNTEER } from '@/lib/arabic-plural';
 import {
-  byStartTime, canClaim, totalHours, REFUSAL_MESSAGES, type ShiftLike,
+  byStartTime, canClaim, totalHours, REFUSAL_MESSAGES,
+  type ShiftLike, type ClaimReason,
 } from '@/lib/volunteering';
+import { committeeLabel } from '@/lib/committees';
+import CommitteePicker from './CommitteePicker';
 import { MAX_SHIFTS_PER_VOLUNTEER } from '@/lib/categories';
 import ShiftButton, { MineChip } from './ShiftButton';
 import { volunteerAccess, NotEntitled } from './access';
@@ -98,7 +101,7 @@ function Capacity({ taken, capacity }: { taken: number; capacity: number }) {
 export default async function VolunteeringPage() {
   const access = await volunteerAccess();
   if (access.userId === null) return <NotEntitled category={access.category} />;
-  const userId = access.userId;
+  const { userId, committee } = access;
 
   // Queried directly rather than through safe() in lib/db/queries.ts: that
   // helper turns a database error into an empty array, which here would tell a
@@ -131,16 +134,23 @@ export default async function VolunteeringPage() {
     capacity: s.capacity,
     isOpen: s.isOpen,
     taken: s._count.assignments,
+    committee: s.committee,
   });
 
   // Decided here, with the same function the server action uses, so the button
   // and the write can never disagree about why something is unavailable.
-  const SHORT_REFUSAL = { closed: 'مغلقة', full: 'مكتملة', clash: 'تتعارض' } as const;
+  const SHORT_REFUSAL: Record<Exclude<ClaimReason, 'already'>, string> = {
+    closed: 'مغلقة',
+    full: 'مكتملة',
+    clash: 'تتعارض',
+    committee: 'لجنة أخرى',
+    nocommittee: 'اختر لجنتك',
+  };
 
   const refusalFor = (
     s: (typeof shifts)[number],
   ): { label: string; title: string } | null => {
-    const verdict = canClaim(asShift(s), mine);
+    const verdict = canClaim(asShift(s), mine, committee);
     // 'already' is not a refusal to show — it is the release button.
     if (verdict.ok || verdict.reason === 'already') return null;
     return {
@@ -155,17 +165,24 @@ export default async function VolunteeringPage() {
 
   const atLimit = mine.length >= MAX_SHIFTS_PER_VOLUNTEER;
 
+  // The volunteer's own committee first and in full; the rest below, to look
+  // at rather than to sign up for. Showing them is deliberate — a rota that
+  // silently hides five sixths of the work leaves a volunteer with no idea
+  // that there is anywhere to move to.
+  const ours = shifts.filter((s) => s.committee === committee);
+  const theirs = shifts.filter((s) => s.committee !== committee);
+
   const days = DAYS.map(({ key, date }) => ({
     key,
     label: DATE_LABEL.format(new Date(date.y, date.m - 1, date.d)),
-    shifts: byStartTime(shifts.filter((s) => s.day === key)),
+    shifts: byStartTime(ours.filter((s) => s.day === key)),
     mineCount: mine.filter((s) => s.day === key).length,
   }));
 
   // Shifts an organizer gave a day outside the two — kept visible rather than
   // silently dropped, because a slot nobody can see is a slot nobody works.
   const knownDays = new Set(DAYS.map((d) => d.key as string));
-  const otherShifts = byStartTime(shifts.filter((s) => !knownDays.has(s.day)));
+  const otherShifts = byStartTime(ours.filter((s) => !knownDays.has(s.day)));
 
   return (
     <div className="max-w-3xl">
@@ -174,12 +191,25 @@ export default async function VolunteeringPage() {
           تطوّعي
         </h1>
         <p className="mt-1.5 text-[12.5px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
-          فترات العمل التي يحتاجها فريق التنظيم. اختر ما يناسبك — ويمكنك الإلغاء ما دامت
+          فترات العمل التي تحتاجها لجنتك. اختر ما يناسبك — ويمكنك الإلغاء ما دامت
           الفترة مفتوحة.
         </p>
+        {committee && (
+          <div className="mt-3">
+            <CommitteePicker current={committee} compact />
+          </div>
+        )}
       </div>
 
-      {shifts.length > 0 && (
+      {/* Nothing else on this page means anything until they have a committee,
+          so it is asked first and alone rather than as a field among others. */}
+      {!committee && (
+        <div className="mb-6">
+          <CommitteePicker current={null} />
+        </div>
+      )}
+
+      {committee && ours.length > 0 && (
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat
             icon={CalendarClock}
@@ -197,8 +227,8 @@ export default async function VolunteeringPage() {
           />
           <Stat
             icon={Users}
-            value={shifts.filter((s) => s.isOpen && s._count.assignments < s.capacity).length}
-            label="فترة ما زالت تحتاج متطوعين"
+            value={ours.filter((s) => s.isOpen && s._count.assignments < s.capacity).length}
+            label="فترة في لجنتك تحتاج متطوعين"
             color="var(--accent-cyan)"
           />
           <Stat
@@ -226,14 +256,16 @@ export default async function VolunteeringPage() {
         </p>
       )}
 
-      {shifts.length === 0 ? (
+      {committee && ours.length === 0 ? (
         <div
           className="rounded-2xl px-6 py-12 text-center"
           style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
         >
           <HandHeart className="mx-auto h-7 w-7" style={{ color: 'var(--text-tertiary)' }} />
           <p className="mt-3 text-[14px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-            لم يُنشر جدول التطوّع بعد
+            {shifts.length === 0
+              ? 'لم يُنشر جدول التطوّع بعد'
+              : `لا توجد فترات في ${committeeLabel(committee)} بعد`}
           </p>
           <p className="mt-1.5 text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
             سيصلك إشعار حين يفتح فريق التنظيم فترات العمل.
@@ -312,7 +344,7 @@ export default async function VolunteeringPage() {
                                   color: 'var(--text-tertiary)',
                                 }}
                               >
-                                {s.teamAr}
+                                {committeeLabel(s.committee)}
                               </span>
                               {s.location && (
                                 <span
@@ -354,6 +386,62 @@ export default async function VolunteeringPage() {
               </ul>
             </section>
           ))
+      )}
+
+      {/* The other committees' work, to read rather than to take.
+      
+          Shown because a rota that hides five sixths of what is happening
+          leaves a volunteer with no idea that another committee is short —
+          and no reason to ask to move. No buttons: the committee is what
+          decides, and a button that always refuses is worse than none. */}
+      {committee && theirs.length > 0 && (
+        <section className="mt-9">
+          <h2
+            className="mb-1.5 flex items-center gap-2 font-outfit text-[13.5px] font-bold"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            فترات اللجان الأخرى
+            <span className="h-px flex-1" style={{ background: 'var(--mat-liquid-border)' }} aria-hidden />
+          </h2>
+          <p className="mb-3 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+            للاطلاع فقط — الحجز في لجنتك. إن أردت الانتقال، غيّر لجنتك من أعلى الصفحة.
+          </p>
+
+          <ul className="space-y-2">
+            {byStartTime(theirs).map((s) => {
+              const short = Math.max(0, s.capacity - s._count.assignments);
+              return (
+                <li
+                  key={s.id}
+                  className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-xl px-3.5 py-2.5"
+                  style={{
+                    background: 'var(--mat-liquid-bg)',
+                    border: '1px solid var(--mat-liquid-border)',
+                  }}
+                >
+                  <span className="text-[12.5px] font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                    {s.titleAr}
+                  </span>
+                  <span
+                    className="rounded-lg px-2 py-0.5 text-[11px]"
+                    style={{ border: '1px solid var(--mat-liquid-border)', color: 'var(--text-tertiary)' }}
+                  >
+                    {committeeLabel(s.committee)}
+                  </span>
+                  <span className="text-[11.5px] tabular-nums" dir="ltr" style={{ color: 'var(--text-tertiary)' }}>
+                    {s.startTime} — {s.endTime}
+                  </span>
+                  <span
+                    className="ms-auto text-[11.5px]"
+                    style={{ color: short > 0 ? 'var(--text-tertiary)' : 'var(--accent-cyan)' }}
+                  >
+                    {short > 0 ? `ينقصها ${arabicCountBare(short, VOLUNTEER)}` : 'مكتملة'}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
     </div>
   );

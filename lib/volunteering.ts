@@ -23,6 +23,8 @@ export interface ShiftLike extends ShiftTime {
   isOpen: boolean;
   /** How many volunteers have claimed it. */
   taken: number;
+  /** Which committee's work this is — see lib/committees.ts. */
+  committee: string;
 }
 
 /**
@@ -66,21 +68,32 @@ export function shiftsOverlap(a: ShiftTime, b: ShiftTime): boolean {
   return aStart < bEnd && bStart < aEnd;
 }
 
+export type ClaimReason = 'closed' | 'full' | 'already' | 'clash' | 'committee' | 'nocommittee';
+
 export type ClaimRefusal =
   | { ok: true }
-  | { ok: false; reason: 'closed' | 'full' | 'already' | 'clash'; clashesWith?: string };
+  | { ok: false; reason: ClaimReason; clashesWith?: string };
 
 /**
  * May this volunteer take this shift?
  *
  * Every answer the page can give, decided in one place, so the button and the
  * server action cannot disagree about why something was refused.
+ *
+ * The committee is checked before anything about the shift itself: telling
+ * somebody a slot is full when the real answer is that it belongs to another
+ * committee would send them back to look at it every hour.
  */
 export function canClaim(
   shift: ShiftLike,
   held: Array<ShiftTime & { id: string; titleAr: string }>,
+  volunteerCommittee: string | null,
 ): ClaimRefusal {
   if (held.some((h) => h.id === shift.id)) return { ok: false, reason: 'already' };
+
+  if (!volunteerCommittee) return { ok: false, reason: 'nocommittee' };
+  if (shift.committee !== volunteerCommittee) return { ok: false, reason: 'committee' };
+
   if (!shift.isOpen) return { ok: false, reason: 'closed' };
   if (shift.taken >= shift.capacity) return { ok: false, reason: 'full' };
 
@@ -90,11 +103,13 @@ export function canClaim(
   return { ok: true };
 }
 
-export const REFUSAL_MESSAGES: Record<Exclude<ClaimRefusal, { ok: true }>['reason'], string> = {
+export const REFUSAL_MESSAGES: Record<ClaimReason, string> = {
   closed: 'هذه الفترة مغلقة — تواصل مع فريق التنظيم',
   full: 'اكتمل عدد المتطوعين في هذه الفترة',
   already: 'أنت مسجّل في هذه الفترة بالفعل',
   clash: 'تتعارض مع فترة أخرى في جدولك',
+  committee: 'هذه الفترة تخصّ لجنة أخرى',
+  nocommittee: 'اختر لجنتك أولاً لتتمكن من الحجز',
 };
 
 export interface RosterHealth {

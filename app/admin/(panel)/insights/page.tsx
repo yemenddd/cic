@@ -117,7 +117,7 @@ export default async function AdminInsightsPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <StatCard label="الحسابات" value={accountCount} icon={Users} />
         <StatCard label="التسجيلات" value={registrationCount} icon={ClipboardList} />
-        <StatCard label="الابتكارات المقدَّمة" value={submissionCount} icon={Lightbulb} />
+        <StatCard label="الأعمال المقدَّمة" value={submissionCount} icon={Lightbulb} />
         <StatCard
           label="بانتظار القرار"
           value={awaitingCount}

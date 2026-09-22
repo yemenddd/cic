@@ -2,12 +2,13 @@
 
 import FormShell from '@/components/admin/FormShell';
 import { TextField, TextAreaField, SelectField } from '@/components/admin/fields';
+import { COMMITTEES } from '@/lib/committees';
 
 type ActionResult = { error?: string; success?: string } | void;
 
 export interface ShiftDefaults {
   titleAr?: string;
-  teamAr?: string;
+  committee?: string;
   day?: string;
   startTime?: string;
   endTime?: string;
@@ -17,10 +18,8 @@ export interface ShiftDefaults {
   isOpen?: boolean;
 }
 
-// Suggestions, not a fixed list: the teams differ from one conference to the
-// next, and a `select` here would mean a migration every time the organizers
-// invent one. A datalist gives the common four without forbidding a fifth.
-const TEAMS = ['الاستقبال والتسجيل', 'القاعة الرئيسية', 'الدعم التقني', 'الإعلام والتصوير', 'الضيافة', 'التنظيم العام'];
+// The six committees, and only those: a volunteer belongs to one of them, and
+// a shift whose committee is spelled any other way is a shift nobody can claim.
 
 export default function ShiftForm({
   title,
@@ -38,14 +37,15 @@ export default function ShiftForm({
       <TextField name="titleAr" label="عنوان الفترة" defaultValue={defaults?.titleAr} required />
 
       <div>
-        <TextField name="teamAr" label="الفريق" defaultValue={defaults?.teamAr} required list="volunteer-teams" />
-        <datalist id="volunteer-teams">
-          {TEAMS.map((t) => (
-            <option key={t} value={t} />
-          ))}
-        </datalist>
+        <SelectField
+          name="committee"
+          label="اللجنة"
+          defaultValue={defaults?.committee ?? COMMITTEES[0].id}
+          options={COMMITTEES.map((c) => ({ value: c.id, label: c.labelAr }))}
+          required
+        />
         <p className="mt-1.5 text-[11.5px]" style={{ color: 'var(--text-tertiary)' }}>
-          مثل: {TEAMS.slice(0, 3).join(' · ')}
+          يظهر هذا العمل لمتطوعي هذه اللجنة وحدهم، ويراه الباقون للاطلاع فقط.
         </p>
       </div>
 

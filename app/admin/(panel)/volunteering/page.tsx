@@ -6,6 +6,7 @@ import DeleteButton from '@/components/admin/DeleteButton';
 import { CONFERENCE_DAYS } from '@/lib/conference';
 import { byStartTime, rosterHealth, type ShiftLike } from '@/lib/volunteering';
 import { arabicCountBare, VOLUNTEER } from '@/lib/arabic-plural';
+import { committeeLabel } from '@/lib/committees';
 import RosterSummary from './RosterSummary';
 import { OpenToggle, RemoveVolunteer } from './ShiftControls';
 import { deleteShift } from './actions';
@@ -53,6 +54,7 @@ export default async function AdminVolunteeringPage() {
     capacity: s.capacity,
     isOpen: s.isOpen,
     taken: s.assignments.length,
+    committee: s.committee,
   });
 
   const health = rosterHealth(shifts.map(asShift));
@@ -144,7 +146,7 @@ export default async function AdminVolunteeringPage() {
                             className="rounded-lg px-2 py-0.5"
                             style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)' }}
                           >
-                            {s.teamAr}
+                            {committeeLabel(s.committee)}
                           </span>
                           {s.location && (
                             <span className="inline-flex items-center gap-1">

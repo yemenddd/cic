@@ -1,4 +1,5 @@
 import type { ProjectSubmission } from '@prisma/client';
+import SubmissionFiles, { type AttachedFile } from './SubmissionFiles';
 import { TextField, TextAreaField, SelectField, ImageUploadField } from '@/components/admin/fields';
 import { SUBMISSION_TRACKS } from '@/lib/submissions';
 
@@ -8,7 +9,16 @@ const TRACK_OPTIONS = [
 ];
 
 // Shared by the new/edit pages so the two forms can never drift apart.
-export default function SubmissionFields({ submission }: { submission?: ProjectSubmission }) {
+export default function SubmissionFields({
+  submission,
+  files = [],
+  editable = true,
+}: {
+  submission?: ProjectSubmission;
+  files?: AttachedFile[];
+  /** False once the committee has it — see SubmissionFiles. */
+  editable?: boolean;
+}) {
   return (
     <>
       <TextField name="titleAr" label="عنوان المشروع" defaultValue={submission?.titleAr} required />
@@ -27,6 +37,9 @@ export default function SubmissionFields({ submission }: { submission?: ProjectS
         defaultValue={submission?.teamMembers.join('\n')}
       />
       <ImageUploadField name="cover" label="صورة الغلاف" currentUrl={submission?.coverImageUrl} />
+      {/* The work itself, for whichever path this is — a paper, a deck, photos
+          of a prototype. The cover image above introduces it; this is it. */}
+      <SubmissionFiles files={files} editable={editable} />
       <TextField
         name="videoId"
         label="معرّف فيديو يوتيوب (مثال: dQw4w9WgXcQ)"

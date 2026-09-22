@@ -132,7 +132,7 @@ export default function UsersTable({ rows, currentAdminId }: { rows: UserRow[]; 
               onClick={async () => {
                 const ok = await confirm({
                   title: `تغيير فئة ${ids.length} مستخدماً إلى «${c.labels.ar}»؟`,
-                  body: 'تتغيّر معها المزايا المتاحة لهم — تقديم الابتكارات متاح لفئة «مشارك» فقط.',
+                  body: 'تتغيّر معها المزايا المتاحة لهم — تقديم الأعمال متاح لفئة «مشارك» فقط.',
                   confirmLabel: 'تغيير الفئة',
                 });
                 if (!ok) return;

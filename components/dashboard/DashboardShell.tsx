@@ -50,7 +50,7 @@ export default function DashboardShell({
       // never sees a heading with no links under it. Hiding the link is
       // cosmetic; the pages and the server actions are what enforce this.
       items: abilities.submitInnovations
-        ? [{ href: '/dashboard/innovations', label: 'ابتكاراتي', icon: Lightbulb }]
+        ? [{ href: '/dashboard/innovations', label: 'أعمالي المقدَّمة', icon: Lightbulb }]
         : [],
     },
     {

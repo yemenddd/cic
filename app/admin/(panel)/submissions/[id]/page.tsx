@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Video } from 'lucide-react';
+import { Video, FileText } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
 import FormShell from '@/components/admin/FormShell';
 import { SelectField, TextAreaField } from '@/components/admin/fields';
@@ -28,7 +28,10 @@ export default async function AdminSubmissionDetailPage({ params }: { params: Pr
 
   const submission = await prisma.projectSubmission.findUnique({
     where: { id },
-    include: { user: { select: { name: true, email: true, organization: true, country: true } } },
+    include: {
+      user: { select: { name: true, email: true, organization: true, country: true } },
+      files: { orderBy: { createdAt: 'asc' } },
+    },
   });
   if (!submission) notFound();
 
@@ -90,6 +93,46 @@ export default async function AdminSubmissionDetailPage({ params }: { params: Pr
         label="أعضاء الفريق"
         value={submission.teamMembers.length ? submission.teamMembers.join('\n') : null}
       />
+
+      {/* The work itself. A committee that cannot open the paper is reviewing
+          the summary of it, which is not the same thing — and until now there
+          was nowhere for a paper to be attached at all. */}
+      <div>
+        <p className="mb-1.5 text-[11.5px] font-semibold" style={{ color: 'var(--text-tertiary)' }}>
+          ملفات المشروع
+        </p>
+        {submission.files.length === 0 ? (
+          <p className="text-[13.5px]" style={{ color: 'var(--text-primary)' }}>—</p>
+        ) : (
+          <ul className="space-y-2">
+            {submission.files.map((f) => (
+              <li key={f.id}>
+                <a
+                  href={f.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5"
+                  style={{
+                    background: 'var(--mat-liquid-bg)',
+                    border: '1px solid var(--mat-liquid-border)',
+                  }}
+                >
+                  <FileText className="h-4 w-4 shrink-0" style={{ color: 'var(--text-tertiary)' }} />
+                  <span
+                    className="min-w-0 flex-1 truncate text-[13px] font-semibold"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    {f.name}
+                  </span>
+                  <span className="text-[11px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                    {Math.max(1, Math.round(f.sizeBytes / 1024))} ك.ب
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       <div>
         <p className="mb-1 text-[11.5px] font-semibold" style={{ color: 'var(--text-tertiary)' }}>فيديو المشروع</p>

@@ -95,7 +95,7 @@ export default async function AdminSubmissionsPage({ searchParams }: Props) {
   return (
     <div>
       <ListPageHeader
-        title="الابتكارات المقدَّمة"
+        title="الأعمال المقدَّمة"
         description="قائمة مراجعة اللجنة — الأقدم أولاً داخل كل حالة."
       />
 

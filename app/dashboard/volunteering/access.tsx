@@ -18,21 +18,23 @@ import { canVolunteer, categoryLabel } from '@/lib/categories';
  * guessing.
  */
 export async function volunteerAccess(): Promise<
-  { userId: string } | { userId: null; category: string | null }
+  { userId: string; committee: string | null } | { userId: null; category: string | null }
 > {
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { category: true },
+    select: { category: true, committee: true },
   });
   if (!user) redirect('/login');
 
   if (!canVolunteer(user.category)) {
     return { userId: null, category: user.category };
   }
-  return { userId: session.user.id };
+  // The committee comes back with the entitlement because every caller needs
+  // both, and asking twice would be two round trips for one row.
+  return { userId: session.user.id, committee: user.committee };
 }
 
 export function NotEntitled({ category }: { category: string | null }) {

@@ -146,7 +146,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
         style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
       >
         <h2 className="font-outfit font-bold text-[15px]" style={{ color: 'var(--text-primary)' }}>
-          الابتكارات المقدَّمة
+          الأعمال المقدَّمة
         </h2>
 
         {user.submissions.length === 0 ? (

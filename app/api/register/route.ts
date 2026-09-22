@@ -7,6 +7,7 @@ import {
   REGISTER_BY_IP, REGISTER_REJECTED_BY_IP, clientIp, recordFailure, throttleState,
 } from '@/lib/rate-limit';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-rules';
+import { initialStatus, needsApproval } from '@/lib/account-status';
 import { canonicalTrack } from '@/lib/submissions';
 import { getSiteSettings } from '@/lib/site-settings-server';
 
@@ -120,6 +121,10 @@ export async function POST(req: Request) {
           organization: fields.organization || null,
           category: fields.category,
           track: fields.track,
+          // Participants and volunteers wait for the committee; a visitor is
+          // admitted on the spot. Decided from the category by one function so
+          // the rule cannot differ between here and the screen that tells them.
+          status: initialStatus(fields.category),
           confirmationCode,
           registrations: {
             create: { ...fields, email, confirmationCode },
@@ -131,7 +136,14 @@ export async function POST(req: Request) {
       // not an attack signal, it is the thing this endpoint is for.
       if (ip) await recordFailure('register:ip', ip, REGISTER_BY_IP);
 
-      return NextResponse.json({ ok: true, code: confirmationCode });
+      // The client signs in straight after registering, which now fails for a
+      // category that waits — so it is told here, rather than discovering it
+      // as a mysterious sign-in error one screen later.
+      return NextResponse.json({
+        ok: true,
+        code: confirmationCode,
+        pending: needsApproval(fields.category),
+      });
     } catch (err) {
       // P2002 is Prisma's unique-constraint violation. On confirmationCode it
       // means "draw another code"; on email it means someone registered in the

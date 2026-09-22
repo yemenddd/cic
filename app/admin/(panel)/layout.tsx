@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { currentUser } from '@/lib/auth-guards';
+import { prisma } from '@/lib/db/client';
 import AdminShell from '@/components/admin/AdminShell';
 
 /**
@@ -25,8 +26,13 @@ export default async function AdminPanelLayout({ children }: { children: React.R
   // honest destination, not a login form they've already passed.
   if (user.role !== 'ADMIN') redirect('/dashboard');
 
+  // Counted here, in a Server Component, so the badge is right on first paint.
+  // Somebody is waiting to be let in, and that should be visible from whatever
+  // page an organizer happens to open.
+  const pendingApprovals = await prisma.user.count({ where: { status: 'PENDING' } });
+
   return (
-    <AdminShell name={user.name} email={user.email}>
+    <AdminShell name={user.name} email={user.email} pendingApprovals={pendingApprovals}>
       {children}
     </AdminShell>
   );

@@ -5,14 +5,15 @@ import {
   LayoutDashboard, Mic2, CalendarDays, Images, Handshake,
   History, Trophy, Clapperboard, ClipboardList, Lightbulb, Users, BarChart3,
   LogOut, Megaphone, KeyRound, ExternalLink, ScanLine, PanelsTopLeft, Settings,
-  HandHeart,
+  HandHeart, UserRoundCheck,
 } from 'lucide-react';
 import PlatformShell, { type NavGroup, type UtilAction } from '@/components/platform/PlatformShell';
 
 // Grouped by what the organizer is trying to do, not by when each section was
 // built: everything that edits the public site, then everything about the
 // people attending, then the outward and analytical tools.
-const GROUPS: NavGroup[] = [
+function buildGroups(pendingApprovals: number): NavGroup[] {
+  return [
   {
     items: [{ href: '/admin', label: 'نظرة عامة', icon: LayoutDashboard, exact: true }],
   },
@@ -45,10 +46,13 @@ const GROUPS: NavGroup[] = [
     label: 'المشاركون',
     items: [
       { href: '/admin/registrations', label: 'التسجيلات', icon: ClipboardList },
-      { href: '/admin/submissions', label: 'الابتكارات المقدَّمة', icon: Lightbulb },
+      { href: '/admin/submissions', label: 'الأعمال المقدَّمة', icon: Lightbulb },
       { href: '/admin/users', label: 'المستخدمون', icon: Users },
       { href: '/admin/attendance', label: 'الحضور', icon: ScanLine },
       { href: '/admin/volunteering', label: 'التطوّع', icon: HandHeart },
+      // First in the group would bury it among seven others; the badge is what
+      // makes it findable, and it is only ever there when somebody is waiting.
+      { href: '/admin/approvals', label: 'طلبات الانضمام', icon: UserRoundCheck, badge: pendingApprovals },
     ],
   },
   {
@@ -57,18 +61,29 @@ const GROUPS: NavGroup[] = [
       { href: '/admin/announcements', label: 'الإعلانات', icon: Megaphone },
       { href: '/admin/insights', label: 'الإحصاءات', icon: BarChart3 },
     ],
-  },
-];
+    },
+  ];
+}
 
 export default function AdminShell({
   name,
   email,
+  pendingApprovals = 0,
   children,
 }: {
   name?: string | null;
   email?: string | null;
+  /**
+   * How many accounts are waiting for a decision, counted by the layout.
+   *
+   * A queue nobody can see is a queue nobody works: without this, an organizer
+   * would have to remember to open the page to find out that four people have
+   * been waiting since Tuesday.
+   */
+  pendingApprovals?: number;
   children: React.ReactNode;
 }) {
+  const groups = buildGroups(pendingApprovals);
   const actions: UtilAction[] = [
     { label: 'تغيير كلمة المرور', icon: KeyRound, href: '/admin/account' },
     { label: 'عرض الموقع', icon: ExternalLink, href: '/', external: true },
@@ -76,7 +91,7 @@ export default function AdminShell({
   ];
 
   return (
-    <PlatformShell title="لوحة CIC" groups={GROUPS} actions={actions} name={name} email={email}>
+    <PlatformShell title="لوحة CIC" groups={groups} actions={actions} name={name} email={email}>
       {children}
     </PlatformShell>
   );
