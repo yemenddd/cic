@@ -24,11 +24,22 @@ export default auth((req) => {
   // who just lost their admin rights and needs a way back to a login form.
   if (pathname === '/admin/login') return;
 
-  if (pathname.startsWith('/admin')) {
-    if (!user) return NextResponse.redirect(new URL('/admin/login', req.nextUrl));
-    // Signed in, but as an attendee — send them to their own dashboard
-    // rather than a login page they've already passed.
-    if (user.role !== 'ADMIN') return NextResponse.redirect(new URL('/dashboard', req.nextUrl));
+  // Only "is there a session at all". The role is deliberately not consulted
+  // here any more.
+  //
+  // It used to send a non-admin away from /admin, which was fine while
+  // /dashboard accepted everybody. Now that the dashboard sends admins to
+  // /admin — an organizer should not also have an attendee account, with a
+  // badge and a certificate — that rule becomes half of a loop. The role in
+  // this JWT is a copy written at sign-in: an account promoted since then
+  // still carries `ATTENDEE`, so /admin would bounce it to /dashboard, the
+  // dashboard would read ADMIN from the database and bounce it back, and
+  // neither side would ever win.
+  //
+  // Both panel layouts already decide from the database, which cannot
+  // disagree with itself. One source of truth, no loop.
+  if (pathname.startsWith('/admin') && !user) {
+    return NextResponse.redirect(new URL('/admin/login', req.nextUrl));
   }
 
   if (pathname.startsWith('/dashboard') && !user) {

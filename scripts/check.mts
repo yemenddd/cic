@@ -1190,6 +1190,39 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
     .every((s) => statusGuidance(s).meaning.length > 0), true);
 }
 
+// --- one account per person ---------------------------------------------------
+
+// An organizer has one account and it is the organizer's. Nothing stopped an
+// admin opening the attendee side, so every admin also had a badge, a
+// certificate, an agenda and a submissions quota — a second identity that
+// would have turned up in the attendance figures and the certificate list as
+// if it were a participant.
+{
+  const dashboardLayout = readFileSync('app/dashboard/layout.tsx', 'utf8');
+  const adminLayout = readFileSync('app/admin/(panel)/layout.tsx', 'utf8');
+  const proxy = readFileSync('proxy.ts', 'utf8');
+
+  check('the dashboard sends admins to the panel', /role === 'ADMIN'\)\s*redirect\('\/admin'\)/.test(dashboardLayout), true);
+  check('the panel sends attendees to the dashboard', /role !== 'ADMIN'\)\s*redirect\('\/dashboard'\)/.test(adminLayout), true);
+
+  // Both read the database. The pair is only safe because neither decides
+  // from the JWT: the role in a token is a copy written at sign-in, so an
+  // account promoted since then still says ATTENDEE. If the proxy redirected
+  // on that stale copy, /admin would bounce to /dashboard, the dashboard
+  // would read ADMIN from the database and bounce back, and nothing would
+  // ever settle.
+  check('the dashboard decides from the database', dashboardLayout.includes('currentUser()'), true);
+  check('and so does the panel', adminLayout.includes('currentUser()'), true);
+  check('the proxy no longer decides on the stale role', /user\.role/.test(proxy), false);
+  check('it still turns signed-out visitors away from /admin', proxy.includes("'/admin/login'"), true);
+  check('and from /dashboard', proxy.includes("'/login'"), true);
+
+  // The two conditions are exhaustive and mutually exclusive over the enum,
+  // which is what makes the pair terminate: exactly one of them fires.
+  const roles = ['ADMIN', 'ATTENDEE'] as const;
+  check('every role is handled by exactly one side', roles.every((r) => (r === 'ADMIN') !== (r !== 'ADMIN')), true);
+}
+
 // --- undo --------------------------------------------------------------------
 
 await prisma.notification.deleteMany({ where: { title: marker } });

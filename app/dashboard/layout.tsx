@@ -16,6 +16,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const user = await currentUser();
   if (!user) redirect('/login');
 
+  // An organizer has one account, and it is the organizer's.
+  //
+  // Nothing stopped an admin opening the attendee side, so every admin also
+  // had a badge, a certificate, an agenda and a submissions quota — a second
+  // identity nobody asked for, and one that would have turned up in the
+  // attendance figures and the certificate list as if it were a participant.
+  //
+  // Decided here from the database rather than in proxy.ts, whose copy of the
+  // role is written at sign-in and can be a month stale.
+  if (user.role === 'ADMIN') redirect('/admin');
+
   // The shell is a client component, so the unread count is counted here (in a
   // Server Component) and passed down as a prop.
   const unreadCount = await prisma.notification.count({
