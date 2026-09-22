@@ -50,8 +50,10 @@ export const metadata: Metadata = {
   description,
   icons: {
     icon: [
-      { url: "/images/logos/logo_colored.png", media: "(prefers-color-scheme: light)" },
-      { url: "/icon.png", media: "(prefers-color-scheme: dark)" },
+      // Both point at the square mark. The light one used to point at the
+      // colour logo in /public, which is now a 3.5:1 lockup — a favicon is
+      // drawn into a square, so a wide lockup arrives as an unreadable sliver.
+      { url: "/icon.png" },
     ],
   },
   openGraph: {

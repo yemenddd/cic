@@ -171,7 +171,7 @@ export default function ParticipationCertificate({
                 {/* ── Header: logo + conference line ── */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/images/logos/logo_colored.png"
+                  src="/images/logos/logo.png"
                   alt="CIC"
                   style={{ height: 62, width: 'auto', objectFit: 'contain', marginBottom: 10 }}
                 />

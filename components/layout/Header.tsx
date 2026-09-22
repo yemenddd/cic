@@ -109,17 +109,25 @@ export default function Header() {
 
           {/* ── Logo ── */}
           <Link href="/" className="flex items-center gap-3 shrink-0 group" aria-label="CIC Home">
+            {/* The logo files are a 3.5:1 lockup — the mark with the
+                conference name set beside it. They used to be square marks,
+                and this slot was a 32x32 box with object-contain, which fits
+                the whole image inside the square and rendered the new ones at
+                32x9: a mark, a wordmark and a line of English crushed into
+                nine pixels of height.
+                
+                Given its own proportions instead, and the separate text
+                beside it removed — a lockup already says the name, and
+                printing it twice in one corner is not a logo, it is a
+                stutter. */}
             <Image
-              src={(overDark || !isLight) ? "/images/logos/logo_white.png" : "/images/logos/logo_colored.png"}
-              alt="CIC"
-              width={32}
-              height={32}
+              src={(overDark || !isLight) ? "/images/logos/logo_white.png" : "/images/logos/logo.png"}
+              alt="مؤتمر الإبداع والابتكار"
+              width={1285}
+              height={367}
               priority
-              className="w-[32px] h-[32px] object-contain opacity-90 group-hover:opacity-100 transition-opacity duration-200"
+              className="h-[26px] md:h-[28px] w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity duration-200"
             />
-            <span className="font-outfit font-bold text-[13px] tracking-tight" style={{ color: overDark ? 'rgba(255,255,255,0.88)' : 'var(--text-primary)' }}>
-              {t('footer.copyright')}
-            </span>
           </Link>
 
           {/* ── Desktop nav ── */}
@@ -436,19 +444,14 @@ export default function Header() {
                 onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-3 shrink-0"
               >
+                {/* Same lockup, same reasoning as the desktop header above. */}
                 <Image
-                  src={isLight ? "/images/logos/logo_colored.png" : "/images/logos/logo_white.png"}
-                  alt="CIC"
-                  width={32}
-                  height={32}
-                  className="w-[32px] h-[32px] object-contain opacity-90"
+                  src={isLight ? "/images/logos/logo.png" : "/images/logos/logo_white.png"}
+                  alt="مؤتمر الإبداع والابتكار"
+                  width={1285}
+                  height={367}
+                  className="h-[26px] w-auto object-contain opacity-90"
                 />
-                <span
-                  className="font-outfit font-bold text-[13px] tracking-tight"
-                  style={{ color: isLight ? 'var(--text-primary)' : 'rgba(255,255,255,0.88)' }}
-                >
-                  {t('footer.copyright')}
-                </span>
               </Link>
 
               <div className="flex items-center gap-2 shrink-0">
