@@ -3,7 +3,11 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db/client';
 import { generateConfirmationCode, isCodeCollision } from '@/lib/confirmation-code';
-import { REGISTER_BY_IP, clientIp, recordFailure, throttleState } from '@/lib/rate-limit';
+import {
+  REGISTER_BY_IP, REGISTER_REJECTED_BY_IP, clientIp, recordFailure, throttleState,
+} from '@/lib/rate-limit';
+import { MIN_PASSWORD_LENGTH } from '@/lib/password-rules';
+import { canonicalTrack } from '@/lib/submissions';
 import { getSiteSettings } from '@/lib/site-settings-server';
 
 const RegistrationSchema = z.object({
@@ -13,8 +17,22 @@ const RegistrationSchema = z.object({
   country: z.string().trim().min(1).max(100),
   organization: z.string().trim().max(200).optional().default(''),
   category: z.enum(['visitor', 'participant', 'volunteer']),
-  track: z.string().trim().max(200),
-  password: z.string().min(8).max(200),
+  // Accepted in any of the three languages the form is offered in, and stored
+  // in the canonical Arabic. The form posts the label the visitor saw, so
+  // validating against the Arabic list alone would have refused every English
+  // and Turkish registration — and storing the label as sent is what put
+  // "Innovation & Technology" on an Arabic certificate.
+  //
+  // Empty passes: the track is optional. Anything outside the twelve does not,
+  // because it is printed on a certificate and the account page has refused
+  // invented values since it was written.
+  track: z.string().trim().max(200)
+    .refine((t) => canonicalTrack(t) !== null, { message: 'المسار غير صالح' })
+    .transform((t) => canonicalTrack(t)!),
+  // The same minimum the rest of the platform enforces. It was eight here and
+  // ten everywhere else, so somebody could register with a password they were
+  // then not allowed to choose again when changing it.
+  password: z.string().min(MIN_PASSWORD_LENGTH).max(200),
 });
 
 export async function POST(req: Request) {
@@ -36,13 +54,24 @@ export async function POST(req: Request) {
   // permanent row. Without a ceiling, one script fills the attendee list with
   // thousands of invented people and the real registrations are lost in them.
   const ip = clientIp(req.headers);
+
+  /** Counted only when a request is turned away — see lib/rate-limit.ts. */
+  const reject = async (body: Record<string, unknown>, status: number) => {
+    if (ip) await recordFailure('register:rejected', ip, REGISTER_REJECTED_BY_IP);
+    return NextResponse.json(body, { status });
+  };
+
   if (ip) {
-    const state = await throttleState('register:ip', ip);
-    if (state.blocked) {
-      return NextResponse.json(
-        { ok: false, error: 'محاولات تسجيل كثيرة — حاول مرة أخرى بعد قليل' },
-        { status: 429, headers: { 'Retry-After': String(state.retryAfter) } },
-      );
+    // Two separate ceilings. A busy desk trips neither; somebody probing the
+    // endpoint trips the first long before the second.
+    for (const scope of ['register:rejected', 'register:ip'] as const) {
+      const state = await throttleState(scope, ip);
+      if (state.blocked) {
+        return NextResponse.json(
+          { ok: false, error: 'محاولات تسجيل كثيرة — حاول مرة أخرى بعد قليل' },
+          { status: 429, headers: { 'Retry-After': String(state.retryAfter) } },
+        );
+      }
     }
   }
 
@@ -50,25 +79,22 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: 'Invalid request body' }, { status: 400 });
+    return reject({ ok: false, error: 'Invalid request body' }, 400);
   }
 
   const parsed = RegistrationSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ ok: false, error: 'بيانات التسجيل غير صالحة' }, { status: 400 });
+    return reject({ ok: false, error: 'بيانات التسجيل غير صالحة' }, 400);
   }
-
-  // Counted before the work is done, so a malformed flood is limited too.
-  if (ip) await recordFailure('register:ip', ip, REGISTER_BY_IP);
 
   const { password, ...fields } = parsed.data;
   const email = fields.email.toLowerCase();
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    return NextResponse.json(
+    return reject(
       { ok: false, error: 'هذا البريد مسجَّل بالفعل — سجّل الدخول بدلاً من ذلك' },
-      { status: 409 },
+      409,
     );
   }
 
@@ -101,6 +127,10 @@ export async function POST(req: Request) {
         },
       });
 
+      // Counted only now, against the generous ceiling: a completed signup is
+      // not an attack signal, it is the thing this endpoint is for.
+      if (ip) await recordFailure('register:ip', ip, REGISTER_BY_IP);
+
       return NextResponse.json({ ok: true, code: confirmationCode });
     } catch (err) {
       // P2002 is Prisma's unique-constraint violation. On confirmationCode it
@@ -110,9 +140,9 @@ export async function POST(req: Request) {
       if (isCodeCollision(err)) continue;
 
       if ((err as { code?: string }).code === 'P2002') {
-        return NextResponse.json(
+        return reject(
           { ok: false, error: 'هذا البريد مسجَّل بالفعل — سجّل الدخول بدلاً من ذلك' },
-          { status: 409 },
+          409,
         );
       }
 

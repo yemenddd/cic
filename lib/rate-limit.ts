@@ -34,8 +34,33 @@ export const LOGIN_BY_EMAIL: ThrottleRule = { limit: 5, windowSeconds: 900, maxL
 /** Spraying one password across many accounts — same source, many emails. */
 export const LOGIN_BY_IP: ThrottleRule = { limit: 20, windowSeconds: 900, maxLockSeconds: 1800 };
 
-/** Bulk fake signups. Counts every attempt, not just failures. */
-export const REGISTER_BY_IP: ThrottleRule = { limit: 5, windowSeconds: 3600, maxLockSeconds: 3600 };
+/**
+ * Registrations that were *rejected* — bad data, a duplicate address, a
+ * category that is not on the list. Several of these in a row is somebody
+ * probing the endpoint rather than somebody signing up.
+ *
+ * Strict, because a rejected request is cheap to make and means nothing good.
+ */
+export const REGISTER_REJECTED_BY_IP: ThrottleRule = {
+  limit: 8, windowSeconds: 3600, maxLockSeconds: 1800,
+};
+
+/**
+ * Registrations that succeeded.
+ *
+ * Generous on purpose, and this is the correction of a real fault: the old
+ * rule counted every attempt against a limit of five an hour, successes
+ * included. A conference registration desk, a university, an office and a
+ * family all reach this site from one address, so the sixth person to sign up
+ * from any of them was refused for an hour — and a single visitor fumbling
+ * the form burnt the allowance for everyone behind the same router.
+ *
+ * Thirty an hour is more than a desk will do and slow enough that a script
+ * filling the attendee list is not worth writing.
+ */
+export const REGISTER_BY_IP: ThrottleRule = {
+  limit: 30, windowSeconds: 3600, maxLockSeconds: 1800,
+};
 
 /**
  * Password-reset requests. Counts every attempt, not just failures — there is

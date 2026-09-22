@@ -3,6 +3,7 @@
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db/client';
+import { MIN_PASSWORD_LENGTH } from '@/lib/password-rules';
 import { currentUser } from '@/lib/auth-guards';
 import { isTrackAllowed } from '@/lib/submissions';
 import { LOGIN_BY_EMAIL, clearFailures, recordFailure, throttleState } from '@/lib/rate-limit';
@@ -80,7 +81,9 @@ export async function changePassword(_prev: ActionResult, formData: FormData): P
   const next = String(formData.get('next') || '');
   const confirm = String(formData.get('confirm') || '');
 
-  if (next.length < 10) return { error: 'كلمة المرور الجديدة يجب أن تكون 10 أحرف على الأقل' };
+  if (next.length < MIN_PASSWORD_LENGTH) {
+    return { error: `كلمة المرور الجديدة يجب أن تكون ${MIN_PASSWORD_LENGTH} أحرف على الأقل` };
+  }
   if (next !== confirm) return { error: 'كلمتا المرور غير متطابقتين' };
 
   const user = await prisma.user.findUnique({ where: { id: account.id } });

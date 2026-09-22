@@ -37,7 +37,7 @@ const { isInternalPath, openAndResolveTarget, NOTIFICATIONS_PATH } = await impor
   '../app/dashboard/notifications/open'
 );
 const { canSubmitInnovations } = await import('../lib/categories');
-const { isTrackAllowed } = await import('../lib/submissions');
+const { isTrackAllowed, canonicalTrack, SUBMISSION_TRACKS } = await import('../lib/submissions');
 const { waitingSince, queueHealth, statusGuidance } = await import('../lib/submission-queue');
 const { csvCell, toCsv, csvResponse } = await import('../lib/csv');
 const { inPages } = await import('../lib/export-pages');
@@ -141,7 +141,11 @@ check('the per-account lock is capped at 15 minutes', lockSeconds(50, LOGIN_BY_E
 check('an absurd count still clamps, not Infinity', lockSeconds(1e9, LOGIN_BY_EMAIL), 900);
 check('one address gets 19 tries across accounts', lockSeconds(19, LOGIN_BY_IP), 0);
 check('the twentieth locks the address', lockSeconds(20, LOGIN_BY_IP), 60);
-check('bulk signups are capped at an hour', lockSeconds(99, REGISTER_BY_IP), 3600);
+// Half an hour, not the full one it used to be. The ceiling it guards is now
+// thirty an hour rather than five, so anything that trips it is either a
+// genuinely busy desk — which should not be shut out until lunchtime — or a
+// script, which half an hour slows down just as well.
+check('a tripped signup limit clears in half an hour', lockSeconds(99, REGISTER_BY_IP), 1800);
 
 // --- Arabic counting, which has four forms rather than two -------------------
 
@@ -1221,6 +1225,81 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   // which is what makes the pair terminate: exactly one of them fires.
   const roles = ['ADMIN', 'ATTENDEE'] as const;
   check('every role is handled by exactly one side', roles.every((r) => (r === 'ADMIN') !== (r !== 'ADMIN')), true);
+}
+
+// --- registering, in three languages ------------------------------------------
+
+// The public form posts the label the visitor saw, and it is offered in
+// Arabic, English and Turkish. Validating against the Arabic list alone would
+// refuse every English and Turkish signup; storing the label as posted is what
+// put "Innovation & Technology" on an Arabic certificate.
+{
+  check('an Arabic track passes through', canonicalTrack('البحث العلمي'), 'البحث العلمي');
+  check('an English label becomes the Arabic one', canonicalTrack('Scientific Research'), 'البحث العلمي');
+  check('and a Turkish one', canonicalTrack('Bilimsel Araştırma'), 'البحث العلمي');
+  check('entrepreneurship, English', canonicalTrack('Entrepreneurship'), 'ريادة الأعمال');
+  check('entrepreneurship, Turkish', canonicalTrack('Girişimcilik'), 'ريادة الأعمال');
+  check('AI, English', canonicalTrack('AI & Robotics'), 'الذكاء الاصطناعي والروبوتات');
+  check('innovation, Turkish', canonicalTrack('İnovasyon ve Teknoloji'), 'الابتكار والتقنية');
+  check('case does not matter', canonicalTrack('scientific research'), 'البحث العلمي');
+  check('surrounding space does not matter', canonicalTrack('  Entrepreneurship  '), 'ريادة الأعمال');
+
+  // Empty is a real answer — the track is optional.
+  check('empty stays empty', canonicalTrack(''), '');
+  check('whitespace counts as empty', canonicalTrack('   '), '');
+  check('null is handled', canonicalTrack(null), '');
+
+  // Anything else is an invented value, and it is printed on a certificate.
+  check('an invented track is refused', canonicalTrack('مسار مخترع'), null);
+  check('and an invented English one', canonicalTrack('Underwater Basket Weaving'), null);
+
+  // Everything this can produce must be re-selectable on the account page —
+  // otherwise a registration would store a value its owner could never keep.
+  check('every canonical result is allowed by the account page',
+    SUBMISSION_TRACKS.every((t) => isTrackAllowed(t, null)), true);
+  check('and every English label maps into that set',
+    ['Innovation & Technology','AI & Robotics','Scientific Research','Entrepreneurship']
+      .every((l) => SUBMISSION_TRACKS.includes(canonicalTrack(l)!)), true);
+  check('and every Turkish one',
+    ['İnovasyon ve Teknoloji','Yapay Zeka ve Robotik','Bilimsel Araştırma','Girişimcilik']
+      .every((l) => SUBMISSION_TRACKS.includes(canonicalTrack(l)!)), true);
+}
+
+// One password rule, not four.
+{
+  const { MIN_PASSWORD_LENGTH } = await import('../lib/password-rules');
+  const register = readFileSync('app/api/register/route.ts', 'utf8');
+  const form = readFileSync('components/sections/RegisterForm.tsx', 'utf8');
+  const dash = readFileSync('app/dashboard/account/actions.ts', 'utf8');
+  const admin = readFileSync('app/admin/(panel)/account/actions.ts', 'utf8');
+
+  // It was min(8) at registration and 10 everywhere else, so a password
+  // accepted at signup could not be chosen again when changing it.
+  check('registration uses the shared minimum', register.includes('MIN_PASSWORD_LENGTH'), true);
+  check('and no longer hardcodes eight', /min\(8\)/.test(register), false);
+  check('the form uses it too', form.includes('MIN_PASSWORD_LENGTH'), true);
+  check('the dashboard account page uses it', dash.includes('MIN_PASSWORD_LENGTH'), true);
+  check('the admin account page uses it', admin.includes('MIN_PASSWORD_LENGTH'), true);
+  check('nobody hardcodes the number any more',
+    [register, form, dash, admin].every((f) => !/length < 10\b|length < 8\b/.test(f)), true);
+  check('and it is ten', MIN_PASSWORD_LENGTH, 10);
+}
+
+// The registration throttle, which used to refuse a busy desk.
+{
+  const { REGISTER_BY_IP, REGISTER_REJECTED_BY_IP } = await import('../lib/rate-limit');
+  const route = readFileSync('app/api/register/route.ts', 'utf8');
+
+  // A conference desk, a university and a family all arrive from one address.
+  // The old rule counted every attempt against five an hour, successes
+  // included, so the sixth person from any of them was refused for an hour.
+  check('a busy desk is not refused at six', REGISTER_BY_IP.limit >= 20, true);
+  check('but the endpoint is still capped', REGISTER_BY_IP.limit <= 60, true);
+  check('rejected attempts are counted apart', REGISTER_REJECTED_BY_IP.limit < REGISTER_BY_IP.limit, true);
+  check('and more strictly', lockSeconds(REGISTER_REJECTED_BY_IP.limit + 1, REGISTER_REJECTED_BY_IP) > 0, true);
+  // The success counter must be incremented only after the row is written.
+  check('a success is counted only once it is one',
+    route.indexOf("recordFailure('register:ip'") > route.indexOf('prisma.user.create'), true);
 }
 
 // --- undo --------------------------------------------------------------------

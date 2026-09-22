@@ -12,6 +12,7 @@ import { downloadBadgePDF } from '@/lib/download-badge-pdf';
 import { CATEGORIES, type Lang } from '@/lib/categories';
 import { DEFAULT_COUNTRY, countryByCode, countryOptions, flagOf } from '@/lib/countries';
 import { signIn } from 'next-auth/react';
+import { MIN_PASSWORD_LENGTH } from '@/lib/password-rules';
 import { useRouter } from 'next/navigation';
 
 const CATEGORY_ICONS: Record<string, typeof Award> = {
@@ -70,8 +71,15 @@ export default function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (password.length < 8) {
-      setErrorMsg(p.pwTooShort ?? 'كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+    // The same minimum the server enforces, and the same one the account and
+    // reset pages enforce. It said eight here while everything else said ten,
+    // so a password accepted at registration could not be chosen again when
+    // changing it.
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setErrorMsg(
+        p.pwTooShort?.replace('8', String(MIN_PASSWORD_LENGTH))
+          ?? `كلمة المرور يجب أن تكون ${MIN_PASSWORD_LENGTH} أحرف على الأقل`,
+      );
       setStatus('error');
       return;
     }
