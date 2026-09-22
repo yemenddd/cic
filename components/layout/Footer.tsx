@@ -50,7 +50,9 @@ export default function Footer({ social }: { social: SocialLinks }) {
       // h-10 w-10 it rendered 40x11.
       width={1285}
       height={367}
-      className="h-9 w-auto object-contain"
+      // Bigger than the h-9 it was: the footer is the one place the mark has
+      // room, and it is now the only thing carrying the name here.
+      className="h-12 md:h-14 w-auto object-contain"
     />
   );
 

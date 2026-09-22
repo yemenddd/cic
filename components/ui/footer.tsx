@@ -39,8 +39,12 @@ export function Footer({
             className="flex items-center gap-x-2"
             aria-label={brandName}
           >
+            {/* The logo is a lockup that already carries the conference name,
+                so the name was printed twice side by side. `brandName` stays
+                as the link's accessible name — the anchor still has to be
+                announced as something, and an image alt inside a link is not
+                a substitute for naming the link itself. */}
             {logo}
-            <span className="font-bold text-xl" style={{ color: 'var(--text-primary)' }}>{brandName}</span>
           </a>
           <ul className="flex list-none mt-6 md:mt-0 space-x-3">
             {socialLinks.map((link, i) => (

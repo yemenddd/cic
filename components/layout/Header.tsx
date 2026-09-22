@@ -126,7 +126,7 @@ export default function Header() {
               width={1285}
               height={367}
               priority
-              className="h-[26px] md:h-[28px] w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity duration-200"
+              className="h-[34px] md:h-[38px] w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity duration-200"
             />
           </Link>
 
@@ -450,7 +450,7 @@ export default function Header() {
                   alt="مؤتمر الإبداع والابتكار"
                   width={1285}
                   height={367}
-                  className="h-[26px] w-auto object-contain opacity-90"
+                  className="h-[34px] w-auto object-contain opacity-90"
                 />
               </Link>
 
