@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, Check, ChevronDown, Sun, Moon } from 'lucide-react';
+import { Globe, Check, ChevronDown, Sun, Moon, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -77,6 +77,11 @@ export default function Header() {
   }, [menuOpen]);
 
   const isHome    = pathname === '/';
+  // Its own hover state rather than the nav's shared one: the pill would
+  // otherwise animate across the theme toggle and the language switcher on
+  // its way here, which reads as a glitch rather than as a transition.
+  const [accountHover, setAccountHover] = useState(false);
+  const accountActive = pathname.startsWith('/dashboard');
   const showBg    = !isHome || scrolled;
   // When header is transparent (home, not scrolled) it sits over a dark photo → always white
   const overDark  = isHome && !scrolled;
@@ -323,16 +328,50 @@ export default function Header() {
             </div>
 
             {/* Account + Register CTA — desktop */}
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2">
+              {/* Built like the nav links above rather than as a bare text
+                  node, which is what it used to be.
+
+                  Two things were wrong with that. It was pinned to
+                  --text-secondary whatever the header was sitting on, so over
+                  the hero photograph on the home page it was dark grey on a
+                  dark image — and in the light theme, unreadable. And it had
+                  no hover or active treatment at all, next to five links that
+                  do, which is what made it look like something left unfinished
+                  rather than a part of the set.
+
+                  The icon is the one deliberate difference: this is the way
+                  into somebody's own account, not another page of the site,
+                  and next to a filled call-to-action it needs to read as its
+                  own kind of thing. */}
               <Link
                 href="/dashboard"
-                className="text-[13px] font-medium transition-colors"
-                style={{ color: 'var(--text-secondary)' }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                onMouseEnter={() => setAccountHover(true)}
+                onMouseLeave={() => setAccountHover(false)}
+                aria-current={accountActive ? 'page' : undefined}
+                className="relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium select-none"
+                style={{
+                  color: overDark
+                    ? (accountActive ? '#ffffff' : accountHover ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.52)')
+                    : (accountActive ? 'var(--text-primary)' : accountHover ? 'var(--text-secondary)' : 'var(--text-tertiary)'),
+                  transition: 'color 0.15s ease',
+                }}
               >
-                {t('nav.account')}
+                {(accountHover || accountActive) && (
+                  <motion.span
+                    layoutId="account-hover"
+                    className="absolute inset-0 rounded-lg"
+                    style={{
+                      background: accountActive ? 'var(--nav-active-bg)' : 'var(--nav-hover-bg)',
+                      boxShadow:  'inset 0 1px 0 var(--mat-liquid-inset)',
+                    }}
+                    transition={SPRING}
+                  />
+                )}
+                <UserRound size={14} className="relative shrink-0" strokeWidth={2} />
+                <span className="relative">{t('nav.account')}</span>
               </Link>
+
               <ShinyButton href="/register">
                 {t('nav.register')}
               </ShinyButton>
@@ -530,12 +569,31 @@ export default function Header() {
                 })}
               </div>
 
-              {/* Register row */}
-              <div className="flex items-center justify-end pt-1">
+              {/* Account + Register row.
+
+                  The account entry was missing here entirely — the phone menu
+                  offered only "register", so somebody who already had an
+                  account had no way into it from the public site on a phone,
+                  which is the device most of them are holding. */}
+              <div className="flex items-center gap-2 pt-1">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 px-5 py-2.5 rounded-full text-[13.5px] font-semibold"
+                  style={{
+                    background:           'transparent',
+                    border:               `1px solid ${isLight ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.16)'}`,
+                    color:                isLight ? 'var(--text-secondary)' : 'rgba(255,255,255,0.72)',
+                  }}
+                >
+                  <UserRound size={14} strokeWidth={2} className="shrink-0" />
+                  {t('nav.account')}
+                </Link>
+
                 <a
                   href="/register"
                   onClick={() => setMenuOpen(false)}
-                  className="px-6 py-2.5 rounded-full text-[13.5px] font-semibold shrink-0"
+                  className="flex-1 text-center px-5 py-2.5 rounded-full text-[13.5px] font-semibold shrink-0"
                   style={{
                     background:           'var(--mat-liquid-bg)',
                     backdropFilter:       'blur(20px)',
