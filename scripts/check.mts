@@ -1884,6 +1884,149 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('the shared link says so too', confirmation.includes('لديك حساب في منصة المؤتمر'), true);
 }
 
+// --- somebody who turned up without registering --------------------------------
+
+{
+  const { validateWalkIn, walkInFields, walkInEmail, isWalkInEmail, WALK_IN_EMAIL_DOMAIN } =
+    await import('../lib/walk-in');
+
+  const ok = { name: 'سالم عبده', phone: '+967 770 123456', category: 'visitor' };
+  check('a name and a phone are enough', validateWalkIn(ok), null);
+  check('a blank name is refused', validateWalkIn({ ...ok, name: ' ' })?.includes('اسم'), true);
+  check('a single letter is refused', validateWalkIn({ ...ok, name: 'س' })?.includes('اسم'), true);
+  check('a blank phone is refused', validateWalkIn({ ...ok, phone: '' })?.includes('الهاتف'), true);
+  // "لا يوجد" typed into a phone box is worse than an empty column: it looks
+  // like a number to everything that reads the table afterwards.
+  check('words in the phone box are refused',
+    validateWalkIn({ ...ok, phone: 'لا يوجد' })?.includes('غير مكتمل'), true);
+  check('a too-short number is refused',
+    validateWalkIn({ ...ok, phone: '12345' })?.includes('غير مكتمل'), true);
+  // Forgiving about the shape, because the desk is standing up with a queue.
+  check('spaces and dashes are fine', validateWalkIn({ ...ok, phone: '0770-123-456' }), null);
+  check('a missing category is refused', validateWalkIn({ ...ok, category: '' })?.includes('فئة'), true);
+
+  check('fields are trimmed',
+    walkInFields({ name: '  ريم  ', phone: ' 770111222 ', category: 'visitor', organization: '  ' }),
+    { name: 'ريم', phone: '770111222', category: 'visitor', organization: null, country: null });
+
+  // .invalid is reserved by RFC 2606 so it can never resolve. A plausible
+  // placeholder on a real domain would eventually be mailed — and bounce, or
+  // reach a stranger.
+  check('the address cannot resolve', WALK_IN_EMAIL_DOMAIN.endsWith('.invalid'), true);
+  check('it is unique per code', walkInEmail('CIC-2026-ABC123') === walkInEmail('CIC-2026-ABC124'), false);
+  check('and it is recognisable as invented', isWalkInEmail(walkInEmail('CIC-2026-ABC123')), true);
+  check('a real address is not', isWalkInEmail('someone@example.com'), false);
+  check('and neither is nothing', isWalkInEmail(null), false);
+}
+
+// --- what the door learned ------------------------------------------------------
+//
+// The figures the next conference is planned from. Checked as pure functions
+// over fixed rows, because "how many came" being quietly wrong is the kind of
+// mistake nobody catches by looking at a chart.
+
+{
+  const {
+    turnout, turnoutByCategory, arrivalCurve, dayRetention, methodSplit,
+    checkpointLoad, rankAttended, byRecorder, clockLabel, venueMinutes,
+  } = await import('../lib/attendance-analytics');
+
+  const person = (id: string, category: string, extra: Partial<{ country: string; organization: string; walkIn: boolean }> = {}) => ({
+    id, category, country: extra.country ?? null, organization: extra.organization ?? null,
+    walkIn: extra.walkIn ?? false,
+  });
+
+  // Venue time is UTC+3; a scan at 06:00 UTC is 09:00 at the door, and a
+  // report that said 06:00 would have people arriving before the gates opened.
+  check('times are read at the venue, not in UTC',
+    clockLabel(venueMinutes(new Date('2026-10-02T06:00:00Z'))), '09:00');
+  check('and it wraps past midnight correctly',
+    clockLabel(venueMinutes(new Date('2026-10-02T22:30:00Z'))), '01:30');
+
+  const at = (h: number, m = 0) => new Date(Date.UTC(2026, 9, 2, h - 3, m));
+  const row = (userId: string, checkpointId: string, hour: number, minute = 0, method: 'QR' | 'MANUAL' = 'QR', recordedById: string | null = 'org1') =>
+    ({ userId, checkpointId, checkedInAt: at(hour, minute), method: method as never, recordedById });
+
+  const attendees = [
+    person('a', 'visitor', { country: 'اليمن' }),
+    person('b', 'visitor', { country: 'اليمن' }),
+    person('c', 'participant', { country: 'تركيا' }),
+    person('d', 'participant'),
+    person('e', 'volunteer'),
+    person('w', 'visitor', { country: 'اليمن', walkIn: true }),
+  ];
+  const checkpoints = [
+    { id: 'g1', nameAr: 'بوابة اليوم الأول', day: 'dayOne' },
+    { id: 'g2', nameAr: 'بوابة اليوم الثاني', day: 'dayTwo' },
+  ];
+  const rows = [
+    row('a', 'g1', 9, 10), row('b', 'g1', 9, 20), row('c', 'g1', 9, 40),
+    row('e', 'g1', 11, 5, 'MANUAL'), row('w', 'g1', 12, 0, 'MANUAL', 'org2'),
+    row('a', 'g2', 9, 30), row('c', 'g2', 10, 0),
+  ];
+
+  const t = turnout(attendees, rows);
+  check('registered excludes people the door invented', t.registered, 5);
+  check('attended counts each person once', t.attended, 4);
+  check('no-shows are the ones who never came', t.noShows, 1);
+  // A turnout rate that climbs whenever registration fails is worse than none.
+  check('walk-ins are reported apart', t.walkIns, 1);
+  check('and never inflate the rate', t.rate, 80);
+
+  const byCat = turnoutByCategory(attendees, rows);
+  check('categories are ranked by how many registered', byCat.map((c) => c.category), ['visitor', 'participant', 'volunteer']);
+  check('each carries its own rate', byCat.find((c) => c.category === 'participant')?.rate, 50);
+  check('and the walk-in is not among them',
+    byCat.find((c) => c.category === 'visitor')?.registered, 2);
+
+  const curve = arrivalCurve(rows.filter((r) => r.checkpointId === 'g1'));
+  check('arrivals bucket by half-hour', curve.buckets.map((b) => b.label),
+    ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00']);
+  // The peak is the number a door is staffed for; the mean would say 0.7.
+  check('the peak is the busiest half-hour', curve.peak?.label, '09:00');
+  check('and its size', curve.peak?.count, 2);
+  check('quiet half-hours are kept, not skipped', curve.buckets.find((b) => b.label === '10:00')?.count, 0);
+  check('the first arrival is recorded', clockLabel(curve.firstMinutes!), '09:10');
+  check('and the median arrival', clockLabel(curve.medianMinutes!), '09:40');
+
+  const r = dayRetention(rows, checkpoints);
+  check('day one counts distinct people', r.dayOne, 5);
+  check('day two as well', r.dayTwo, 2);
+  // Day two attendance alone cannot tell the same crowd from a different one.
+  check('the overlap is what says they came back', r.both, 2);
+  check('day one only', r.dayOneOnly, 3);
+  check('day two only', r.dayTwoOnly, 0);
+  check('and the return rate', r.returnRate, 40);
+
+  const m = methodSplit(rows);
+  check('scans are counted', m.qr, 5);
+  check('and manual entries', m.manual, 2);
+  // A high manual share is a badge-health signal, not a staffing one.
+  check('the manual share is rounded honestly', m.manualRate, 29);
+
+  const loads = checkpointLoad(rows, checkpoints);
+  check('doors are ranked by load', loads.map((l) => l.id), ['g1', 'g2']);
+  check('each with its own peak', loads[0].peakLabel, '09:00');
+
+  // Among everybody who was in the room, walk-ins included: the question this
+  // answers is what the room looked like, and somebody admitted at the door
+  // was as present as somebody who registered in March.
+  check('countries are counted among those who actually came',
+    rankAttended(attendees, rows, 'country'), [
+      { label: 'اليمن', count: 3 },
+      { label: 'تركيا', count: 1 },
+    ]);
+
+  check('scanning load is ranked', byRecorder(rows).map((x) => [x.recordedById, x.count]),
+    [['org1', 6], ['org2', 1]]);
+
+  // An empty conference must produce zeros rather than NaN or a crash.
+  const empty = turnout([], []);
+  check('nothing at all is zero, not NaN', [empty.rate, empty.attended, empty.noShows], [0, 0, 0]);
+  check('and an empty curve has no peak', arrivalCurve([]).peak, null);
+  check('and empty retention divides by nothing safely', dayRetention([], checkpoints).returnRate, 0);
+}
+
 // --- undo --------------------------------------------------------------------
 
 await prisma.notification.deleteMany({ where: { title: marker } });

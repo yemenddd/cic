@@ -92,6 +92,20 @@ model User {
   category         String? // visitor | participant | volunteer
   /** One of the two paths in lib/submissions.ts, for participants. */
   track            String?
+
+  /**
+   * Added at the door rather than through the registration form.
+   *
+   * Somebody who turned up without having registered — no account, no
+   * password, and an address that cannot receive mail. They are a real
+   * attendee and belong in the figures, but they are not a user: nothing
+   * should try to email them, and an analysis of how the conference was
+   * reached has to be able to tell them apart from people who signed up in
+   * advance. That difference is the single most useful thing the door
+   * learns, so it is a column rather than something inferred from the shape
+   * of an address.
+   */
+  walkIn           Boolean @default(false)
   /**
    * Which organizing committee a volunteer works with — one of the six in
    * lib/committees.ts. Chosen by the volunteer themselves, on their rota page,

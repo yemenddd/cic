@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { CalendarCheck, Download, Plus, ScanLine, TrendingUp, UserCheck, Users } from 'lucide-react';
+import { BarChart3, CalendarCheck, Download, Plus, ScanLine, TrendingUp, UserCheck, Users } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
 import StatCard from '@/components/admin/StatCard';
 import { Panel, EmptyNote } from '@/components/admin/Panel';
+import WalkInForm from './WalkInForm';
 import BarList, { type BarItem } from '@/components/admin/BarList';
 import { relativeArabicDate } from '@/lib/relative-time';
 import {
@@ -104,6 +105,14 @@ export default async function AttendancePage() {
             <ScanLine className="h-4 w-4" />
             بدء المسح
           </Link>
+          <Link
+            href="/admin/attendance/report"
+            className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[13.5px] font-semibold"
+            style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)', color: 'var(--text-primary)' }}
+          >
+            <BarChart3 className="h-4 w-4" />
+            تحليل الحضور
+          </Link>
           <a
             href="/admin/attendance/export"
             className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[13.5px] font-semibold"
@@ -132,6 +141,18 @@ export default async function AttendancePage() {
         <StatCard label="نسبة الحضور" value={rate} icon={TrendingUp} hint="٪ من المسجّلين" />
         <StatCard label="إجمالي عمليات المسح" value={totalScans} icon={Users} />
       </div>
+
+      {/* Placed above the log rather than below it: this is something done
+          while somebody waits, and the log is something read afterwards. */}
+      <Panel
+        title="إضافة حاضر من الباب"
+        caption="من حضر دون تسجيل مسبق — يُدرج في قاعدة البيانات ويُحتسب في الحضور"
+      >
+        <WalkInForm
+          checkpoints={checkpoints.map((c) => ({ id: c.id, nameAr: c.nameAr, isOpen: c.isOpen }))}
+          defaultCheckpointId={checkpoints.find((c) => c.isOpen && c.day === today)?.id}
+        />
+      </Panel>
 
       <div className="grid lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">

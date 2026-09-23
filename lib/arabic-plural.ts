@@ -36,6 +36,8 @@ export const DAY: ArabicUnit = { one: 'يوم', two: 'يومين', few: 'أيا�
 export const SESSION: ArabicUnit = { one: 'جلسة', two: 'جلستين', few: 'جلسات', many: 'جلسة' };
 export const CLASH: ArabicUnit = { one: 'تعارض', two: 'تعارضين', few: 'تعارضات', many: 'تعارضاً', oneWord: 'واحد' };
 export const PROJECT: ArabicUnit = { one: 'مشروع', two: 'مشروعين', few: 'مشاريع', many: 'مشروعاً', oneWord: 'واحد' };
+export const PERSON: ArabicUnit = { one: 'شخص', two: 'شخصين', few: 'أشخاص', many: 'شخصاً', oneWord: 'واحد' };
+export const SCAN: ArabicUnit = { one: 'تسجيل', two: 'تسجيلين', few: 'تسجيلات', many: 'تسجيلاً', oneWord: 'واحد' };
 export const SHIFT: ArabicUnit = { one: 'فترة', two: 'فترتين', few: 'فترات', many: 'فترة' };
 export const VOLUNTEER: ArabicUnit = { one: 'متطوع', two: 'متطوعَين', few: 'متطوعين', many: 'متطوعاً', oneWord: 'واحد' };
 

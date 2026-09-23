@@ -5,6 +5,9 @@ import { prisma } from '@/lib/db/client';
 import { requireAdmin } from '@/lib/auth-guards';
 import { isDayKey, type CheckInOutcome } from '@/lib/attendance';
 import { recordAttendance } from '@/lib/attendance-record';
+import { generateConfirmationCode, isCodeCollision } from '@/lib/confirmation-code';
+import { validateWalkIn, walkInEmail, walkInFields, type WalkInInput } from '@/lib/walk-in';
+import { randomUUID } from 'node:crypto';
 
 type ActionResult = { error?: string; success?: string };
 
@@ -68,6 +71,118 @@ export async function manualCheckIn(checkpointId: string, userId: string): Promi
   }
 
   return outcome;
+}
+
+/**
+ * Admit somebody who never registered.
+ *
+ * The case this exists for: a person is standing at the desk, has no account,
+ * cannot make one (no phone, no signal, no patience for a form with a password
+ * on it), and is about to walk into the conference either way. Before this,
+ * the honest options were to turn them away or to let them in uncounted — and
+ * an uncounted attendee is a hole in every number the conference reports
+ * afterwards.
+ *
+ * Creating the account and counting the attendance are one transaction: a row
+ * that exists but was never checked in would look, forever after, like
+ * somebody who registered and did not come.
+ */
+export async function addWalkIn(
+  _prev: ActionResult | undefined,
+  form: FormData,
+): Promise<ActionResult> {
+  const admin = await requireAdmin();
+  if (!admin) return { error: 'غير مصرح لك بإدارة الحضور' };
+
+  const checkpointId = String(form.get('checkpointId') ?? '').trim();
+  const input: WalkInInput = {
+    name: String(form.get('name') ?? ''),
+    phone: String(form.get('phone') ?? ''),
+    category: String(form.get('category') ?? 'visitor'),
+    organization: String(form.get('organization') ?? ''),
+    country: String(form.get('country') ?? ''),
+  };
+
+  const problem = validateWalkIn(input);
+  if (problem) return { error: problem };
+
+  const checkpoint = await prisma.checkpoint.findUnique({
+    where: { id: checkpointId },
+    select: { id: true, nameAr: true, isOpen: true },
+  });
+  if (!checkpoint) return { error: 'اختر نقطة الحضور أولاً' };
+  if (!checkpoint.isOpen) return { error: `نقطة «${checkpoint.nameAr}» مغلقة` };
+
+  const fields = walkInFields(input);
+
+  // No password can ever match this: bcrypt refuses to verify against a string
+  // that is not a valid hash, so the account is unusable by design rather than
+  // by a flag somebody could forget to check. They were admitted in person;
+  // they were never given a way in from outside.
+  const passwordHash = `walk-in:${randomUUID()}`;
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const confirmationCode = generateConfirmationCode();
+
+    try {
+      const created = await prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            ...fields,
+            email: walkInEmail(confirmationCode),
+            passwordHash,
+            role: 'ATTENDEE',
+            // An organizer standing in front of them is the approval.
+            status: 'APPROVED',
+            statusChangedAt: new Date(),
+            walkIn: true,
+            confirmationCode,
+            // The same pairing every other signup makes, so the registrations
+            // list and the CSV the organizers actually count from are not
+            // missing the people who came through the door.
+            registrations: {
+              create: {
+                fullName: fields.name,
+                email: walkInEmail(confirmationCode),
+                phone: fields.phone,
+                country: fields.country,
+                organization: fields.organization,
+                category: fields.category,
+                confirmationCode,
+              },
+            },
+          },
+          select: { id: true, name: true },
+        });
+
+        await tx.attendance.create({
+          data: {
+            userId: user.id,
+            checkpointId: checkpoint.id,
+            method: 'MANUAL',
+            recordedById: admin.id,
+          },
+        });
+
+        return user;
+      });
+
+      revalidateAttendance();
+      revalidatePath('/admin/registrations');
+      revalidatePath('/admin/users');
+
+      return { success: `أُضيف ${created.name} وسُجّل حضوره عند «${checkpoint.nameAr}»` };
+    } catch (err) {
+      // A confirmation-code collision is a dice roll, not a failure — draw
+      // again. Anything else is real and the desk needs to hear about it.
+      if (isCodeCollision(err)) continue;
+
+      console.error('Failed to add a walk-in attendee:', err);
+      return { error: 'تعذّر إضافة الحاضر، حاول مرة أخرى' };
+    }
+  }
+
+  return { error: 'تعذّر إصدار رمز تأكيد، حاول مرة أخرى' };
 }
 
 /**
