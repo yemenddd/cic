@@ -33,6 +33,10 @@ const OUTCOME_TONE: Record<CheckInOutcome['status'], Tone> = {
   recorded: 'ok',
   duplicate: 'warn',
   unknown: 'bad',
+  // Not a fault of the badge and not an error the organizer can fix at the
+  // door — it is a real person whose application has not been decided. Amber,
+  // so it reads as "send them to the desk" rather than "forged pass".
+  'not-admitted': 'warn',
   unreadable: 'bad',
   closed: 'bad',
   'no-checkpoint': 'bad',
@@ -384,6 +388,23 @@ export default function Scanner({
                     ? `${OUTCOME_LABELS.closed} — ${outcome.checkpointName}`
                     : OUTCOME_LABELS[outcome.status]}
                 </p>
+
+                {/* A real person the committee has not admitted. The organizer
+                    at the door needs their name to send them to the desk —
+                    "لم يُقبل هذا الحساب" over an anonymous screen is an
+                    argument waiting to happen. */}
+                {outcome.status === 'not-admitted' && (
+                  <>
+                    <p className="font-outfit text-[26px] font-black leading-tight" style={{ color: '#fff' }}>
+                      {outcome.attendee.name || outcome.attendee.email}
+                    </p>
+                    <p className="text-[13px]" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                      {outcome.accountStatus === 'PENDING'
+                        ? 'طلبه ما زال بانتظار قرار اللجنة — وجّهه إلى مكتب التسجيل'
+                        : 'لم يُقبل طلب انضمامه — وجّهه إلى مكتب التسجيل'}
+                    </p>
+                  </>
+                )}
 
                 {(outcome.status === 'recorded' || outcome.status === 'duplicate') && (
                   <>

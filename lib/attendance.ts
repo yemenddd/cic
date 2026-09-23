@@ -81,6 +81,15 @@ export type CheckInOutcome =
   | { status: 'duplicate'; attendee: ScannedAttendee; at: Date; method: AttendanceMethod }
   /** Readable, but no account answers to it. */
   | { status: 'unknown' }
+  /**
+   * A real badge, belonging to somebody the committee has not admitted.
+   *
+   * Registering and being admitted are two different things, and the door is
+   * where that distinction finally means something: a participant or volunteer
+   * whose application is still waiting — or was refused — must not be counted
+   * through the gate on the strength of a pass they were handed at signup.
+   */
+  | { status: 'not-admitted'; attendee: ScannedAttendee; accountStatus: 'PENDING' | 'REJECTED' }
   /** Not a badge of ours at all. */
   | { status: 'unreadable' }
   /** The checkpoint is closed, or was deleted while the scanner was open. */
@@ -91,6 +100,7 @@ export const OUTCOME_LABELS: Record<CheckInOutcome['status'], string> = {
   recorded: 'تم تسجيل الحضور',
   duplicate: 'مسجَّل مسبقاً',
   unknown: 'لا يوجد حساب بهذا الرمز',
+  'not-admitted': 'لم يُقبل هذا الحساب بعد',
   unreadable: 'رمز غير صالح',
   closed: 'نقطة الحضور مغلقة',
   'no-checkpoint': 'اختر نقطة حضور أولاً',

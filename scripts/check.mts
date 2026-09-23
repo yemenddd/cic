@@ -462,7 +462,14 @@ check('and it is a real limit, not a formality', MAX_SUBMISSIONS_PER_ATTENDEE > 
 
 // --- taking attendance, against real rows -------------------------------------
 
-const scanned = await prisma.user.findFirst({ where: { role: 'ATTENDEE' }, select: { id: true } });
+// Deliberately an *admitted* attendee. The door now refuses an account the
+// committee has not let in, so picking whoever came first would make "a valid
+// badge is counted" fail the moment somebody is waiting in the real queue —
+// which is a true fact about the door, reported as a broken check.
+const scanned = await prisma.user.findFirst({
+  where: { role: 'ATTENDEE', status: 'APPROVED' },
+  select: { id: true },
+});
 
 if (scanned) {
   const gate = await prisma.checkpoint.create({
@@ -510,9 +517,94 @@ if (scanned) {
     'unknown',
   );
 
+  // --- the door is where "registered" and "admitted" are told apart ----------
+  //
+  // A badge is a bearer object: whoever holds it can present it. So a valid
+  // signature proves the platform issued the badge and nothing about whether
+  // its holder was ever let in — which is why the scanner asks the database
+  // rather than trusting the signature alone.
+  {
+    const waiting = await prisma.user.create({
+      data: {
+        email: `gate-pending-${Date.now()}@regcheck.invalid`,
+        passwordHash: 'x',
+        name: `${marker} منتظر`,
+        role: 'ATTENDEE',
+        category: 'participant',
+        status: 'PENDING',
+      },
+    });
+    const refused = await prisma.user.create({
+      data: {
+        email: `gate-rejected-${Date.now()}@regcheck.invalid`,
+        passwordHash: 'x',
+        name: `${marker} مرفوض`,
+        role: 'ATTENDEE',
+        category: 'volunteer',
+        status: 'REJECTED',
+      },
+    });
+
+    await prisma.checkpoint.update({ where: { id: gate.id }, data: { isOpen: true } });
+
+    const pendingScan = await recordAttendance({
+      checkpointId: gate.id,
+      raw: badgeToken(waiting.id),
+      method: 'QR',
+      recordedById: admin.id,
+    });
+    check('a waiting account is not counted through the gate', pendingScan.status, 'not-admitted');
+    // The organizer at the door has to be able to name them, or "refused" is
+    // an argument rather than a redirection to the desk.
+    check('and the door is told who it is',
+      pendingScan.status === 'not-admitted' && pendingScan.attendee.name?.includes('منتظر'), true);
+    check('and why', pendingScan.status === 'not-admitted' && pendingScan.accountStatus, 'PENDING');
+
+    check('a refused account is not counted either',
+      (await recordAttendance({
+        checkpointId: gate.id,
+        raw: badgeToken(refused.id),
+        method: 'QR',
+        recordedById: admin.id,
+      })).status,
+      'not-admitted');
+
+    // Typing the printed code instead of scanning is the same door.
+    const byCode = await prisma.user.update({
+      where: { id: waiting.id },
+      data: { confirmationCode: 'CIC-2026-PEND99' },
+    });
+    check('nor by typing their confirmation code',
+      (await recordAttendance({
+        checkpointId: gate.id,
+        raw: byCode.confirmationCode!,
+        method: 'MANUAL',
+        recordedById: admin.id,
+      })).status,
+      'not-admitted');
+
+    check('and nothing was written for either of them',
+      await prisma.attendance.count({ where: { userId: { in: [waiting.id, refused.id] } } }), 0);
+
+    // Approved a moment later, the same badge works — the refusal is about the
+    // decision, not about the badge.
+    await prisma.user.update({ where: { id: waiting.id }, data: { status: 'APPROVED' } });
+    check('once admitted, the same badge counts',
+      (await recordAttendance({
+        checkpointId: gate.id,
+        raw: badgeToken(waiting.id),
+        method: 'QR',
+        recordedById: admin.id,
+      })).status,
+      'recorded');
+
+    await prisma.user.deleteMany({ where: { id: { in: [waiting.id, refused.id] } } });
+    await prisma.checkpoint.update({ where: { id: gate.id }, data: { isOpen: false } });
+  }
+
   await prisma.checkpoint.update({ where: { id: gate.id }, data: { isOpen: false } });
   const other = await prisma.user.findFirst({
-    where: { role: 'ATTENDEE', id: { not: scanned.id } },
+    where: { role: 'ATTENDEE', status: 'APPROVED', id: { not: scanned.id } },
     select: { id: true },
   });
   if (other) {
@@ -1760,6 +1852,11 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   const dashboard = readFileSync('app/dashboard/badge/page.tsx', 'utf8');
 
   check('registration issues a badge token', route.includes('badgeToken(created.id)'), true);
+  // But not to an account that has not been admitted: a working QR is an entry
+  // pass, and handing one to an application still waiting would let somebody
+  // through the gate for having filled in a form.
+  check('and withholds it while the committee has not decided',
+    route.includes('needsApproval(fields.category) ? null : badgeToken(created.id)'), true);
   check('and the registration screen renders it', form.includes('qrValue={badgeToken'), true);
   check('and so does the shared link', confirmation.includes('qrValue={qrValue'), true);
   // Both derive from the account id. Deriving one from the confirmation code

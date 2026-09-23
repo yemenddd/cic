@@ -1,4 +1,4 @@
-import type { AttendanceMethod } from '@prisma/client';
+import type { AccountStatus, AttendanceMethod, UserRole } from '@prisma/client';
 import { prisma } from '@/lib/db/client';
 import { verifyBadgeToken, isBadgeTokenShape } from '@/lib/badge-token';
 import {
@@ -84,16 +84,21 @@ const ATTENDEE_FIELDS = {
   confirmationCode: true,
 } as const;
 
-async function findAttendee(input: ScanInput): Promise<ScannedAttendee | null> {
+/** The same fields plus what decides whether they may come in at all. */
+const SCAN_FIELDS = { ...ATTENDEE_FIELDS, status: true, role: true } as const;
+
+type ScannedRow = ScannedAttendee & { status: AccountStatus; role: UserRole };
+
+async function findAttendee(input: ScanInput): Promise<ScannedRow | null> {
   if (input.kind === 'unreadable') return null;
 
   if (input.kind === 'token') {
-    return prisma.user.findUnique({ where: { id: input.userId }, select: ATTENDEE_FIELDS });
+    return prisma.user.findUnique({ where: { id: input.userId }, select: SCAN_FIELDS });
   }
 
   return prisma.user.findUnique({
     where: { confirmationCode: input.code },
-    select: ATTENDEE_FIELDS,
+    select: SCAN_FIELDS,
   });
 }
 
@@ -122,8 +127,32 @@ export async function recordAttendance(params: {
   const input: ScanInput = userId ? { kind: 'token', userId } : parseScanInput(raw ?? '');
   if (input.kind === 'unreadable') return { status: 'unreadable' };
 
-  const attendee = await findAttendee(input);
-  if (!attendee) return { status: 'unknown' };
+  const row = await findAttendee(input);
+  if (!row) return { status: 'unknown' };
+
+  // The door is where "registered" and "admitted" finally have to be told
+  // apart. A badge is issued at signup and is a bearer object — anybody
+  // holding it can present it — so the scanner asks the database whether this
+  // account was ever let in, rather than trusting that a valid signature
+  // implies a valid attendee.
+  //
+  // An organizer is exempt for the same reason they are at sign-in: the role
+  // is itself the admission.
+  // Rebuilt field by field rather than spread-minus-two: `status` and `role`
+  // were selected for the decision above and have no business travelling on to
+  // a screen held up at a door. The same reasoning as lib/auth-guards.ts.
+  const attendee: ScannedAttendee = {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    category: row.category,
+    organization: row.organization,
+    confirmationCode: row.confirmationCode,
+  };
+
+  if (row.role !== 'ADMIN' && row.status !== 'APPROVED') {
+    return { status: 'not-admitted', attendee, accountStatus: row.status as 'PENDING' | 'REJECTED' };
+  }
 
   const existing = await prisma.attendance.findUnique({
     where: { userId_checkpointId: { userId: attendee.id, checkpointId } },

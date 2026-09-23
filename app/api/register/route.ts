@@ -144,19 +144,22 @@ export async function POST(req: Request) {
         ok: true,
         code: confirmationCode,
         pending: needsApproval(fields.category),
-        // The badge the platform would show them, issued here as well.
+        // The badge the platform would show them, issued here as well — but
+        // only to an account that has actually been admitted.
         //
-        // Registration already handed over a pass, but one carrying a
-        // decorative barcode rather than the QR the door scanner reads — so
-        // somebody who saved that pass and never signed in was holding a badge
-        // that does not work. It is the same token /dashboard/badge derives,
-        // from the same account id, so the two are the same badge rather than
-        // two badges that resemble each other.
+        // Registration already handed over a pass, and it carried a decorative
+        // barcode rather than the QR the door scanner reads, so somebody who
+        // saved it and never signed in held a badge that does not work. This
+        // is the same token /dashboard/badge derives, from the same account id,
+        // so the two are one badge rather than two that resemble each other.
         //
-        // Handed to the person who just proved they own this address, and it
-        // is what their own QR encodes: a bearer credential they already hold,
-        // not a new disclosure.
-        badge: badgeToken(created.id),
+        // Withheld while the committee has not decided: a working QR is an
+        // entry pass, and handing one to an application that is still waiting
+        // would let somebody through the gate on the strength of having filled
+        // in a form. The door checks this too (lib/attendance-record.ts) —
+        // that check is the boundary, and this is simply not issuing a
+        // credential nobody should be carrying yet.
+        badge: needsApproval(fields.category) ? null : badgeToken(created.id),
       });
     } catch (err) {
       // P2002 is Prisma's unique-constraint violation. On confirmationCode it
