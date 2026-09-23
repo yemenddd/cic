@@ -8,6 +8,7 @@ import {
 } from '@/lib/rate-limit';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-rules';
 import { initialStatus, needsApproval } from '@/lib/account-status';
+import { badgeToken } from '@/lib/badge-token';
 import { canonicalTrack } from '@/lib/submissions';
 import { getSiteSettings } from '@/lib/site-settings-server';
 
@@ -110,7 +111,7 @@ export async function POST(req: Request) {
     try {
       // The account and its registration record are created together: a user
       // without a registration (or the reverse) would be a broken half-signup.
-      await prisma.user.create({
+      const created = await prisma.user.create({
         data: {
           email,
           passwordHash,
@@ -143,6 +144,19 @@ export async function POST(req: Request) {
         ok: true,
         code: confirmationCode,
         pending: needsApproval(fields.category),
+        // The badge the platform would show them, issued here as well.
+        //
+        // Registration already handed over a pass, but one carrying a
+        // decorative barcode rather than the QR the door scanner reads — so
+        // somebody who saved that pass and never signed in was holding a badge
+        // that does not work. It is the same token /dashboard/badge derives,
+        // from the same account id, so the two are the same badge rather than
+        // two badges that resemble each other.
+        //
+        // Handed to the person who just proved they own this address, and it
+        // is what their own QR encodes: a bearer credential they already hold,
+        // not a new disclosure.
+        badge: badgeToken(created.id),
       });
     } catch (err) {
       // P2002 is Prisma's unique-constraint violation. On confirmationCode it

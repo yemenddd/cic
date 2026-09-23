@@ -51,6 +51,10 @@ export default function RegisterForm() {
   // Whether this registration waits for the committee. Answered by the server
   // rather than worked out here, so the form and the door agree.
   const [pending, setPending] = useState(false);
+  // The signed token the door scanner reads, issued by the register route.
+  // Without it this screen drew a decorative barcode, so a pass saved here and
+  // never re-opened in the platform did not work at the door.
+  const [badgeToken, setBadgeToken] = useState('');
 
   const set = (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setFields(prev => ({ ...prev, [k]: e.target.value }));
@@ -119,6 +123,7 @@ export default function RegisterForm() {
       }
       setConfirmCode(data.code);
       setPending(Boolean(data.pending));
+      setBadgeToken(typeof data.badge === 'string' ? data.badge : '');
       setStatus('success');
 
       // Registration creates the account, so sign them straight in — the badge
@@ -143,12 +148,16 @@ export default function RegisterForm() {
 
   const handleCopyLink = useCallback(() => {
     const cat = CATEGORIES.find(c => c.id === selected);
-    const url = `${window.location.origin}/register/confirmation?n=${encodeURIComponent(fields.fullName)}&c=${selected}&cl=${encodeURIComponent(cat?.labels[l] ?? '')}&t=${encodeURIComponent(track)}&k=${confirmCode}&lang=${lang}`;
+    // Carries the badge token too, so the saved link renders the same working
+    // pass rather than a picture of one. The QR is a bearer credential either
+    // way — a screenshot of the badge is exactly as transferable — so this
+    // moves nothing that was not already in the holder's hands.
+    const url = `${window.location.origin}/register/confirmation?n=${encodeURIComponent(fields.fullName)}&c=${selected}&cl=${encodeURIComponent(cat?.labels[l] ?? '')}&t=${encodeURIComponent(track)}&k=${confirmCode}&org=${encodeURIComponent(fields.organization)}&q=${encodeURIComponent(badgeToken)}&lang=${lang}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     });
-  }, [fields.fullName, selected, track, confirmCode, lang, l]);
+  }, [fields.fullName, fields.organization, selected, track, confirmCode, badgeToken, lang, l]);
 
   // ── Success state: Conference Badge ────────────────────────────────────────
   if (status === 'success') {
@@ -164,40 +173,86 @@ export default function RegisterForm() {
           code={confirmCode}
           date={p.date}
           location={p.location}
+          qrValue={badgeToken || undefined}
           lang={lang as 'ar' | 'en' | 'tr'}
           onDownloadPDF={handleDownloadPDF}
           onCopyLink={handleCopyLink}
           copied={copied}
         />
-        {/* The badge is issued either way — it is the proof of registration.
-            What differs is whether the account can be used yet. Saying so here
-            is what stops somebody trying to sign in all evening. */}
-        {pending ? (
-          <div
-            className="max-w-md rounded-2xl px-5 py-4 text-center"
+        {/* The badge above is the pass; this is the other half of what just
+            happened, and it was never said out loud.
+
+            Registration creates an account, and the screen showed a card and a
+            link — so somebody who saved the card had no way to know there was
+            a dashboard, a certificate and a schedule waiting behind an account
+            they did not know they had. */}
+        <div
+          className="w-full max-w-md rounded-2xl p-5"
+          style={{
+            background: isLight ? 'rgba(245,245,247,0.9)' : '#0d0d0f',
+            border: '1px solid var(--mat-liquid-border)',
+          }}
+          dir={isRtl ? 'rtl' : 'ltr'}
+        >
+          <p className="text-[14px] font-bold" style={{ color: 'var(--text-primary)' }}>
+            {pending
+              ? (p.pendingTitle ?? 'طلبك وصل — وبانتظار موافقة فريق التنظيم')
+              : (p.accountReadyTitle ?? 'وأنشأنا لك حساباً في المنصة')}
+          </p>
+
+          <p className="mt-2 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            {pending
+              ? (p.pendingBody
+                ?? 'احتفظ ببطاقتك ورمزها. سيصلك إشعار فور قبول طلبك، وعندها يمكنك الدخول إلى حسابك.')
+              : (p.accountReadyBody
+                ?? 'من حسابك تتابع بطاقتك وجدولك وشهادتك، وتستعيد البطاقة في أي وقت إن فقدتها.')}
+          </p>
+
+          {/* The address they sign in with, said back to them. It is the one
+              detail nobody writes down and everybody needs later. */}
+          <p
+            className="mt-3 rounded-xl px-3 py-2 text-[12.5px]"
             style={{
-              background: 'var(--bg-elevated)',
+              background: 'var(--mat-liquid-bg)',
               border: '1px solid var(--mat-liquid-border)',
+              color: 'var(--text-tertiary)',
             }}
           >
-            <p className="text-[14px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-              {p.pendingTitle ?? 'طلبك وصل — وبانتظار موافقة فريق التنظيم'}
-            </p>
-            <p className="mt-2 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              {p.pendingBody
-                ?? 'احتفظ ببطاقتك ورمزها. سيصلك إشعار فور قبول طلبك، وعندها يمكنك الدخول إلى حسابك.'}
-            </p>
+            {p.accountEmailLabel ?? 'بريد الدخول'}:{' '}
+            <span dir="ltr" style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
+              {fields.email}
+            </span>
+          </p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2.5">
+            {pending ? (
+              // The dashboard would refuse them, so it is not offered. Sign-in
+              // is, because that is the screen that will tell them the day the
+              // committee decides.
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[13.5px] font-semibold"
+                style={{
+                  background: 'var(--mat-liquid-bg)',
+                  border: '1px solid var(--mat-liquid-border)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {p.goToLogin ?? 'صفحة الدخول'}
+                <ArrowRight className={cn('h-4 w-4', isRtl && 'rotate-180')} />
+              </Link>
+            ) : (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[13.5px] font-semibold"
+                style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+              >
+                {p.goToDashboard ?? 'الذهاب إلى لوحتي'}
+                <ArrowRight className={cn('h-4 w-4', isRtl && 'rotate-180')} />
+              </Link>
+            )}
           </div>
-        ) : (
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-[14px] font-semibold"
-            style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
-          >
-            {p.goToDashboard ?? 'الذهاب إلى لوحتي'}
-            <ArrowRight className={cn('h-4 w-4', isRtl && 'rotate-180')} />
-          </Link>
-        )}
+        </div>
       </div>
     );
   }

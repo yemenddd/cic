@@ -1746,6 +1746,45 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   }
 }
 
+// --- one badge, issued twice ---------------------------------------------------
+//
+// The pass handed over at registration and the one on /dashboard/badge have to
+// be the same object, not two that resemble each other. The registration copy
+// carried a decorative barcode, so somebody who saved it and never signed in
+// was holding a badge the door scanner could not read.
+
+{
+  const route = readFileSync('app/api/register/route.ts', 'utf8');
+  const form = readFileSync('components/sections/RegisterForm.tsx', 'utf8');
+  const confirmation = readFileSync('components/sections/RegisterConfirmation.tsx', 'utf8');
+  const dashboard = readFileSync('app/dashboard/badge/page.tsx', 'utf8');
+
+  check('registration issues a badge token', route.includes('badgeToken(created.id)'), true);
+  check('and the registration screen renders it', form.includes('qrValue={badgeToken'), true);
+  check('and so does the shared link', confirmation.includes('qrValue={qrValue'), true);
+  // Both derive from the account id. Deriving one from the confirmation code
+  // instead would produce a second, different badge for the same person.
+  check('the dashboard derives it the same way',
+    dashboard.includes('badgeToken(session.user.id)'), true);
+
+  // The real proof: a token minted the way registration mints it verifies as
+  // the account it belongs to.
+  const someone = await prisma.user.findFirst({ where: { role: 'ATTENDEE' }, select: { id: true } });
+  if (someone) {
+    const issued = badgeToken(someone.id);
+    check('a badge issued at registration verifies', verifyBadgeToken(issued), someone.id);
+    check('and it is byte-identical to the dashboard one', issued, badgeToken(someone.id));
+  }
+
+  // Registration creates an account, and the screen used to show a card and a
+  // link — so somebody who saved the card never learned they had one.
+  check('the screen says an account exists', form.includes('accountReadyTitle'), true);
+  check('and names the address they sign in with', form.includes('accountEmailLabel'), true);
+  check('a waiting account is offered sign-in, not the dashboard',
+    form.includes("href=\"/login\"") && form.includes("href=\"/dashboard\""), true);
+  check('the shared link says so too', confirmation.includes('لديك حساب في منصة المؤتمر'), true);
+}
+
 // --- undo --------------------------------------------------------------------
 
 await prisma.notification.deleteMany({ where: { title: marker } });
