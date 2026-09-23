@@ -14,6 +14,8 @@
 export interface Committee {
   id: string;
   labelAr: string;
+  /** For the English half of a bilingual certificate. */
+  labelEn: string;
   /** What this committee actually does, so a volunteer can choose knowingly. */
   descriptionAr: string;
 }
@@ -21,31 +23,37 @@ export interface Committee {
 export const COMMITTEES: Committee[] = [
   {
     id: 'systems',
+    labelEn: 'Systems & Services',
     labelAr: 'النظام والخدمات',
     descriptionAr: 'تنظيم القاعات والمداخل وخدمة الحضور طوال أيام المؤتمر.',
   },
   {
     id: 'relations',
+    labelEn: 'Relations & Protocol',
     labelAr: 'العلاقات والبروتوكول',
     descriptionAr: 'استقبال الضيوف والمتحدثين ومرافقتهم وترتيب اللقاءات الرسمية.',
   },
   {
     id: 'media',
+    labelEn: 'Media',
     labelAr: 'الإعلام',
     descriptionAr: 'التغطية والتصوير والنشر ومتابعة حسابات المؤتمر.',
   },
   {
     id: 'programs',
+    labelEn: 'Programs',
     labelAr: 'البرامج',
     descriptionAr: 'إدارة الجلسات والورش ومتابعة البرنامج في وقته.',
   },
   {
     id: 'finance',
+    labelEn: 'Finance & Accounts',
     labelAr: 'المالية والحسابات',
     descriptionAr: 'ضبط المصروفات والعُهد والتوثيق المالي.',
   },
   {
     id: 'logistics',
+    labelEn: 'Logistics',
     labelAr: 'اللوجستيك',
     descriptionAr: 'التجهيزات والنقل والمستلزمات وتوزيعها على المواقع.',
   },
@@ -56,6 +64,11 @@ const BY_ID = new Map(COMMITTEES.map((c) => [c.id, c]));
 /** The Arabic name, or '' for an unknown or missing id. */
 export function committeeLabel(id: string | null | undefined): string {
   return (id && BY_ID.get(id)?.labelAr) || '';
+}
+
+/** The English name, for the facing column of the certificate. */
+export function committeeLabelEn(id: string | null | undefined): string {
+  return (id && BY_ID.get(id)?.labelEn) || '';
 }
 
 export function isCommittee(id: string | null | undefined): boolean {

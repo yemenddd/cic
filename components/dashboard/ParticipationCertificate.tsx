@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Download } from 'lucide-react';
 import { downloadCertificatePDF } from '@/lib/download-certificate-pdf';
-import { arabicCountBare, HOUR } from '@/lib/arabic-plural';
+import { certificateWording } from '@/lib/certificate-wording';
+import { committeeLabel, committeeLabelEn } from '@/lib/committees';
 
 /* A4 landscape proportions (297 × 210 mm → 1.414). Fixed pixel dimensions so
    the rasterised capture is deterministic; the on-screen copy is scaled down
@@ -31,10 +32,14 @@ export interface ParticipationCertificateProps {
   name: string;
   categoryId: string;
   categoryLabel: string;
+  /** The participant's path, canonical Arabic. */
   track?: string;
   code: string;
+  /** The conference dates, in each language the sheet prints. */
   date: string;
+  dateEn: string;
   location: string;
+  locationEn: string;
   /** Registration date, already formatted as a plain Arabic string server-side. */
   issuedAt: string;
   /**
@@ -52,45 +57,14 @@ export interface ParticipationCertificateProps {
    * rule exists to prevent.
    */
   preview?: boolean;
-  /**
-   * Hours on the volunteer rota, summed server-side.
-   *
-   * Only meaningful for the volunteer tier, whose certificate is the one that
-   * has to say how much work it attests to.
-   */
+  /** Hours on the volunteer rota, summed server-side. */
   volunteerHours?: number;
-}
-
-function wording(
-  categoryId: string,
-  categoryLabel: string,
-  date: string,
-  location: string,
-  volunteerHours?: number,
-) {
-  const isVolunteer = categoryId === 'volunteer';
-
-  // The hours are what turns "شهادة تطوع معتمدة" from a title into a document
-  // that says something — an employer or a university reads the number, not
-  // the adjective. Stated only when there are hours on the rota to state:
-  // a volunteer who worked no recorded shift gets the sentence without a
-  // figure rather than a certificate claiming zero.
-  //
-  // Counted through the shared helper: Arabic has four forms, and "2 ساعتين"
-  // — which is what writing the number in by hand produces — carries the two
-  // twice.
-  const service = volunteerHours && volunteerHours > 0
-    ? ` بواقع ${arabicCountBare(volunteerHours, HOUR)} من العمل التنظيمي،`
-    : '';
-
-  return {
-    title: isVolunteer ? 'شهادة تطوع' : 'شهادة مشاركة',
-    titleEn: isVolunteer ? 'CERTIFICATE OF VOLUNTEERING' : 'CERTIFICATE OF PARTICIPATION',
-    body: isVolunteer
-      ? `قد ساهم ضمن الفريق التطوعي لمؤتمر الإبداع والابتكار 2026، المنعقد يومي ${date} في ${location}،${service} وأدّى مهامه التنظيمية بالتزام وتفانٍ يستحقان التقدير.`
-      : `قد شارك في فعاليات مؤتمر الإبداع والابتكار 2026، المنعقد يومي ${date} في ${location}، بصفة ${categoryLabel || 'زائر'}.`,
-    kindLabel: isVolunteer ? 'صفة التطوع' : 'صفة المشاركة',
-  };
+  /** The volunteer's committee id — resolved to both languages here. */
+  committee?: string | null;
+  /** The title of the work they presented, when exactly one was approved. */
+  projectTitle?: string | null;
+  projectTitleEn?: string | null;
+  approvedProjects?: number;
 }
 
 /** Small L-shaped ornament pinned to one corner of the inner frame. */
@@ -125,10 +99,25 @@ function Flourish({ width = 300 }: { width?: number }) {
 }
 
 export default function ParticipationCertificate({
-  name, categoryId, categoryLabel, track, code, date, location, issuedAt, preview = false,
-  volunteerHours,
+  name, categoryId, categoryLabel, track, code, date, dateEn, location, locationEn,
+  issuedAt, preview = false, volunteerHours, committee,
+  projectTitle, projectTitleEn, approvedProjects,
 }: ParticipationCertificateProps) {
-  const w = wording(categoryId, categoryLabel, date, location, volunteerHours);
+  const w = certificateWording({
+    categoryId,
+    categoryLabel,
+    track,
+    committeeAr: committeeLabel(committee),
+    committeeEn: committeeLabelEn(committee),
+    volunteerHours,
+    projectTitle,
+    projectTitleEn,
+    approvedProjects,
+    dateAr: date,
+    dateEn,
+    locationAr: location,
+    locationEn,
+  });
 
   // Scale the on-screen copy to fit narrow viewports. The transform lives on a
   // wrapper, never on #cic-certificate, so the capture stays at full size.
@@ -196,80 +185,151 @@ export default function ParticipationCertificate({
                 <CornerMark corner="bl" />
                 <CornerMark corner="br" />
 
-                {/* ── Header: logo + conference line ── */}
+                {/* ── Header: logo, and the conference named in both ── */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/images/logos/logo.png"
                   alt="CIC"
-                  style={{ height: 62, width: 'auto', objectFit: 'contain', marginBottom: 10 }}
+                  style={{ height: 50, width: 'auto', objectFit: 'contain', marginBottom: 7 }}
                 />
-                <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: INK_SOFT, letterSpacing: '0.01em' }}>
-                  مؤتمر الإبداع والابتكار الرابع
-                </p>
+                <div
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    gap: 14, width: '100%',
+                  }}
+                >
+                  <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600, color: INK_SOFT }}>
+                    مؤتمر الإبداع والابتكار الرابع
+                  </p>
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: GOLD, flexShrink: 0 }} />
+                  <p dir="ltr" style={{ margin: 0, fontSize: 12, fontWeight: 600, color: INK_SOFT }}>
+                    Fourth Creativity &amp; Innovation Conference
+                  </p>
+                </div>
                 <p
                   dir="ltr"
                   style={{
-                    margin: '3px 0 0', fontSize: 10.5, fontWeight: 600, color: GOLD,
+                    margin: '3px 0 0', fontSize: 9.5, fontWeight: 600, color: GOLD,
                     letterSpacing: '0.34em', textTransform: 'uppercase',
                   }}
                 >
                   CIC 2026 · Istanbul
                 </p>
 
-                {/* ── Title ── */}
-                <h1 style={{ margin: '20px 0 0', fontSize: 50, fontWeight: 700, lineHeight: 1.15, color: INK }}>
-                  {w.title}
-                </h1>
-                <p
-                  dir="ltr"
+                {/* ── Titles, facing each other ── */}
+                <div
                   style={{
-                    margin: '7px 0 14px', fontSize: 10, fontWeight: 600, color: INK_SOFT,
-                    letterSpacing: '0.3em',
+                    display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+                    width: '100%', marginTop: 14, gap: 24,
                   }}
                 >
-                  {w.titleEn}
-                </p>
-                <Flourish width={330} />
+                  <h1 style={{ margin: 0, fontSize: 38, fontWeight: 700, lineHeight: 1.15, color: INK, textAlign: 'right' }}>
+                    {w.titleAr}
+                  </h1>
+                  <h2
+                    dir="ltr"
+                    style={{
+                      margin: 0, fontSize: 19, fontWeight: 700, lineHeight: 1.2, color: INK,
+                      textAlign: 'left', letterSpacing: '0.06em', textTransform: 'uppercase',
+                    }}
+                  >
+                    {w.titleEn}
+                  </h2>
+                </div>
 
-                {/* ── Citation ── */}
-                <p style={{ margin: '22px 0 0', fontSize: 15, color: INK_SOFT }}>
-                  تشهد اللجنة المنظمة للمؤتمر بأنّ
-                </p>
+                <div style={{ width: '100%', marginTop: 8 }}>
+                  <Flourish width={CERT_W - 220} />
+                </div>
+
+                {/* ── The name, shared by both halves ──
+                    One person, one name, printed once and centred: splitting it
+                    would mean transliterating it, and a transliteration nobody
+                    checked is a different person as far as a registrar is
+                    concerned. */}
+                <div
+                  style={{
+                    display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+                    width: '100%', marginTop: 14, gap: 24,
+                  }}
+                >
+                  <p style={{ margin: 0, fontSize: 12.5, color: INK_SOFT, textAlign: 'right' }}>
+                    {w.leadAr}
+                  </p>
+                  <p dir="ltr" style={{ margin: 0, fontSize: 11.5, color: INK_SOFT, textAlign: 'left' }}>
+                    {w.leadEn}
+                  </p>
+                </div>
 
                 <p
                   style={{
-                    margin: '10px 0 0',
-                    fontSize: 38,
+                    margin: '6px 0 0',
+                    fontSize: 32,
                     fontWeight: 700,
                     lineHeight: 1.25,
                     color: INK,
-                    maxWidth: 800,
+                    maxWidth: 820,
                     borderBottom: `1px solid ${GOLD_SOFT}`,
-                    paddingBottom: 8,
+                    paddingBottom: 7,
                   }}
                 >
                   {name || '—'}
                 </p>
 
-                <p style={{ margin: '16px 0 0', fontSize: 16, lineHeight: 1.95, color: INK_SOFT, maxWidth: 760 }}>
-                  {w.body}
-                </p>
+                {/* ── The two citations, Arabic on the right, English on the
+                    left, with a rule between them. A bilingual certificate is
+                    read by two different people and neither should have to
+                    read past the other's language to find their own. ── */}
+                <div
+                  style={{
+                    display: 'flex',
+                    width: '100%',
+                    marginTop: 14,
+                    gap: 26,
+                    alignItems: 'stretch',
+                    flexGrow: 1,
+                  }}
+                >
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                    <p
+                      style={{
+                        margin: 0, width: '100%', fontSize: 13.5, lineHeight: 1.95,
+                        color: INK_SOFT, textAlign: 'right',
+                      }}
+                    >
+                      {w.bodyAr}
+                    </p>
+                  </div>
 
-                {/* ── Category / track chips ── */}
-                <div style={{ display: 'flex', gap: 10, marginTop: 14, justifyContent: 'center' }}>
+                  <div style={{ width: 1, background: GOLD_SOFT, opacity: 0.8, flexShrink: 0 }} />
+
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                    <p
+                      dir="ltr"
+                      style={{
+                        margin: 0, width: '100%', fontSize: 12.5, lineHeight: 1.85,
+                        color: INK_SOFT, textAlign: 'left',
+                      }}
+                    >
+                      {w.bodyEn}
+                    </p>
+                  </div>
+                </div>
+
+                {/* ── Category / path chips, labelled in both ── */}
+                <div style={{ display: 'flex', gap: 9, marginTop: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
                   <span
                     style={{
-                      padding: '5px 16px', borderRadius: 999, fontSize: 12.5, fontWeight: 600,
+                      padding: '4px 14px', borderRadius: 999, fontSize: 11.5, fontWeight: 600,
                       color: INK, background: 'rgba(168,134,60,0.10)', border: `1px solid ${GOLD_SOFT}`,
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {w.kindLabel}: {categoryLabel || '—'}
+                    {w.kindAr}: {categoryLabel || '—'} · {w.kindEn}
                   </span>
                   {track && (
                     <span
                       style={{
-                        padding: '5px 16px', borderRadius: 999, fontSize: 12.5, fontWeight: 600,
+                        padding: '4px 14px', borderRadius: 999, fontSize: 11.5, fontWeight: 600,
                         color: INK, background: 'rgba(22,35,63,0.05)', border: '1px solid rgba(22,35,63,0.14)',
                         whiteSpace: 'nowrap',
                       }}
@@ -279,37 +339,39 @@ export default function ParticipationCertificate({
                   )}
                 </div>
 
-                {/* ── Footer: code · seal · signature ── */}
+                {/* ── Footer: code · seal · signature, labelled in both ── */}
                 <div
                   style={{
-                    marginTop: 'auto',
+                    marginTop: 12,
                     width: '100%',
                     display: 'flex',
                     alignItems: 'flex-end',
                     justifyContent: 'space-between',
-                    gap: 20,
+                    gap: 18,
+                    paddingTop: 10,
+                    borderTop: `1px solid ${GOLD_SOFT}`,
                   }}
                 >
                   {/* Verification code (start side in RTL = right) */}
-                  <div style={{ textAlign: 'right', minWidth: 210 }}>
+                  <div style={{ textAlign: 'right', minWidth: 200 }}>
                     <p
                       style={{
-                        margin: 0, fontSize: 9.5, fontWeight: 700, color: GOLD,
-                        letterSpacing: '0.2em',
+                        margin: 0, fontSize: 9, fontWeight: 700, color: GOLD,
+                        letterSpacing: '0.16em',
                       }}
                     >
-                      رمز التحقق
+                      رمز التحقق · VERIFICATION CODE
                     </p>
                     <p
                       dir="ltr"
                       style={{
-                        margin: '5px 0 0', fontFamily: 'monospace', fontSize: 16, fontWeight: 700,
+                        margin: '4px 0 0', fontFamily: 'monospace', fontSize: 15, fontWeight: 700,
                         color: INK, letterSpacing: '0.16em', textAlign: 'right',
                       }}
                     >
                       {code || '—'}
                     </p>
-                    <p style={{ margin: '5px 0 0', fontSize: 10.5, color: INK_SOFT }}>
+                    <p style={{ margin: '4px 0 0', fontSize: 9.5, color: INK_SOFT }}>
                       تاريخ التسجيل: {issuedAt}
                     </p>
                   </div>
@@ -317,7 +379,7 @@ export default function ParticipationCertificate({
                   {/* Seal */}
                   <div
                     style={{
-                      width: 108, height: 108, borderRadius: '50%', flexShrink: 0,
+                      width: 96, height: 96, borderRadius: '50%', flexShrink: 0,
                       border: `2px solid ${GOLD}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: 'rgba(168,134,60,0.05)',
@@ -325,37 +387,37 @@ export default function ParticipationCertificate({
                   >
                     <div
                       style={{
-                        width: 92, height: 92, borderRadius: '50%',
+                        width: 82, height: 82, borderRadius: '50%',
                         border: `1px dashed ${GOLD_SOFT}`,
                         display: 'flex', flexDirection: 'column',
                         alignItems: 'center', justifyContent: 'center', gap: 1,
                       }}
                     >
-                      <span dir="ltr" style={{ fontSize: 17, fontWeight: 700, letterSpacing: '0.12em', color: INK }}>
+                      <span dir="ltr" style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.12em', color: INK }}>
                         CIC
                       </span>
-                      <span style={{ fontSize: 9, fontWeight: 600, color: GOLD, letterSpacing: '0.06em' }}>
+                      <span style={{ fontSize: 8, fontWeight: 600, color: GOLD, letterSpacing: '0.04em' }}>
                         ختم المؤتمر
                       </span>
-                      <span dir="ltr" style={{ fontSize: 10.5, fontWeight: 600, color: INK_SOFT, letterSpacing: '0.1em' }}>
+                      <span dir="ltr" style={{ fontSize: 9.5, fontWeight: 600, color: INK_SOFT, letterSpacing: '0.1em' }}>
                         2026
                       </span>
                     </div>
                   </div>
 
                   {/* Signature */}
-                  <div style={{ textAlign: 'left', minWidth: 210 }}>
+                  <div style={{ textAlign: 'left', minWidth: 200 }}>
                     <p
                       style={{
-                        margin: 0, fontSize: 20, fontWeight: 700, color: INK,
+                        margin: 0, fontSize: 17, fontWeight: 700, color: INK,
                         fontStyle: 'italic', textAlign: 'center',
                       }}
                     >
                       اللجنة المنظمة
                     </p>
-                    <div style={{ height: 1, background: INK_SOFT, opacity: 0.45, margin: '6px 0 6px' }} />
-                    <p style={{ margin: 0, fontSize: 10.5, color: INK_SOFT, textAlign: 'center' }}>
-                      التوقيع المعتمد · مؤتمر الإبداع والابتكار
+                    <div style={{ height: 1, background: INK_SOFT, opacity: 0.45, margin: '5px 0' }} />
+                    <p dir="ltr" style={{ margin: 0, fontSize: 9.5, color: INK_SOFT, textAlign: 'center' }}>
+                      The Organizing Committee · CIC 2026
                     </p>
                   </div>
                 </div>

@@ -1,6 +1,14 @@
 // Certificate export — same machinery as `download-badge-pdf.ts` (rasterise the
-// DOM node with html-to-image, then drop the PNG onto a jsPDF page), but with
+// DOM node with html-to-image, then drop the image onto a jsPDF page), but with
 // its own DOM id and an A4 *landscape* page, since a certificate is wide.
+//
+// JPEG rather than PNG. A lossless capture of a parchment with two radial
+// gradients came out at 18 MB, which is a certificate that Gmail refuses to
+// attach and half the job portals refuse to accept — on a document whose
+// entire purpose is being sent to somebody. At quality 0.94 and three times
+// the pixels, the artefacts are invisible on flat colour and type, and the
+// file lands around a tenth of the size.
+const JPEG_QUALITY = 0.94;
 export async function downloadCertificatePDF(name = 'CIC-Certificate') {
   const card = document.getElementById('cic-certificate');
   if (!card) return;
@@ -17,25 +25,26 @@ export async function downloadCertificatePDF(name = 'CIC-Certificate') {
     // rasterised text falls back to a system face mid-capture.
     await document.fonts.ready;
 
-    const { toPng } = await import('html-to-image');
+    const { toJpeg } = await import('html-to-image');
 
     // Small delay to ensure Framer Motion animations have settled
     await new Promise(r => setTimeout(r, 80));
 
     // Capture at high resolution with white background
-    const dataUrl = await toPng(card, {
-      quality: 1,
+    const dataUrl = await toJpeg(card, {
+      quality: JPEG_QUALITY,
       pixelRatio: 3,
       backgroundColor: '#ffffff',
       filter: node => !(node as HTMLElement).classList?.contains('badge-no-print'),
     });
 
     if (isIOS) {
-      // iOS Safari: download as PNG via <a download> — works natively on iOS 13+
-      // PDF blob URLs show blank pages on iOS Safari, PNG is the reliable option
+      // iOS Safari: download as an image via <a download> — works natively on
+      // iOS 13+. PDF blob URLs show blank pages there, so an image is the
+      // reliable option.
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.download = `${safeName}-CIC2026.png`;
+      a.download = `${safeName}-CIC2026.jpg`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -68,7 +77,7 @@ export async function downloadCertificatePDF(name = 'CIC-Certificate') {
       const x = (A4_W - imgW) / 2;
       const y = (A4_H - imgH) / 2;
 
-      pdf.addImage(dataUrl, 'PNG', x, y, imgW, imgH);
+      pdf.addImage(dataUrl, 'JPEG', x, y, imgW, imgH);
       pdf.save(`${safeName}-CIC2026.pdf`);
     }
   } catch (err) {

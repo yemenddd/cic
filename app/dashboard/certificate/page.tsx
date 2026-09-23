@@ -63,6 +63,7 @@ export default async function CertificatePage() {
       name: true,
       category: true,
       track: true,
+      committee: true,
       confirmationCode: true,
       createdAt: true,
     },
@@ -94,6 +95,17 @@ export default async function CertificatePage() {
         ).map((a) => a.shift),
       ).hours
     : 0;
+
+  // What a participant actually presented. Only the works the committee
+  // accepted: a certificate that named a rejected submission would be the
+  // platform vouching for something the committee declined.
+  const approved = user.category === 'participant'
+    ? await prisma.projectSubmission.findMany({
+        where: { userId: session.user.id, status: 'APPROVED' },
+        orderBy: { submittedAt: 'asc' },
+        select: { titleAr: true, titleEn: true },
+      })
+    : [];
 
   /**
    * The certificate states in the past tense that its holder attended, and
@@ -198,8 +210,14 @@ export default async function CertificatePage() {
             track={user.track ?? ''}
             code={user.confirmationCode ?? '—'}
             volunteerHours={volunteerHours}
+            committee={user.committee}
+            projectTitle={approved[0]?.titleAr ?? null}
+            projectTitleEn={approved[0]?.titleEn ?? null}
+            approvedProjects={approved.length}
             date={dict.ar.registerPage.date}
+            dateEn={dict.en.registerPage.date}
             location={dict.ar.registerPage.location}
+            locationEn={dict.en.registerPage.location}
             issuedAt={issuedAt}
           />
         </section>
@@ -317,8 +335,14 @@ export default async function CertificatePage() {
           track={user.track ?? ''}
           code={user.confirmationCode ?? '—'}
           volunteerHours={volunteerHours}
+          committee={user.committee}
+          projectTitle={approved[0]?.titleAr ?? null}
+          projectTitleEn={approved[0]?.titleEn ?? null}
+          approvedProjects={approved.length}
           date={dict.ar.registerPage.date}
+          dateEn={dict.en.registerPage.date}
           location={dict.ar.registerPage.location}
+          locationEn={dict.en.registerPage.location}
           issuedAt={issuedAt}
         />
       </div>

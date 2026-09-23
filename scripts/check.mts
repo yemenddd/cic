@@ -206,7 +206,6 @@ const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' }, select: { 
 if (!admin) throw new Error('no admin in the database to attribute the send to');
 
 const expected = await prisma.user.count({ where: { role: 'ATTENDEE', category: 'visitor' } });
-const before = await prisma.notification.count();
 
 const marker = `[check ${Date.now()}]`;
 const result = await deliverAnnouncement(admin.id, {
@@ -220,7 +219,11 @@ check('delivered to exactly the visitor tier', result, { sent: expected });
 
 const created = await prisma.notification.findMany({ where: { title: marker } });
 check('one notification per recipient', created.length, expected);
-check('no other feed was touched', await prisma.notification.count(), before + expected);
+// Counted among the rows this run wrote, rather than against a snapshot of
+// the whole table: the platform is live, and a real registration approved by
+// an organizer mid-run would otherwise read as a leak from this announcement.
+check('no other feed was touched',
+  await prisma.notification.count({ where: { title: marker } }), expected);
 
 const record = await prisma.announcement.findFirst({ where: { title: marker } });
 check('an audit record was written', record?.recipients, expected);
@@ -1638,11 +1641,124 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('a submission may carry a handful of files', MAX_FILES_PER_SUBMISSION, 5);
 }
 
+// --- what each certificate actually says ---------------------------------------
+//
+// Three categories were sharing two sentences: a volunteer and a visitor were
+// both told they "شارك في فعاليات المؤتمر", which is true of anybody who walked
+// through the door. These are printed, signed and shown to employers, so each
+// one has to claim what that person did and nothing more.
+
+{
+  const { certificateWording } = await import('../lib/certificate-wording');
+  const { committeeLabel, committeeLabelEn } = await import('../lib/committees');
+
+  const base = {
+    categoryLabel: 'متطوع',
+    dateAr: '2-3 أكتوبر 2026',
+    dateEn: 'Oct 2–3, 2026',
+    locationAr: 'إسطنبول - تركيا',
+    locationEn: 'Istanbul, Turkey',
+  };
+
+  const volunteer = certificateWording({
+    ...base,
+    categoryId: 'volunteer',
+    committeeAr: committeeLabel('media'),
+    committeeEn: committeeLabelEn('media'),
+    volunteerHours: 7,
+  });
+  check('a volunteer gets a volunteering certificate', volunteer.titleAr, 'شهادة تطوّع');
+  check('and it says so in English', volunteer.titleEn, 'Certificate of Volunteering');
+  check('it names their committee', volunteer.bodyAr.includes('لجنة الإعلام'), true);
+  check('in English too', volunteer.bodyEn.includes('Media committee'), true);
+  // The hours are the whole point: an employer reads the number, not the
+  // adjective in the title.
+  check('it states the hours', volunteer.bodyAr.includes('7 ساعات'), true);
+  check('in English too', volunteer.bodyEn.includes('7 hours'), true);
+  check('one hour is singular in English',
+    certificateWording({ ...base, categoryId: 'volunteer', volunteerHours: 1 })
+      .bodyEn.includes('1 hour of'), true);
+  check('two hours carries the Arabic dual',
+    certificateWording({ ...base, categoryId: 'volunteer', volunteerHours: 2 })
+      .bodyAr.includes('ساعتين'), true);
+  // A volunteer with no recorded shift gets the sentence without a figure
+  // rather than a certificate claiming zero hours.
+  check('no recorded hours claims no hours',
+    certificateWording({ ...base, categoryId: 'volunteer', volunteerHours: 0 }).bodyAr.includes('بواقع'),
+    false);
+  check('and no committee claims no committee',
+    certificateWording({ ...base, categoryId: 'volunteer' }).bodyAr.includes('لجنة'), false);
+
+  const inventor = certificateWording({
+    ...base,
+    categoryId: 'participant',
+    categoryLabel: 'مشارك',
+    track: 'مسار الاختراع والابتكار',
+    projectTitle: 'ذراع آلية للإنقاذ',
+    approvedProjects: 1,
+  });
+  check('a participant gets a participation certificate', inventor.titleAr, 'شهادة مشاركة');
+  check('the invention path says invention', inventor.bodyAr.includes('ابتكاره'), true);
+  check('and names the work', inventor.bodyAr.includes('«ذراع آلية للإنقاذ»'), true);
+  check('in English too', inventor.bodyEn.includes('Invention & Innovation Path'), true);
+
+  const researcher = certificateWording({
+    ...base,
+    categoryId: 'participant',
+    categoryLabel: 'مشارك',
+    track: 'مسار البحث العلمي',
+    approvedProjects: 0,
+  });
+  // The two paths are judged differently and must not read identically: a
+  // paper is not an invention, and a certificate saying otherwise is wrong
+  // about the one thing it exists to record.
+  check('the research path says research', researcher.bodyAr.includes('بحثه'), true);
+  check('and not invention', researcher.bodyAr.includes('ابتكاره'), false);
+  check('in English too', researcher.bodyEn.includes('their research'), true);
+  // Nothing approved: no work is named rather than an empty pair of quotes.
+  check('an unapproved participant names no work', researcher.bodyAr.includes('«'), false);
+  check('several approved works are not listed one by one',
+    certificateWording({ ...base, categoryId: 'participant', track: 'مسار البحث العلمي', approvedProjects: 3, projectTitle: 'أ' })
+      .bodyAr.includes('بأعماله المقبولة'), true);
+
+  const visitor = certificateWording({ ...base, categoryId: 'visitor', categoryLabel: 'زائر' });
+  check('a visitor gets an attendance certificate', visitor.titleAr, 'شهادة حضور');
+  check('and it says attendance in English', visitor.titleEn, 'Certificate of Attendance');
+  check('it claims attendance', visitor.bodyAr.includes('حضر فعاليات'), true);
+  // Claiming participation for somebody who came to watch is what makes every
+  // other certificate here worth less.
+  check('and claims nothing more', visitor.bodyAr.includes('شارك في'), false);
+  check('nor in English', visitor.bodyEn.includes('participated'), false);
+
+  // An account with no category at all still has to print something true.
+  const unknown = certificateWording({ ...base, categoryId: '', categoryLabel: '' });
+  check('an unknown category falls back to attendance', unknown.titleAr, 'شهادة حضور');
+
+  // Both halves of one sheet, always: a document with an empty English column
+  // is a document somebody has to explain.
+  for (const [label, w] of [['volunteer', volunteer], ['participant', inventor], ['visitor', visitor]] as const) {
+    check(`the ${label} sheet has both languages`,
+      w.bodyAr.length > 40 && w.bodyEn.length > 40 && w.titleAr !== '' && w.titleEn !== '', true);
+    check(`the ${label} date and place appear in both`,
+      w.bodyAr.includes(base.dateAr) && w.bodyEn.includes(base.dateEn)
+        && w.bodyAr.includes(base.locationAr) && w.bodyEn.includes(base.locationEn),
+      true);
+  }
+}
+
 // --- undo --------------------------------------------------------------------
 
 await prisma.notification.deleteMany({ where: { title: marker } });
 await prisma.announcement.deleteMany({ where: { title: marker } });
-check('test data removed', await prisma.notification.count(), before);
+// Counted by marker, not as a global total.
+//
+// This compared the whole Notification table before and after, which held
+// while the platform was empty and stopped the moment it went live: a real
+// registration approved by an organizer mid-run is a row this script did not
+// write and must not be blamed for. What has to be true is that nothing
+// *carrying the marker* survives.
+check('test data removed', await prisma.notification.count({ where: { title: marker } }), 0);
+check('and no announcement either', await prisma.announcement.count({ where: { title: marker } }), 0);
 
 await prisma.$disconnect();
 console.log(failures === 0 ? '\nall checks passed' : `\n${failures} CHECK(S) FAILED`);
