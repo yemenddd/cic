@@ -144,22 +144,21 @@ export async function POST(req: Request) {
         ok: true,
         code: confirmationCode,
         pending: needsApproval(fields.category),
-        // The badge the platform would show them, issued here as well — but
-        // only to an account that has actually been admitted.
+        // The real badge — the one they will actually be admitted with.
         //
-        // Registration already handed over a pass, and it carried a decorative
-        // barcode rather than the QR the door scanner reads, so somebody who
-        // saved it and never signed in held a badge that does not work. This
-        // is the same token /dashboard/badge derives, from the same account id,
-        // so the two are one badge rather than two that resemble each other.
+        // Issued to everybody, including an application still waiting on the
+        // committee. That is safe because the token is not a key: it is an
+        // identifier, consumed in exactly one place (lib/attendance-record.ts),
+        // and the door checks the account's admission against the database
+        // before counting anybody. Presenting this before approval is refused
+        // at the gate; the paper itself is not what decides.
         //
-        // Withheld while the committee has not decided: a working QR is an
-        // entry pass, and handing one to an application that is still waiting
-        // would let somebody through the gate on the strength of having filled
-        // in a form. The door checks this too (lib/attendance-record.ts) —
-        // that check is the boundary, and this is simply not issuing a
-        // credential nobody should be carrying yet.
-        badge: needsApproval(fields.category) ? null : badgeToken(created.id),
+        // And because badgeToken is a pure function of the account id, the
+        // card saved at signup becomes valid the moment the committee
+        // approves — no reissue, no second badge, and no need to sign in to
+        // collect one. Plenty of people will register and never open the
+        // platform again; the card in their hand has to be the final one.
+        badge: badgeToken(created.id),
       });
     } catch (err) {
       // P2002 is Prisma's unique-constraint violation. On confirmationCode it

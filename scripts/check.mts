@@ -1852,11 +1852,13 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   const dashboard = readFileSync('app/dashboard/badge/page.tsx', 'utf8');
 
   check('registration issues a badge token', route.includes('badgeToken(created.id)'), true);
-  // But not to an account that has not been admitted: a working QR is an entry
-  // pass, and handing one to an application still waiting would let somebody
-  // through the gate for having filled in a form.
-  check('and withholds it while the committee has not decided',
-    route.includes('needsApproval(fields.category) ? null : badgeToken(created.id)'), true);
+  // To everybody, including an application still waiting. The badge is not a
+  // key — the door checks admission against the database — and because the
+  // token is a pure function of the account id, the card saved at signup
+  // becomes valid the moment the committee approves. Plenty of people register
+  // and never open the platform again; the card in their hand has to be final.
+  check('to everyone, so the card handed over is the final one',
+    route.includes('badge: badgeToken(created.id)'), true);
   check('and the registration screen renders it', form.includes('qrValue={badgeToken'), true);
   check('and so does the shared link', confirmation.includes('qrValue={qrValue'), true);
   // Both derive from the account id. Deriving one from the confirmation code
