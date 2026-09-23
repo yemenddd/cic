@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db/client';
 import { requireAdmin } from '@/lib/auth-guards';
 import { cleanEmail, cleanUrl, SETTINGS_ID } from '@/lib/site-settings';
+import { emailConfigured, isDeliverable, sendEmail } from '@/lib/email';
+import { testEmail } from '@/lib/account-emails';
 
 type ActionResult = { error?: string; success?: string } | void;
 
@@ -78,4 +80,42 @@ export async function saveSiteSettings(
   revalidatePath('/admin/settings');
 
   return { success: 'تم حفظ الإعدادات' };
+}
+
+/**
+ * Prove the mail setup works, by sending one.
+ *
+ * "Is mail configured" and "does mail arrive" are different questions, and only
+ * the second matters. A key can be present and wrong; a from-address can sit on
+ * a domain the provider has never been shown. Both look identical from inside
+ * the platform until something is actually sent — which is why this exists as a
+ * button rather than as a green tick beside an environment variable.
+ *
+ * The result is reported verbatim, including the provider's own refusal, since
+ * that text is what says which DNS record is missing.
+ */
+export async function sendTestEmail(
+  _prev: ActionResult | undefined,
+  formData: FormData,
+): Promise<ActionResult> {
+  const admin = await requireAdmin();
+  if (!admin) return { error: 'غير مصرح لك بتغيير الإعدادات' };
+
+  const to = String(formData.get('testEmail') ?? '').trim();
+  if (!to) return { error: 'اكتب البريد الذي تريد الاختبار عليه' };
+  if (!isDeliverable(to)) return { error: 'هذا العنوان لا يصلح للإرسال إليه' };
+
+  if (!emailConfigured()) {
+    return { error: 'البريد غير مفعّل — أضف RESEND_API_KEY و EMAIL_FROM في إعدادات Vercel' };
+  }
+
+  const result = await sendEmail({ to, ...testEmail({ to, sentBy: admin.email }) });
+
+  if (result.ok) return { success: `أُرسلت رسالة اختبار إلى ${to} — تحقق من الوارد والبريد المزعج` };
+
+  return {
+    error: result.reason === 'rejected'
+      ? `رفض المزوّد الإرسال (${result.detail ?? 'خطأ'}) — غالباً النطاق في EMAIL_FROM غير مُوثَّق في Resend`
+      : 'تعذّر الإرسال',
+  };
 }

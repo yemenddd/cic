@@ -6,6 +6,8 @@ import { getSiteSettings } from '@/lib/site-settings-server';
 import { DEFAULT_SETTINGS } from '@/lib/site-settings';
 import ToggleField from './ToggleField';
 import { saveSiteSettings } from './actions';
+import MailCheck from './MailCheck';
+import { emailConfigured } from '@/lib/email';
 
 export const metadata = {
   title: 'إعدادات الموقع | لوحة CIC',
@@ -99,6 +101,25 @@ export default async function SiteSettingsPage() {
           </p>
         </section>
       </div>
+
+      {/* Its own section, below the site settings, because it is not a site
+          setting: it is a check on a service outside the platform, and its
+          answer changes without anybody touching this page. */}
+      <section
+        className="mt-5 rounded-2xl p-5"
+        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
+      >
+        <header className="mb-4">
+          <h2 className="font-outfit text-[14.5px] font-semibold" style={{ color: 'var(--text-primary)' }}>
+            البريد الصادر
+          </h2>
+          <p className="mt-1 text-[11.5px]" style={{ color: 'var(--text-tertiary)' }}>
+            رسائل قبول ورفض طلبات الانضمام، وروابط استعادة كلمة المرور
+          </p>
+        </header>
+
+        <MailCheck configured={emailConfigured()} from={process.env.EMAIL_FROM ?? ''} />
+      </section>
     </div>
   );
 }

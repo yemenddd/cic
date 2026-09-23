@@ -2027,6 +2027,74 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('and empty retention divides by nothing safely', dayRetention([], checkpoints).returnRate, 0);
 }
 
+// --- mail that leaves the platform ---------------------------------------------
+//
+// The reason a decision reaches anybody. A refusal notification lives inside
+// the account its recipient can no longer open, so the mail is not a courtesy
+// here — it is the only copy.
+
+{
+  const { isDeliverable, sendEmail } = await import('../lib/email');
+  const { approvalEmail, rejectionEmail, testEmail } = await import('../lib/account-emails');
+  const { walkInEmail } = await import('../lib/walk-in');
+
+  check('a real address is deliverable', isDeliverable('someone@example.org'), true);
+  // The door invents an address for everybody it admits. Sending there is a
+  // hard bounce, and enough hard bounces is how a sending domain stops being
+  // trusted by the inbox providers that matter.
+  check('a walk-in address is not', isDeliverable(walkInEmail('CIC-2026-ABC123')), false);
+  check('nor is any reserved TLD', [
+    isDeliverable('x@thing.invalid'),
+    isDeliverable('x@thing.test'),
+    isDeliverable('x@thing.example'),
+    isDeliverable('x@thing.localhost'),
+  ], [false, false, false, false]);
+  check('nor is a non-address', [isDeliverable('nope'), isDeliverable('@x.com'), isDeliverable('x@')], [false, false, false]);
+  check('nor is nothing at all', [isDeliverable(''), isDeliverable(null)], [false, false]);
+
+  // Refused before the configuration is even consulted, so this holds whether
+  // or not a key is present — the platform never tries to mail an address it
+  // made up for somebody who never gave one.
+  const toWalkIn = await sendEmail({
+    to: walkInEmail('CIC-2026-ZZZ999'),
+    subject: 'x',
+    text: 'x',
+  });
+  check('and the sender refuses it outright',
+    toWalkIn.ok === false && toWalkIn.reason, 'undeliverable');
+
+  const approved = approvalEmail({ name: 'ريم الشيباني', categoryLabel: 'مشاركة' });
+  check('an approval greets them by first name', approved.text.startsWith('مرحباً ريم،'), true);
+  check('and names the category they were admitted as', approved.text.includes('بصفة مشاركة'), true);
+  // Somebody told they are in needs to be told where to go next, or the mail
+  // generates the question it was meant to answer.
+  check('and links to sign-in', approved.text.includes('/login'), true);
+  check('a nameless account still gets a greeting',
+    approvalEmail({ name: null, categoryLabel: 'زائر' }).text.startsWith('مرحباً،'), true);
+
+  const refused = rejectionEmail({ name: 'خالد', reason: 'الفئة لا تناسب طلبك' });
+  // The reason is the message: a refusal without one produces a reply asking
+  // why, which somebody then answers by hand.
+  check('a refusal carries the committee reason', refused.text.includes('الفئة لا تناسب طلبك'), true);
+  check('and invites a reply rather than ending the conversation',
+    refused.text.includes('تواصل معنا'), true);
+  check('and never says the word rejected at them',
+    refused.subject.includes('رفض'), false);
+
+  check('a test message says what it proves', testEmail({ to: 'a@b.com', sentBy: 'c@d.com' })
+    .text.includes('إعدادات البريد سليمة'), true);
+
+  // Both decisions must actually attempt a send — this is the wiring that was
+  // missing, and it is invisible from the panel when it regresses.
+  const approvals = readFileSync('app/admin/(panel)/approvals/actions.ts', 'utf8');
+  check('approving sends mail', approvals.includes('approvalEmail('), true);
+  check('refusing sends mail', approvals.includes('rejectionEmail('), true);
+  // Sent after the write, so a slow provider cannot cost somebody their
+  // decision.
+  check('and the decision is committed first',
+    approvals.indexOf('$transaction') < approvals.indexOf('sendEmail('), true);
+}
+
 // --- undo --------------------------------------------------------------------
 
 await prisma.notification.deleteMany({ where: { title: marker } });
