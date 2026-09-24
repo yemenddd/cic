@@ -25,7 +25,19 @@ const CATEGORY_ICONS: Record<string, typeof Award> = {
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-export default function RegisterForm() {
+/**
+ * The registration form.
+ *
+ * `standalone` is for the invitation link — a page sent directly to people,
+ * with no way from it into the rest of the site. Every outbound link is
+ * withheld in that mode rather than restyled: a "home" button that lands
+ * somewhere the recipient was not invited to is the whole thing the separate
+ * link exists to avoid.
+ *
+ * The form itself, the validation and the route behind it are identical. Only
+ * the ways out differ.
+ */
+export default function RegisterForm({ standalone = false }: { standalone?: boolean }) {
   const { tx, lang, dir } = useLang();
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -183,6 +195,7 @@ export default function RegisterForm() {
           date={p.date}
           location={p.location}
           qrValue={badgeToken || undefined}
+          backHref={standalone ? null : '/'}
           lang={lang as 'ar' | 'en' | 'tr'}
           onDownloadPDF={handleDownloadPDF}
           onCopyLink={handleCopyLink}
@@ -294,7 +307,26 @@ export default function RegisterForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="mx-auto max-w-5xl px-5 md:px-8 pt-32 pb-24">
+      <form
+        onSubmit={handleSubmit}
+        className={cn('mx-auto max-w-5xl px-5 md:px-8 pb-24', standalone ? 'pt-12' : 'pt-32')}
+      >
+        {/* The conference's mark, and deliberately not a link.
+        
+            On the invitation link there is no site header above this, and a
+            form with no mark on it reads like something that should not be
+            filled in. It says who is asking without offering a way anywhere. */}
+        {standalone && (
+          <div className="mb-8 flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/logos/logo.png"
+              alt="مؤتمر الإبداع والابتكار"
+              className="h-14 w-auto object-contain md:h-16"
+            />
+          </div>
+        )}
+
         {/* Page heading */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -848,6 +880,7 @@ export default function RegisterForm() {
 
           {/* Footer row: cancel + privacy note */}
           <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
+            {!standalone && (
             <Link
               href="/"
               className="flex items-center gap-1 text-[13px] font-medium transition-colors"
@@ -858,6 +891,7 @@ export default function RegisterForm() {
               <ArrowRight className="h-3.5 w-3.5 rotate-180" style={{ flexShrink: 0 }} />
               {p.btnCancel}
             </Link>
+            )}
           </div>
         </motion.div>
 

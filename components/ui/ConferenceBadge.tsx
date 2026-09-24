@@ -20,7 +20,13 @@ export interface BadgeProps {
   onCopyLink:    () => void;
   copied:        boolean;
   /** Where the secondary "back" button goes. Defaults to the public homepage. */
-  backHref?: string;
+  /**
+   * Where the "home" button goes. Pass null to leave it out altogether — the
+   * standalone registration link has nowhere to send anybody, and a button
+   * labelled "الرئيسية" that lands on a site they were not given is worse than
+   * no button.
+   */
+  backHref?: string | null;
   backLabel?: string;
   /** Overrides the copy button's label when it copies something other than a link. */
   copyLabel?: string;
@@ -378,6 +384,7 @@ export default function ConferenceBadge({
               </motion.button>
             </AnimatePresence>
 
+            {backHref !== null && (
             <Link
               href={backHref}
               style={{
@@ -393,6 +400,7 @@ export default function ConferenceBadge({
               <ArrowRight size={14} style={{ transform: isRtl ? 'scaleX(-1)' : undefined }} />
               {lbl.backBtn}
             </Link>
+            )}
           </div>
         </div>
 
