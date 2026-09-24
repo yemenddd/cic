@@ -32,6 +32,31 @@ export function walkInEmail(confirmationCode: string): string {
   return `${confirmationCode.toLowerCase()}@${WALK_IN_EMAIL_DOMAIN}`;
 }
 
+/**
+ * The address somebody gets when they registered themselves but gave none.
+ *
+ * The email field is optional: plenty of people who come to a conference do
+ * not use email, and requiring one turned them away at the first field. The
+ * column is still unique and non-null, so a placeholder is generated — on the
+ * same reserved `.invalid` domain, for the same reason. `isDeliverable` in
+ * lib/email.ts refuses it, so nothing ever tries to write to it.
+ *
+ * Kept distinct from the walk-in domain because the two are different facts:
+ * one person filled in the form and skipped a field, the other never saw the
+ * form at all.
+ */
+export const NO_EMAIL_DOMAIN = 'no-email.cic.invalid';
+
+export function placeholderEmail(confirmationCode: string): string {
+  return `${confirmationCode.toLowerCase()}@${NO_EMAIL_DOMAIN}`;
+}
+
+/** Did this person actually give us an address? */
+export function hasRealEmail(email: string | null | undefined): boolean {
+  const value = email?.toLowerCase() ?? '';
+  return Boolean(value) && !value.endsWith(`@${WALK_IN_EMAIL_DOMAIN}`) && !value.endsWith(`@${NO_EMAIL_DOMAIN}`);
+}
+
 /** Is this an address the platform invented rather than one a person gave? */
 export function isWalkInEmail(email: string | null | undefined): boolean {
   return Boolean(email?.toLowerCase().endsWith(`@${WALK_IN_EMAIL_DOMAIN}`));

@@ -23,4 +23,18 @@
  * length is what costs an attacker time, and a rule that asks for one capital
  * and one digit mostly produces `Password1`.
  */
-export const MIN_PASSWORD_LENGTH = 10;
+/**
+ * Six characters.
+ *
+ * Lowered from ten deliberately, and it is a real trade. What buys it back is
+ * that guessing is rate-limited rather than free: four wrong attempts on an
+ * account cost nothing, the fifth locks it, and each further attempt doubles
+ * the wait to a ceiling of fifteen minutes — so an online attack gets a few
+ * hundred tries a day against one account, not a few billion.
+ *
+ * The reason is the audience. A conference whose attendees include people who
+ * do not use a password manager, typing on a phone, at a desk, with a queue
+ * behind them: a ten-character minimum there does not produce stronger
+ * passwords, it produces written-down ones and abandoned registrations.
+ */
+export const MIN_PASSWORD_LENGTH = 6;

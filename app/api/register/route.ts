@@ -9,12 +9,18 @@ import {
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-rules';
 import { initialStatus, needsApproval } from '@/lib/account-status';
 import { badgeToken } from '@/lib/badge-token';
+import { placeholderEmail } from '@/lib/walk-in';
 import { canonicalTrack } from '@/lib/submissions';
 import { getSiteSettings } from '@/lib/site-settings-server';
 
 const RegistrationSchema = z.object({
   fullName: z.string().trim().min(1).max(200),
-  email: z.string().trim().email().max(200),
+  // Optional on purpose. Plenty of people who attend a conference do not use
+  // email, and making it the second required field turned them away before
+  // they reached the rest of the form. An empty string is a real answer here;
+  // anything non-empty still has to be a valid address, because a typo'd one
+  // is worse than none — it silently swallows every message meant for them.
+  email: z.union([z.string().trim().email().max(200), z.literal('')]).optional().default(''),
   phone: z.string().trim().min(1).max(50),
   country: z.string().trim().min(1).max(100),
   organization: z.string().trim().max(200).optional().default(''),
@@ -90,14 +96,18 @@ export async function POST(req: Request) {
   }
 
   const { password, ...fields } = parsed.data;
-  const email = fields.email.toLowerCase();
+  const givenEmail = fields.email.trim().toLowerCase();
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    return reject(
-      { ok: false, error: 'هذا البريد مسجَّل بالفعل — سجّل الدخول بدلاً من ذلك' },
-      409,
-    );
+  // Only a real address can collide, and only a real address can be signed in
+  // with. A registration without one gets a generated placeholder below.
+  if (givenEmail) {
+    const existing = await prisma.user.findUnique({ where: { email: givenEmail } });
+    if (existing) {
+      return reject(
+        { ok: false, error: 'هذا البريد مسجَّل بالفعل — سجّل الدخول بدلاً من ذلك' },
+        409,
+      );
+    }
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
@@ -111,6 +121,10 @@ export async function POST(req: Request) {
     try {
       // The account and its registration record are created together: a user
       // without a registration (or the reverse) would be a broken half-signup.
+      // Generated from the confirmation code, which is already unique, so two
+      // people registering without an address in the same second cannot clash.
+      const email = givenEmail || placeholderEmail(confirmationCode);
+
       const created = await prisma.user.create({
         data: {
           email,
@@ -144,6 +158,9 @@ export async function POST(req: Request) {
         ok: true,
         code: confirmationCode,
         pending: needsApproval(fields.category),
+        // The screen needs to know, because without an address there is no way
+        // into the account and no way to be told a decision.
+        hasEmail: Boolean(givenEmail),
         // The real badge — the one they will actually be admitted with.
         //
         // Issued to everybody, including an application still waiting on the
@@ -182,7 +199,7 @@ export async function POST(req: Request) {
     }
   }
 
-  console.error('Gave up generating a unique confirmation code for', email);
+  console.error('Gave up generating a unique confirmation code for', givenEmail || fields.phone);
   return NextResponse.json(
     { ok: false, error: 'تعذّر حفظ التسجيل، حاول مرة أخرى' },
     { status: 502 },

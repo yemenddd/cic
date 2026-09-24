@@ -73,6 +73,7 @@ const { profileCompleteness } = await import('../lib/profile-completeness');
 const { certificateReadiness } = await import('../lib/certificate-readiness');
 const { resolveSettings, cleanUrl, cleanEmail, DEFAULT_SETTINGS } = await import('../lib/site-settings');
 const { passwordStrength } = await import('../lib/password-strength');
+const { MIN_PASSWORD_LENGTH } = await import('../lib/password-rules');
 const { reconcileRegistrationAccount } = await import('../lib/registration-accounts');
 
 let failures = 0;
@@ -1024,10 +1025,16 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
 {
   const level = (p: string, email?: string) => passwordStrength(p, email).level;
 
+  // Written against MIN_PASSWORD_LENGTH rather than a literal, so lowering or
+  // raising the rule moves these with it instead of breaking them.
+  const oneShort = 'q7w2e9r4t1y6u3'.slice(0, MIN_PASSWORD_LENGTH - 1);
+  const exactly = 'q7w2e9r4t1y6u3'.slice(0, MIN_PASSWORD_LENGTH);
+
   check('nothing typed has no verdict', passwordStrength('').label, '');
-  check('under the minimum is too short', level('short'), 'tooShort');
-  check('and says how many characters remain', passwordStrength('short').advice?.includes('5'), true);
-  check('exactly the minimum is not too short', level('abcmnpqrxy') !== 'tooShort', true);
+  check('under the minimum is too short', level(oneShort), 'tooShort');
+  check('and says how many characters remain',
+    passwordStrength(oneShort).advice?.includes('بقي 1'), true);
+  check('exactly the minimum is not too short', level(exactly) !== 'tooShort', true);
 
   // Length alone must not rescue a notorious password.
   check('a long common password is still weak', level('password12345678'), 'weak');
@@ -1038,7 +1045,10 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
 
   // Length is what actually costs an attacker time, so it outranks symbols.
   check('a long ordinary phrase is strong', level('mountain river lantern'), 'strong');
-  check('a short complex one is not', level('Xk7#mQ2!p'), 'tooShort');
+  // Complexity does not rescue something under the minimum — the rule is a
+  // floor, not a score to be argued with.
+  check('complexity does not rescue a too-short one',
+    level('Xk7#mQ2!p'.slice(0, MIN_PASSWORD_LENGTH - 1)), 'tooShort');
   check('thirteen mixed characters are strong', level('Kx7mQpRt2Nvz4'), 'strong');
   check('a long lowercase-only phrase still rates', level('lanternrivermoth') !== 'weak', true);
 
@@ -1388,7 +1398,15 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('the admin account page uses it', admin.includes('MIN_PASSWORD_LENGTH'), true);
   check('nobody hardcodes the number any more',
     [register, form, dash, admin].every((f) => !/length < 10\b|length < 8\b/.test(f)), true);
-  check('and it is ten', MIN_PASSWORD_LENGTH, 10);
+  // Not pinned to a number — that is a product decision and it has already
+  // changed once. What is pinned is that it exists, is enforceable, and that
+  // the browser's own attribute agrees with it: a form that lets through what
+  // the server then refuses is the bug this block was written for.
+  check('the minimum is a real floor', MIN_PASSWORD_LENGTH >= 6 && MIN_PASSWORD_LENGTH <= 64, true);
+  check('and the form input agrees with the server',
+    form.includes('minLength={MIN_PASSWORD_LENGTH}'), true);
+  check('and the note quotes it rather than a literal',
+    /passwordNote[^\n]*MIN_PASSWORD_LENGTH|\$\{MIN_PASSWORD_LENGTH\} أحرف/.test(form), true);
 }
 
 // The registration throttle, which used to refuse a busy desk.
@@ -2093,6 +2111,46 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   // decision.
   check('and the decision is committed first',
     approvals.indexOf('$transaction') < approvals.indexOf('sendEmail('), true);
+}
+
+// --- registering without an email -----------------------------------------------
+//
+// The field is optional now. What must stay true: a person who skips it still
+// gets a complete row and a working badge, nothing ever tries to mail the
+// address the platform generated for them, and a real address still behaves
+// exactly as before.
+
+{
+  const { placeholderEmail, hasRealEmail, NO_EMAIL_DOMAIN, walkInEmail } = await import('../lib/walk-in');
+  const { isDeliverable } = await import('../lib/email');
+  const route = readFileSync('app/api/register/route.ts', 'utf8');
+
+  check('the generated address cannot resolve', NO_EMAIL_DOMAIN.endsWith('.invalid'), true);
+  check('and is unique per registration',
+    placeholderEmail('CIC-2026-AAA111') === placeholderEmail('CIC-2026-AAA112'), false);
+  // Generated from the confirmation code, which is already unique, so two
+  // people registering in the same second cannot collide on the unique column.
+  check('it is derived from the confirmation code',
+    placeholderEmail('CIC-2026-AAA111').startsWith('cic-2026-aaa111@'), true);
+
+  check('nothing will try to mail it', isDeliverable(placeholderEmail('CIC-2026-AAA111')), false);
+  check('a real address is still mailable', isDeliverable('someone@example.org'), true);
+
+  check('a generated address is not counted as one they gave',
+    hasRealEmail(placeholderEmail('CIC-2026-AAA111')), false);
+  check('nor is a walk-in address', hasRealEmail(walkInEmail('CIC-2026-BBB222')), false);
+  check('but a real one is', hasRealEmail('someone@example.org'), true);
+  check('and nothing at all is not', hasRealEmail(null), false);
+
+  // An empty field is a real answer; a typo'd address is not — it silently
+  // swallows every message meant for them, which is worse than none.
+  check('the schema accepts an empty address',
+    route.includes("z.literal('')"), true);
+  check('and still validates a non-empty one',
+    route.includes('z.string().trim().email().max(200)'), true);
+  // Only a real address can collide, so the duplicate check is conditional.
+  check('the duplicate check runs only on a real address',
+    route.includes('if (givenEmail) {'), true);
 }
 
 // --- undo --------------------------------------------------------------------

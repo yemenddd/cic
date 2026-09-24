@@ -29,12 +29,21 @@ export const CATEGORIES: Category[] = [
   },
   {
     id: 'participant',
-    recommended: true,
-    labels: { ar: 'مشارك', en: 'Participant', tr: 'Katılımcı' },
+    // No "most requested" badge. Steering people toward the tier that waits
+    // for a committee decision is steering them into a queue.
+    recommended: false,
+    labels: {
+      // The two competitions named in the label itself: "مشارك" alone does not
+      // say what one is participating in, and the path chosen below is exactly
+      // this choice.
+      ar: 'مشارك (مسابقة الاختراع والابتكار - مسابقة الأوراق البحثية)',
+      en: 'Participant (Invention & Innovation — Research Papers)',
+      tr: 'Katılımcı (İcat ve İnovasyon — Araştırma Makaleleri)',
+    },
     features: {
-      ar: ['كل مميزات الزائر', 'المشاركة في ورشات العمل', 'عرض بحث أو مشروع', 'الأولوية في جلسات التواصل'],
-      en: ['All Visitor benefits', 'Join workshops & competitions', 'Present a research or project', 'Priority networking sessions'],
-      tr: ['Tüm Ziyaretçi hakları', 'Atölye ve yarışmalara katılım', 'Araştırma veya proje sunumu', 'Öncelikli ağ kurma oturumları'],
+      ar: ['كل مميزات الزائر', 'المشاركة في ورشات العمل', 'عرض بحث أو مشروع'],
+      en: ['All Visitor benefits', 'Join workshops & competitions', 'Present a research or project'],
+      tr: ['Tüm Ziyaretçi hakları', 'Atölye ve yarışmalara katılım', 'Araştırma veya proje sunumu'],
     },
   },
   {

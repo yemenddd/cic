@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, CircleCheck, MapPin, Calendar, ArrowRight, Award, Eye, HandHelping, Lock } from 'lucide-react';
+import { Check, CircleCheck, MapPin, Calendar, ArrowRight, Award, Eye, HandHelping } from 'lucide-react';
 import Link from 'next/link';
 import { useLang } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme-context';
@@ -55,6 +55,9 @@ export default function RegisterForm() {
   // Without it this screen drew a decorative barcode, so a pass saved here and
   // never re-opened in the platform did not work at the door.
   const [badgeToken, setBadgeToken] = useState('');
+  // Whether they actually gave an address. Answered by the server, because the
+  // server is what decides whether a placeholder was generated.
+  const [hasEmail, setHasEmail] = useState(true);
 
   const set = (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setFields(prev => ({ ...prev, [k]: e.target.value }));
@@ -124,6 +127,7 @@ export default function RegisterForm() {
       setConfirmCode(data.code);
       setPending(Boolean(data.pending));
       setBadgeToken(typeof data.badge === 'string' ? data.badge : '');
+      setHasEmail(data.hasEmail !== false);
       setStatus('success');
 
       // Registration creates the account, so sign them straight in — the badge
@@ -197,7 +201,9 @@ export default function RegisterForm() {
           <p className="text-[14px] font-bold" style={{ color: 'var(--text-primary)' }}>
             {pending
               ? (p.pendingTitle ?? 'طلبك وصل — وبانتظار موافقة فريق التنظيم')
-              : (p.accountReadyTitle ?? 'وأنشأنا لك حساباً في المنصة')}
+              : hasEmail
+                ? (p.accountReadyTitle ?? 'وأنشأنا لك حساباً في المنصة')
+                : (p.noEmailTitle ?? 'احتفظ ببطاقتك — فهي كل ما تحتاجه')}
           </p>
 
           <p className="mt-2 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
@@ -210,22 +216,24 @@ export default function RegisterForm() {
 
           {/* The address they sign in with, said back to them. It is the one
               detail nobody writes down and everybody needs later. */}
-          <p
-            className="mt-3 rounded-xl px-3 py-2 text-[12.5px]"
-            style={{
-              background: 'var(--mat-liquid-bg)',
-              border: '1px solid var(--mat-liquid-border)',
-              color: 'var(--text-tertiary)',
-            }}
-          >
-            {p.accountEmailLabel ?? 'بريد الدخول'}:{' '}
-            <span dir="ltr" style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
-              {fields.email}
-            </span>
-          </p>
+          {hasEmail && (
+            <p
+              className="mt-3 rounded-xl px-3 py-2 text-[12.5px]"
+              style={{
+                background: 'var(--mat-liquid-bg)',
+                border: '1px solid var(--mat-liquid-border)',
+                color: 'var(--text-tertiary)',
+              }}
+            >
+              {p.accountEmailLabel ?? 'بريد الدخول'}:{' '}
+              <span dir="ltr" style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
+                {fields.email}
+              </span>
+            </p>
+          )}
 
           <div className="mt-4 flex flex-wrap items-center gap-2.5">
-            {pending ? (
+            {!hasEmail ? null : pending ? (
               // The dashboard would refuse them, so it is not offered. Sign-in
               // is, because that is the screen that will tell them the day the
               // committee decides.
@@ -358,16 +366,27 @@ export default function RegisterForm() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-                    {p.fieldEmail} <span style={{ color: '#ef4444' }}>*</span>
+                    {p.fieldEmail}{' '}
+                    <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>
+                      ({p.optional ?? 'اختياري'})
+                    </span>
                   </label>
                   <input
-                    required
                     type="email"
                     value={fields.email}
                     onChange={set('email')}
                     placeholder={p.phEmail}
                     className="input-glass"
                   />
+                  {/* Said where the decision is made, not after it. Skipping
+                      this is fine for somebody who wants a badge and nothing
+                      else — and it is the whole account for anybody else. */}
+                  <p className="mt-2 text-[11.5px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                    {!fields.email.trim()
+                      ? (p.emailSkipped
+                        ?? 'بدونه تصلك بطاقتك وتعمل عند الباب كالمعتاد — لكن لن تتمكن من الدخول إلى حسابك في المنصة ولا استعادة كلمة مرورك.')
+                      : (p.emailNote ?? 'هو اسم الدخول إلى حسابك، وإليه تصل رسائل المؤتمر.')}
+                  </p>
                 </div>
                 <div>
                   <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
@@ -446,7 +465,7 @@ export default function RegisterForm() {
                   <input
                     required
                     type="password"
-                    minLength={8}
+                    minLength={MIN_PASSWORD_LENGTH}
                     autoComplete="new-password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
@@ -461,7 +480,7 @@ export default function RegisterForm() {
                   <input
                     required
                     type="password"
-                    minLength={8}
+                    minLength={MIN_PASSWORD_LENGTH}
                     autoComplete="new-password"
                     value={passwordConfirm}
                     onChange={e => setPasswordConfirm(e.target.value)}
@@ -471,7 +490,8 @@ export default function RegisterForm() {
                 </div>
               </div>
               <p className="text-[12px] -mt-1" style={{ color: 'var(--text-tertiary)' }}>
-                {p.passwordNote ?? 'ينشئ التسجيل حسابك في المنصة — 8 أحرف على الأقل.'}
+                {p.passwordNote?.replace('8', String(MIN_PASSWORD_LENGTH))
+                  ?? `ينشئ التسجيل حسابك في المنصة — ${MIN_PASSWORD_LENGTH} أحرف على الأقل.`}
               </p>
 
             </div>
@@ -783,10 +803,6 @@ export default function RegisterForm() {
               <ArrowRight className="h-3.5 w-3.5 rotate-180" style={{ flexShrink: 0 }} />
               {p.btnCancel}
             </Link>
-            <div className="flex items-center gap-1.5" style={{ color: 'var(--text-tertiary)' }}>
-              <Lock style={{ width: 11, height: 11 }} />
-              <span className="text-[11px]">{p.privacyNote ?? 'بياناتك محمية ولن تُشارك مع أي طرف ثالث'}</span>
-            </div>
           </div>
         </motion.div>
 
