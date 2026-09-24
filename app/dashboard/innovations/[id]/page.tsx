@@ -79,7 +79,7 @@ export default async function EditSubmissionPage({ params }: { params: Promise<{
       <SubmissionFields
         submission={submission}
         files={submission.files.map((f) => ({
-          id: f.id, url: f.url, name: f.name, sizeBytes: f.sizeBytes,
+          id: f.id, name: f.name, sizeBytes: f.sizeBytes,
         }))}
         editable={!locked}
       />

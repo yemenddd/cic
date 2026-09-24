@@ -2183,6 +2183,57 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
     form.includes("selected === 'volunteer' ? committee : ''"), true);
 }
 
+// --- a participant's own files -----------------------------------------------
+//
+// Covers are public because a cover is meant to be looked at. The work itself
+// is not: a research paper on a public URL is protected by nothing but the
+// secrecy of a link, and links are shared, logged by proxies and carried in
+// referrer headers.
+
+{
+  const blob = readFileSync('lib/blob.ts', 'utf8');
+  const route = readFileSync('app/api/submission-files/[id]/route.ts', 'utf8');
+  const form = readFileSync('app/dashboard/innovations/SubmissionFiles.tsx', 'utf8');
+  const review = readFileSync('app/admin/(panel)/submissions/[id]/page.tsx', 'utf8');
+
+  // The blob URL is a server-side handle and must never be rendered: that is
+  // what the route below is for. (Full privacy also needs a private Blob
+  // store, which the account does not have — see lib/blob.ts.)
+  check('reading a document goes through the server',
+    blob.includes('export async function readDocument'), true);
+  // Exactly one place decides how a stored document is fetched, so moving the
+  // store to private access is a one-line change rather than a hunt.
+  check('and only one place fetches a stored document',
+    (blob.match(/fetch\(url/g) ?? []).length, 1);
+
+  check('the route requires a session', route.includes('if (!user) return new Response'), true);
+  check('and lets the owner through', route.includes('file!.submission.userId === user.id'), true);
+  // The committee has to be able to open what it is judging.
+  check('and any organizer', route.includes("user.role === 'ADMIN'"), true);
+  // Distinguishing "not yours" from "does not exist" turns the route into a
+  // way to learn which ids are real.
+  check('and answers both refusals identically',
+    route.includes('if (!file || !mayRead) return new Response'), true);
+  check('and never lets an intermediary keep a copy',
+    route.includes("'Cache-Control': 'private, no-store'"), true);
+  // The filename becomes a header value. HTTP headers are Latin-1, so an
+  // Arabic name thrown in raw makes the whole response throw — which is most
+  // filenames this platform will ever see, and was a real 500 until it wasn't.
+  check('the filename is carried in the RFC 6266 form',
+    route.includes("filename*=UTF-8''"), true);
+  check('with an ASCII fallback for clients that cannot read it',
+    route.includes("replace(/[^\\x20-\\x7E]/g, '_')"), true);
+  // Unescaped, a newline in a filename would let the uploader write headers.
+  check('and is stripped of header characters first',
+    route.includes('replace(/["\\\\\\r\\n]/g'), true);
+
+  // Nothing may link straight at a blob any more, or the route is decoration.
+  check('the attendee page links through the route',
+    form.includes('/api/submission-files/') && !form.includes('href={file.url}'), true);
+  check('and so does the review page',
+    review.includes('/api/submission-files/') && !review.includes('href={f.url}'), true);
+}
+
 // --- undo --------------------------------------------------------------------
 
 await prisma.notification.deleteMany({ where: { title: marker } });

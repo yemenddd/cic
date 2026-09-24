@@ -16,7 +16,6 @@ import { deleteSubmissionFile } from './actions';
 
 export interface AttachedFile {
   id: string;
-  url: string;
   name: string;
   sizeBytes: number;
 }
@@ -40,7 +39,9 @@ function ExistingFile({ file, editable }: { file: AttachedFile; editable: boolea
     >
       <FileText className="h-4 w-4 shrink-0" style={{ color: 'var(--text-tertiary)' }} aria-hidden />
       <a
-        href={file.url}
+        // Through the route, not at the blob: these are stored privately and
+        // the blob URL is a server-side handle, not something to hand out.
+        href={`/api/submission-files/${file.id}`}
         target="_blank"
         rel="noreferrer"
         className="min-w-0 flex-1 truncate text-[12.5px] font-semibold"

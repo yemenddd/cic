@@ -19,16 +19,6 @@ datasource db {
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
-// Superseded by `User` — kept until the admin row is verified migrated, so
-// the switch never depends on a destructive drop of the only admin account.
-model AdminUser {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String?
-  createdAt    DateTime @default(now())
-}
-
 enum UserRole {
   ADMIN
   ATTENDEE

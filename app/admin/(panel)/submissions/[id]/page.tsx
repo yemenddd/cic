@@ -108,7 +108,7 @@ export default async function AdminSubmissionDetailPage({ params }: { params: Pr
             {submission.files.map((f) => (
               <li key={f.id}>
                 <a
-                  href={f.url}
+                  href={`/api/submission-files/${f.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2.5 rounded-xl px-3 py-2.5"

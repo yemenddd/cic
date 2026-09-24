@@ -92,14 +92,32 @@ export interface StoredDocument {
   sizeBytes: number;
 }
 
+/**
+ * Store a submission's own work.
+ *
+ * A cover photograph is meant to be looked at; an unpublished research paper
+ * is not. So the blob URL of a document is never handed to a browser — the
+ * files are served back through a route that checks the caller first
+ * (app/api/submission-files/[id]), and the URL stays a server-side handle.
+ *
+ * It is still written to a public store, and that is a limitation rather than
+ * a choice: `access: 'private'` is refused by the store itself — "Cannot use
+ * private access on a public store" — and moving to one is a second Blob store
+ * on the account, which is a billing decision and not this code's to make.
+ *
+ * What that leaves: the URL is unguessable and never published, so the file is
+ * reachable only by somebody the route has vetted — unless the URL itself
+ * leaks from the database or a server log. Closing that last gap needs the
+ * private store; everything up to it is closed here.
+ */
 export async function uploadDocument(file: File, folder: string): Promise<StoredDocument> {
   const problem = checkDocumentUpload(file);
   if (problem) throw new UploadError(problem);
 
   // The stored name is generated, exactly as for images: `file.name` is
-  // attacker-controlled text that would otherwise appear verbatim in a public
-  // URL and decide how the file is served back. The original is kept in the
-  // database as a label instead.
+  // attacker-controlled text that would otherwise appear verbatim in a URL and
+  // decide how the file is served back. The original is kept in the database
+  // as a label instead.
   const extension = ALLOWED_DOCUMENTS[file.type] ?? 'bin';
   const blob = await put(`${folder}/${crypto.randomUUID()}.${extension}`, file, {
     access: 'public',
@@ -113,6 +131,37 @@ export async function uploadDocument(file: File, folder: string): Promise<Stored
     contentType: file.type,
     sizeBytes: file.size,
   };
+}
+
+/**
+ * Read a stored document back, for a caller the route has already vetted.
+ *
+ * A plain server-side fetch, because the store is public (see uploadDocument).
+ * The point of going through here rather than redirecting the browser is that
+ * the blob URL never reaches the client: the only address anybody outside the
+ * server sees is /api/submission-files/<id>, which checks who is asking.
+ *
+ * If the store is ever moved to private access, this is the one function that
+ * changes — to `get(url, { access: 'private' })` — and nothing else does.
+ *
+ * Returns null when the object is gone: a file deleted from the store while a
+ * row still points at it is a 404 for whoever asked, not a crash.
+ */
+export async function readDocument(url: string): Promise<{
+  body: ReadableStream;
+  contentType: string;
+} | null> {
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok || !res.body) return null;
+    return {
+      body: res.body,
+      contentType: res.headers.get('content-type') ?? 'application/octet-stream',
+    };
+  } catch (err) {
+    console.error('[blob] could not read a stored document:', err);
+    return null;
+  }
 }
 
 export async function deleteImage(url: string): Promise<void> {

@@ -1,0 +1,11 @@
+-- Drop the table the platform stopped using when accounts were unified.
+--
+-- `AdminUser` was replaced by `User` with a role column. No code has read it
+-- since, and Prisma keeps it in the schema only because dropping a table it
+-- knows about is a migration, not a deletion.
+--
+-- The reason to do it rather than leave it: the one surviving row holds a
+-- bcrypt hash for an organizer account that no longer exists. Credentials
+-- sitting in a live database for no purpose are the kind of thing that is
+-- nobody's job to notice until it matters.
+DROP TABLE IF EXISTS "AdminUser";
