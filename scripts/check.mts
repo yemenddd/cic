@@ -2153,6 +2153,36 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
     route.includes('if (givenEmail) {'), true);
 }
 
+// --- choosing a committee at signup ----------------------------------------------
+//
+// A volunteer used to register, then have to come back to the platform to pick
+// a committee before their rota showed them anything they could book. Asked on
+// the form now, which is one field for them and one fewer dead end.
+
+{
+  const route = readFileSync('app/api/register/route.ts', 'utf8');
+  const form = readFileSync('components/sections/RegisterForm.tsx', 'utf8');
+
+  check('the form offers the committees to volunteers only',
+    form.includes("selected === 'volunteer' && ("), true);
+  check('and offers the real six rather than a hand-typed list',
+    form.includes('COMMITTEES.map('), true);
+  // "اللوجستيك" means nothing to somebody choosing between six words.
+  check('and shows what the chosen one does', form.includes('descriptionAr'), true);
+
+  check('the route requires one from a volunteer',
+    route.includes("fields.category === 'volunteer' && !committee"), true);
+  check('and resolves it through the shared list',
+    route.includes('canonicalCommittee(rawCommittee)'), true);
+  // A committee on a visitor's row would put them on a rota they have no
+  // business being on, and the organizers' "volunteers without a shift" figure
+  // reads straight off this column.
+  check('and stores it for nobody else',
+    route.includes("fields.category === 'volunteer' ? canonicalCommittee(rawCommittee) : null"), true);
+  check('the form does not post one for another category',
+    form.includes("selected === 'volunteer' ? committee : ''"), true);
+}
+
 // --- undo --------------------------------------------------------------------
 
 await prisma.notification.deleteMany({ where: { title: marker } });

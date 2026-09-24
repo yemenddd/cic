@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import ConferenceBadge from '@/components/ui/ConferenceBadge';
 import { downloadBadgePDF } from '@/lib/download-badge-pdf';
 import { CATEGORIES, type Lang } from '@/lib/categories';
+import { COMMITTEES } from '@/lib/committees';
 import { DEFAULT_COUNTRY, countryByCode, countryOptions, flagOf } from '@/lib/countries';
 import { signIn } from 'next-auth/react';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-rules';
@@ -33,6 +34,7 @@ export default function RegisterForm() {
   const l = lang as Lang;
   const [selected, setSelected] = useState(CATEGORIES[0].id);
   const [track, setTrack] = useState('');
+  const [committee, setCommittee] = useState('');
   const [fields, setFields] = useState({ fullName: '', email: '', organization: '' });
   // Held as an ISO code, not a name: the name is looked up for display and for
   // storage, so the two can never drift apart.
@@ -115,6 +117,9 @@ export default function RegisterForm() {
         body: JSON.stringify({
           ...fields, phone, country: countryName, category: selected,
           track: selected === 'participant' ? track : '',
+          // The same rule as the path: an answer that belongs to a category
+          // they are no longer in must not travel with the form.
+          committee: selected === 'volunteer' ? committee : '',
           password,
         }),
       });
@@ -640,6 +645,56 @@ export default function RegisterForm() {
                   </div>
                   <p className="mt-2 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
                     {p.trackNote ?? 'يحدّد المسار طريقة مراجعة عملك، ويُطبع على شهادتك.'}
+                  </p>
+                </div>
+              )}
+
+              {/* The volunteer's committee, asked here rather than left to the
+                  dashboard.
+
+                  Somebody volunteering has already decided to give up their
+                  time; asking which team on the same screen costs them one
+                  field and saves the platform a second visit — and a volunteer
+                  who never made that second visit used to open their rota and
+                  find nothing they could book.
+
+                  Each committee says what it actually does, because
+                  "اللوجستيك" means nothing to somebody choosing between six
+                  words. The description is shown for the selected one rather
+                  than all six at once: the form is long enough. */}
+              {selected === 'volunteer' && (
+                <div className="mt-5">
+                  <label className="block text-[13px] font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    {p.fieldCommittee ?? 'اللجنة التي تريد التطوّع فيها'}{' '}
+                    <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      required
+                      value={committee}
+                      onChange={e => setCommittee(e.target.value)}
+                      className="input-glass appearance-none cursor-pointer"
+                      style={{ direction: isRtl ? 'rtl' : 'ltr' }}
+                    >
+                      <option value="" disabled style={{ background: optionBg }}>—</option>
+                      {COMMITTEES.map((c) => (
+                        <option key={c.id} value={c.id} style={{ background: optionBg }}>
+                          {c.labelAr}
+                        </option>
+                      ))}
+                    </select>
+                    <div
+                      className={cn('pointer-events-none absolute top-1/2 -translate-y-1/2', isRtl ? 'left-3' : 'right-3')}
+                      style={{ color: 'var(--text-tertiary)' }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[12px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                    {COMMITTEES.find((c) => c.id === committee)?.descriptionAr
+                      ?? (p.committeeNote ?? 'تعمل مع لجنة واحدة وتحجز فتراتها. يمكنك تغييرها لاحقاً ما دمت لم تحجز فترة.')}
                   </p>
                 </div>
               )}

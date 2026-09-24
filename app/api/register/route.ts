@@ -10,6 +10,7 @@ import { MIN_PASSWORD_LENGTH } from '@/lib/password-rules';
 import { initialStatus, needsApproval } from '@/lib/account-status';
 import { badgeToken } from '@/lib/badge-token';
 import { placeholderEmail } from '@/lib/walk-in';
+import { canonicalCommittee } from '@/lib/committees';
 import { canonicalTrack } from '@/lib/submissions';
 import { getSiteSettings } from '@/lib/site-settings-server';
 
@@ -40,6 +41,10 @@ const RegistrationSchema = z.object({
   // The same minimum the rest of the platform enforces. It was eight here and
   // ten everywhere else, so somebody could register with a password they were
   // then not allowed to choose again when changing it.
+  // The volunteer's committee, by id. Empty for every other category — and
+  // validated below rather than here, because "which of the six" is a rule
+  // that lives in lib/committees.ts and must not be restated in a schema.
+  committee: z.string().trim().max(60).optional().default(''),
   password: z.string().min(MIN_PASSWORD_LENGTH).max(200),
 });
 
@@ -95,8 +100,16 @@ export async function POST(req: Request) {
     return reject({ ok: false, error: 'بيانات التسجيل غير صالحة' }, 400);
   }
 
-  const { password, ...fields } = parsed.data;
+  const { password, committee: rawCommittee, ...fields } = parsed.data;
   const givenEmail = fields.email.trim().toLowerCase();
+
+  // Asked of volunteers and stored for nobody else. A committee on a visitor's
+  // row would put them on a rota they have no business being on, and the
+  // organizers' "volunteers without a shift" count reads directly off it.
+  const committee = fields.category === 'volunteer' ? canonicalCommittee(rawCommittee) : null;
+  if (fields.category === 'volunteer' && !committee) {
+    return reject({ ok: false, error: 'اختر اللجنة التي تريد التطوّع فيها' }, 400);
+  }
 
   // Only a real address can collide, and only a real address can be signed in
   // with. A registration without one gets a generated placeholder below.
@@ -136,6 +149,7 @@ export async function POST(req: Request) {
           organization: fields.organization || null,
           category: fields.category,
           track: fields.track,
+          committee,
           // Participants and volunteers wait for the committee; a visitor is
           // admitted on the spot. Decided from the category by one function so
           // the rule cannot differ between here and the screen that tells them.
