@@ -7,13 +7,7 @@ import ScrollToTop from '@/components/layout/ScrollToTop';
 
 // The panels (/admin, /dashboard) and the auth screens carry their own
 // chrome — the marketing site's header/footer would only get in the way.
-//
-// /join is here for a different reason: it is the invitation link, sent to
-// people directly, and the point of it is that there is no way from it into
-// the rest of the site. A header with eight nav items would defeat it.
-const BARE_ROUTES = [
-  '/admin', '/dashboard', '/login', '/forgot-password', '/reset-password', '/join',
-];
+const BARE_ROUTES = ['/admin', '/dashboard', '/login', '/forgot-password', '/reset-password'];
 
 export interface SocialLinks {
   facebookUrl: string;

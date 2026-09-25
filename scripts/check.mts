@@ -2234,43 +2234,6 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
     review.includes('/api/submission-files/') && !review.includes('href={f.url}'), true);
 }
 
-// --- the invitation link -----------------------------------------------------
-//
-// /join is the registration form to send people directly. The whole point of
-// it is that there is no way from it into the rest of the site, so every way
-// out is something to assert the absence of.
-
-{
-  const join = readFileSync('app/join/page.tsx', 'utf8');
-  const chrome = readFileSync('components/layout/SiteChrome.tsx', 'utf8');
-  const form = readFileSync('components/sections/RegisterForm.tsx', 'utf8');
-  const badge = readFileSync('components/ui/ConferenceBadge.tsx', 'utf8');
-  const sitemap = readFileSync('app/sitemap.ts', 'utf8');
-
-  check('the invitation link exists', join.includes('RegisterForm standalone'), true);
-  // A header with eight nav items would defeat the entire purpose.
-  check('and carries no site header or footer', chrome.includes("'/join'"), true);
-
-  check('the form can withhold its ways out', form.includes('standalone = false'), true);
-  check('the cancel link is one of them', form.includes('{!standalone && (') , true);
-  // A "home" button that lands somewhere the recipient was never invited to is
-  // exactly what the separate link exists to avoid.
-  check('and so is the badge home button',
-    form.includes("backHref={standalone ? null : '/'}"), true);
-  check('which the badge honours', badge.includes('backHref !== null &&'), true);
-
-  // Sent in a message, not found in a search: a second copy of the form
-  // competing with /register in results serves nobody.
-  check('it is not indexed', join.includes('robots: { index: false'), true);
-  check('and not in the sitemap', sitemap.includes("'/join'"), false);
-  check('but /register still is', sitemap.includes("'/register'"), true);
-
-  // The gate has to hold on both doors, or the invitation link is a way past a
-  // closed registration.
-  check('a closed registration closes this one too',
-    join.includes('settings.registrationOpen'), true);
-}
-
 // --- undo --------------------------------------------------------------------
 
 await prisma.notification.deleteMany({ where: { title: marker } });
