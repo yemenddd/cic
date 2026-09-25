@@ -96,6 +96,30 @@ export default async function RootLayout({
       className={`${inter.variable} ${outfit.variable} ${thmanyah.variable} ${ibmPlexArabic.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        {/*
+          Decide light or dark before anything is painted.
+
+          The theme used to be applied from an effect, which runs after the
+          first paint — so every visitor whose device is set to light opened to
+          a dark page that then flipped. This runs synchronously in <head>,
+          before the body exists, so the correct theme is the only one ever
+          drawn.
+
+          It reads the same key and the same rules as lib/theme-context.tsx,
+          and the two must not drift: the absence of a stored preference means
+          "follow this device", not "dark".
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{
+              var m=localStorage.getItem('cic-theme')||localStorage.getItem('cict-theme')||'system';
+              if(m!=='light'&&m!=='dark')m=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
+              document.documentElement.setAttribute('data-theme',m);
+            }catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col font-inter" style={{ background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
         <ThemeProvider>
           <LanguageProvider>

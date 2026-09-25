@@ -3,7 +3,7 @@
 import { useState, useEffect, useId } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Sun, Moon, ChevronDown } from 'lucide-react';
+import { Menu, X, Sun, Moon, MonitorCog, ChevronDown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import CICLogo from '@/components/ui/CICLogo';
 import ConfirmProvider from '@/components/platform/ConfirmDialog';
@@ -278,16 +278,37 @@ function SidebarFooter({
   actions: UtilAction[];
   onNavigate?: () => void;
 }) {
-  const { theme, toggle } = useTheme();
+  const { theme, mode, setMode } = useTheme();
+
+  // Three states here, unlike the pill in the site header: this row has room
+  // for a word, so it can say which one it is in — and it is the only place
+  // that offers the way back to "follow the device".
+  const NEXT: Record<typeof mode, typeof mode> = {
+    system: 'light',
+    light: 'dark',
+    dark: 'system',
+  };
+  const MODE_LABEL: Record<typeof mode, string> = {
+    system: 'المظهر: تلقائي',
+    light: 'المظهر: فاتح',
+    dark: 'المظهر: داكن',
+  };
 
   return (
     <div className="pt-2.5 mt-2.5" style={{ borderTop: '1px solid var(--mat-liquid-border)' }}>
       <Identity name={name} email={email} />
 
       <div className="space-y-0.5">
-        <button type="button" onClick={toggle} className="platform-util">
-          {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-          {theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'}
+        <button
+          type="button"
+          onClick={() => setMode(NEXT[mode])}
+          className="platform-util"
+          title={`التالي: ${MODE_LABEL[NEXT[mode]]}`}
+        >
+          {mode === 'system'
+            ? <MonitorCog className="h-3.5 w-3.5" />
+            : theme === 'dark' ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
+          {MODE_LABEL[mode]}
         </button>
 
         {actions.map(({ label, icon: Icon, href, onClick, external }) =>

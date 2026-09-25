@@ -209,6 +209,24 @@ if (!admin) throw new Error('no admin in the database to attribute the send to')
 
 const expected = await prisma.user.count({ where: { role: 'ATTENDEE', category: 'visitor' } });
 
+// Anything a previous run left behind, before adding more.
+//
+// The undo at the bottom of this file only runs if the script reaches it. A
+// run stopped part-way — Ctrl-C, a failed check, a dropped database
+// connection — leaves its announcement in place, and because delivery fans out
+// to every registered account, one abandoned row also leaves a notification in
+// a few hundred real people's bells. Nine of them had accumulated that way,
+// visible on the organizers' dashboard as recent activity. So each run starts
+// by clearing the wreckage of the last one, and the cleanup no longer depends
+// on this script finishing.
+const stale = { title: { contains: '[check ' } };
+const staleNotifications = await prisma.notification.deleteMany({ where: stale });
+const staleAnnouncements = await prisma.announcement.deleteMany({ where: stale });
+if (staleAnnouncements.count || staleNotifications.count) {
+  console.log(`  swept ${staleAnnouncements.count} announcement(s) and `
+    + `${staleNotifications.count} notification(s) left by an interrupted run`);
+}
+
 const marker = `[check ${Date.now()}]`;
 const result = await deliverAnnouncement(admin.id, {
   title: marker,
@@ -2284,6 +2302,74 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('the door desk normalises', walkIn.includes('normalizePhone(input.phone)'), true);
   check('the account page normalises', account.includes('normalizePhone('), true);
   check('and the organizer forms normalise', users.includes('normalizePhone('), true);
+}
+
+// --- light or dark, and who decided --------------------------------------------
+//
+// The site opened dark for everybody and only went light if somebody had asked
+// for it explicitly. On a phone in daylight with the OS set to light, that is a
+// page ignoring what its owner already told their device.
+
+{
+  const layout = readFileSync('app/layout.tsx', 'utf8');
+  const context = readFileSync('lib/theme-context.tsx', 'utf8');
+  const shell = readFileSync('components/platform/PlatformShell.tsx', 'utf8');
+  const auth = readFileSync('components/platform/AuthScreen.tsx', 'utf8');
+  const form = readFileSync('components/sections/RegisterForm.tsx', 'utf8');
+
+  // The absence of a stored preference means "follow this device", not "dark".
+  check('no preference means follow the device',
+    context.includes("? stored : 'system'"), true);
+  check('and the system is read from the media query',
+    context.includes("matchMedia?.('(prefers-color-scheme: light)')"), true);
+  // Somebody whose phone switches at sunset should not have to reload.
+  check('and followed live while in that mode',
+    context.includes("query.addEventListener('change', sync)"), true);
+
+  // Applied from an effect, the correct theme arrives after the first paint —
+  // so a light-mode visitor watches a dark page flip. This has to be in <head>.
+  check('the theme is stamped before the first paint',
+    layout.includes("document.documentElement.setAttribute('data-theme'"), true);
+  check('by a script in the document head',
+    layout.indexOf('<head>') < layout.indexOf('prefers-color-scheme'), true);
+  // The two decide the same thing and must not drift.
+  check('reading the same key as the provider',
+    layout.includes("localStorage.getItem('cic-theme')")
+      && context.includes('THEME_STORAGE_KEY'), true);
+  // Blocked site data throws on read; an unreadable preference is not a crash.
+  check('and surviving unreadable storage',
+    layout.includes('}catch(e){'), true);
+
+  // The bug this is here for: the provider starts at the 'system' default, so
+  // on the first client render the follow-the-device effect ran and stamped
+  // data-theme from the media query — painting over the choice the blocking
+  // script had correctly read from storage a moment earlier. By the time the
+  // real preference arrived in state, that effect returned early and nothing
+  // else wrote the attribute, so an explicit "light" on a dark device stayed
+  // dark. Every check above passed throughout.
+  //
+  // So: one writer, downstream of the resolved theme, and silent until the
+  // stored preference has actually been read.
+  const applyCalls = (context.match(/(?<!function )\bapply\(/g) ?? []).length;
+  check('one place writes data-theme', applyCalls, 1);
+  check('and it is an effect on the resolved theme',
+    context.includes('if (read) apply(theme);')
+      && context.includes('}, [read, theme]);'), true);
+  check('and nothing paints before the preference is read',
+    context.includes('if (!read || mode !== ') && context.includes('setRead(true)'), true);
+
+  // 'system' is stored rather than cleared, so "follow the device" is a
+  // decision somebody made and not merely the absence of one.
+  check('choosing auto is remembered',
+    context.includes('localStorage.setItem(THEME_STORAGE_KEY, next)'), true);
+  check('and the panels offer the way back to it',
+    shell.includes("dark: 'system'"), true);
+
+  // These screens carry no site header, so without this the only way out of a
+  // sign-in page is the browser's back button.
+  check('the sign-in screens offer a way back to the site',
+    auth.includes('العودة إلى الموقع'), true);
+  check('and so does the registration form', form.includes('backToSite'), true);
 }
 
 // --- undo --------------------------------------------------------------------

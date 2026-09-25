@@ -2,9 +2,10 @@
 
 import { useId, useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { Loader2, Sun, Moon, Eye, EyeOff, TriangleAlert } from 'lucide-react';
+import { Loader2, Sun, Moon, Eye, EyeOff, TriangleAlert, ArrowRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import CICLogo from '@/components/ui/CICLogo';
 import { useTheme } from '@/lib/theme-context';
 import { loginErrorMessage } from '@/lib/login-error';
@@ -324,6 +325,27 @@ export default function AuthScreen({
           </form>
 
           {footer && <div className="mt-6 text-center text-[13px]">{footer}</div>}
+
+          {/* The way back to the site.
+          
+              These screens carry their own chrome — no site header, no footer —
+              so without this the only way out of a sign-in page is the browser's
+              back button. Somebody who followed a link here and decided to read
+              about the conference first had nowhere to go. */}
+          <div className="mt-6 flex justify-center">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[12.5px] font-semibold transition-colors"
+              style={{
+                background: 'var(--mat-liquid-bg)',
+                border: '1px solid var(--mat-liquid-border)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+              العودة إلى الموقع
+            </Link>
+          </div>
         </div>
       </main>
 
