@@ -10,6 +10,7 @@ import { requireAdmin } from '@/lib/auth-guards';
 import { CATEGORIES, categoryLabel } from '@/lib/categories';
 import { generateConfirmationCode, isCodeCollision } from '@/lib/confirmation-code';
 import { SUBMISSION_TRACKS } from '@/lib/submissions';
+import { normalizePhone } from '@/lib/digits';
 
 type ActionResult = { error?: string; success?: string };
 // resetUserPassword is the one action that hands something back: the generated
@@ -217,7 +218,7 @@ export async function createUser(_prev: CreateResult | undefined, form: FormData
   const passwordHash = await bcrypt.hash(password, 12);
 
   const profile = {
-    phone: field(form, 'phone', 50) || null,
+    phone: normalizePhone(field(form, 'phone', 50)) || null,
     country: field(form, 'country', 100) || null,
     organization: field(form, 'organization') || null,
     track: field(form, 'track') || null,
@@ -330,7 +331,7 @@ export async function updateUserProfile(
       email,
       category: category || null,
       track: track || null,
-      phone: field(form, 'phone', 50) || null,
+      phone: normalizePhone(field(form, 'phone', 50)) || null,
       country: field(form, 'country', 100) || null,
       organization: field(form, 'organization') || null,
     },

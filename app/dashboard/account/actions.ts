@@ -7,6 +7,7 @@ import { MIN_PASSWORD_LENGTH } from '@/lib/password-rules';
 import { currentUser } from '@/lib/auth-guards';
 import { isTrackAllowed } from '@/lib/submissions';
 import { LOGIN_BY_EMAIL, clearFailures, recordFailure, throttleState } from '@/lib/rate-limit';
+import { normalizePhone } from '@/lib/digits';
 
 type ActionResult = { error?: string; success?: string } | void;
 
@@ -21,7 +22,9 @@ export async function updateProfile(_prev: ActionResult, formData: FormData): Pr
   if (!account) return { error: SESSION_EXPIRED };
 
   const name = String(formData.get('name') || '').trim();
-  const phone = String(formData.get('phone') || '').trim();
+  // Same rule as registration: one script inside the platform, whatever
+  // keyboard it was typed on.
+  const phone = normalizePhone(String(formData.get('phone') || ''));
   const country = String(formData.get('country') || '').trim();
   const organization = String(formData.get('organization') || '').trim();
   const track = String(formData.get('track') || '').trim();

@@ -1,3 +1,5 @@
+import { normalizePhone } from '@/lib/digits';
+
 /**
  * Somebody who turned up without registering.
  *
@@ -88,7 +90,9 @@ export interface WalkInFields {
  */
 export function validateWalkIn(input: WalkInInput): string | null {
   const name = input.name.trim();
-  const phone = input.phone.trim();
+  // Counted on the normalised form: ٧٧٠١٢٣٤٥٦ has six digits like any other
+  // number, and refusing it as "incomplete" at a desk would be nonsense.
+  const phone = normalizePhone(input.phone);
 
   if (name.length < 2) return 'اكتب اسم الحاضر';
   if (name.length > 200) return 'الاسم طويل جداً';
@@ -109,7 +113,7 @@ export function validateWalkIn(input: WalkInInput): string | null {
 export function walkInFields(input: WalkInInput): WalkInFields {
   return {
     name: input.name.trim(),
-    phone: input.phone.trim(),
+    phone: normalizePhone(input.phone),
     category: input.category,
     organization: input.organization?.trim() || null,
     country: input.country?.trim() || null,

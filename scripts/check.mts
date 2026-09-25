@@ -33,6 +33,7 @@ const {
   resendAnnouncement,
 } = await import('../app/admin/(panel)/announcements/send');
 const { prisma } = await import('../lib/db/client');
+const { generateConfirmationCode } = await import('../lib/confirmation-code');
 const { isInternalPath, openAndResolveTarget, NOTIFICATIONS_PATH } = await import(
   '../app/dashboard/notifications/open'
 );
@@ -571,9 +572,12 @@ if (scanned) {
       'not-admitted');
 
     // Typing the printed code instead of scanning is the same door.
+    // Generated rather than hardcoded: a run interrupted before its cleanup
+    // used to leave this code behind and poison every run after it with a
+    // unique-constraint failure that looked like a real bug.
     const byCode = await prisma.user.update({
       where: { id: waiting.id },
-      data: { confirmationCode: 'CIC-2026-PEND99' },
+      data: { confirmationCode: generateConfirmationCode() },
     });
     check('nor by typing their confirmation code',
       (await recordAttendance({
@@ -2232,6 +2236,54 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
     form.includes('/api/submission-files/') && !form.includes('href={file.url}'), true);
   check('and so does the review page',
     review.includes('/api/submission-files/') && !review.includes('href={f.url}'), true);
+}
+
+// --- numbers, in one script --------------------------------------------------
+//
+// An Arabic keyboard types ٧٧٠…, which is the same number to a person and
+// unusable to everything else: it cannot be dialled from a contacts app, found
+// by somebody searching in Latin, or sorted in an exported spreadsheet.
+
+{
+  const { toLatinDigits, normalizePhone } = await import('../lib/digits');
+
+  check('Arabic-Indic digits become Latin', toLatinDigits('٧٧٠١٢٣٤٥٦'), '770123456');
+  check('and the Eastern set too', toLatinDigits('۷۷۰۱۲۳۴۵۶'), '770123456');
+  check('Latin digits are left alone', toLatinDigits('770123456'), '770123456');
+  check('a mixed number is fully converted', toLatinDigits('+٩٦٧ 770 ١٢٣٤٥٦'), '+967 770 123456');
+
+  // Only the digits change. How somebody writes their own number is theirs.
+  check('the plus and spacing survive', normalizePhone('+٩٦٧ ٧٧٠ ١٢٣ ٤٥٦'), '+967 770 123 456');
+  check('and so do dashes', normalizePhone('٠٧٧٠-١٢٣-٤٥٦'), '0770-123-456');
+
+  // Invisible in every interface, and enough to break an exact-match search.
+  check('bidi marks are stripped', normalizePhone('\u200F+967\u200E 770123456'), '+967 770123456');
+  check('Arabic separators are stripped', normalizePhone('٧٧٠٫١٢٣٬٤٥٦'), '770123456');
+  check('nothing at all is empty', [normalizePhone(''), normalizePhone(null)], ['', '']);
+
+  // Every path that writes a phone number goes through it — the public form is
+  // only one of the things that can reach the route.
+  const register = readFileSync('app/api/register/route.ts', 'utf8');
+  const form = readFileSync('components/sections/RegisterForm.tsx', 'utf8');
+  const walkIn = readFileSync('lib/walk-in.ts', 'utf8');
+  const account = readFileSync('app/dashboard/account/actions.ts', 'utf8');
+  const users = readFileSync('app/admin/(panel)/users/actions.ts', 'utf8');
+
+  check('the form converts as it is typed', form.includes('toLatinDigits(e.target.value)'), true);
+  // A way out at the top as well as the foot: somebody who opened the form and
+  // wanted to read about the conference first should not have to scroll past
+  // every field to leave.
+  check('and offers a way back to the site before the form',
+    form.indexOf('backToSite') < form.indexOf('{p.title}'), true);
+  // Right-to-left text would otherwise reorder a number on screen. Measured on
+  // the element itself rather than a window of characters around it, so a
+  // comment added above the attribute cannot break the check.
+  const phoneInput = form.slice(form.indexOf('type="tel"'), form.indexOf('/>', form.indexOf('type="tel"')));
+  check('and the field reads left to right', phoneInput.includes('dir="ltr"'), true);
+  check('the registration route normalises', register.includes('transform(normalizePhone)'), true);
+  check('the door desk normalises', walkIn.includes('normalizePhone(input.phone)'), true);
+  check('the account page normalises', account.includes('normalizePhone('), true);
+  check('and the organizer forms normalise', users.includes('normalizePhone('), true);
 }
 
 // --- undo --------------------------------------------------------------------

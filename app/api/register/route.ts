@@ -11,6 +11,7 @@ import { initialStatus, needsApproval } from '@/lib/account-status';
 import { badgeToken } from '@/lib/badge-token';
 import { placeholderEmail } from '@/lib/walk-in';
 import { canonicalCommittee } from '@/lib/committees';
+import { normalizePhone } from '@/lib/digits';
 import { canonicalTrack } from '@/lib/submissions';
 import { getSiteSettings } from '@/lib/site-settings-server';
 
@@ -22,7 +23,11 @@ const RegistrationSchema = z.object({
   // anything non-empty still has to be a valid address, because a typo'd one
   // is worse than none — it silently swallows every message meant for them.
   email: z.union([z.string().trim().email().max(200), z.literal('')]).optional().default(''),
-  phone: z.string().trim().min(1).max(50),
+  // Normalised rather than merely trimmed: a form on an Arabic keyboard posts
+  // ٧٧٠…, which is the same number and unusable everywhere afterwards. Done
+  // here as well as in the form, because the route is a public endpoint and
+  // the form is only one of the things that can reach it.
+  phone: z.string().trim().min(1).max(50).transform(normalizePhone),
   country: z.string().trim().min(1).max(100),
   organization: z.string().trim().max(200).optional().default(''),
   category: z.enum(['visitor', 'participant', 'volunteer']),

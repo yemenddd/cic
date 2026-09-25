@@ -14,6 +14,7 @@ import { COMMITTEES } from '@/lib/committees';
 import { DEFAULT_COUNTRY, countryByCode, countryOptions, flagOf } from '@/lib/countries';
 import { signIn } from 'next-auth/react';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-rules';
+import { toLatinDigits } from '@/lib/digits';
 import { needsApproval } from '@/lib/account-status';
 import { useRouter } from 'next/navigation';
 
@@ -295,6 +296,26 @@ export default function RegisterForm() {
       )}
 
       <form onSubmit={handleSubmit} className="mx-auto max-w-5xl px-5 md:px-8 pt-32 pb-24">
+        {/* The way back, before the form rather than after it.
+        
+            There was already a "cancel" link at the foot, which is a long
+            scroll away from somebody who opened this page and decided they
+            wanted to read about the conference first. */}
+        <div className="mb-6 flex">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[13px] font-semibold transition-colors"
+            style={{
+              background: 'var(--mat-liquid-bg)',
+              border: '1px solid var(--mat-liquid-border)',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <ArrowRight className={cn('h-3.5 w-3.5', !isRtl && 'rotate-180')} style={{ flexShrink: 0 }} />
+            {p.backToSite ?? 'العودة إلى الموقع'}
+          </Link>
+        </div>
+
         {/* Page heading */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -440,10 +461,17 @@ export default function RegisterForm() {
                     required
                     type="tel"
                     inputMode="tel"
+                    // Always Latin script and always left to right, whatever
+                    // language the page is being read in. An Arabic keyboard
+                    // types ٧٧٠…, which is the same number and is unusable
+                    // afterwards: it cannot be dialled from a contacts app or
+                    // matched by somebody searching for it in Latin.
+                    dir="ltr"
                     value={localPhone}
-                    onChange={e => setLocalPhone(e.target.value)}
+                    onChange={e => setLocalPhone(toLatinDigits(e.target.value))}
                     placeholder={p.phPhone}
                     className="input-glass min-w-0 flex-1"
+                    style={{ textAlign: isRtl ? 'right' : 'left' }}
                   />
                 </div>
               </div>
