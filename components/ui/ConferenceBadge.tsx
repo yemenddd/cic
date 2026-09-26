@@ -99,7 +99,6 @@ export default function ConferenceBadge({
     venueLabel: isRtl ? 'المكان'            : lang === 'tr' ? 'Mekan'              : 'Venue',
     codeLabel:  isRtl ? 'رمز التأكيد'       : lang === 'tr' ? 'Onay Kodu'          : 'Confirmation Code',
     scanHint:   isRtl ? 'امسح هذا الرمز عند الدخول' : lang === 'tr' ? 'Girişte bu kodu okutun' : 'Scan at the entrance',
-    edition:    isRtl ? 'النسخة الرابعة · 2026' : lang === 'tr' ? '4. Baskı · 2026' : '4th Edition · 2026',
     pdfBtn:     isRtl ? 'تحميل الشارة'      : lang === 'tr' ? 'Rozeti İndir'       : 'Download Badge',
     copyBtn:    copyLabel ?? (isRtl ? 'نسخ الرابط' : lang === 'tr' ? 'Linki Kopyala' : 'Copy Link'),
     copiedBtn:  isRtl ? 'تم النسخ!'         : lang === 'tr' ? 'Kopyalandı!'        : 'Copied!',

@@ -57,8 +57,8 @@ export interface CertificateWording {
   kindEn: string;
 }
 
-const CONFERENCE_AR = 'مؤتمر الإبداع والابتكار الرابع';
-const CONFERENCE_EN = 'the Fourth Creativity & Innovation Conference';
+const CONFERENCE_AR = 'مؤتمر الإبداع والابتكار';
+const CONFERENCE_EN = 'the Creativity & Innovation Conference';
 
 /** English hours, where one is "hour" and everything else is "hours". */
 function englishHours(n: number): string {

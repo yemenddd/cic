@@ -199,11 +199,11 @@ export default function ParticipationCertificate({
                   }}
                 >
                   <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600, color: INK_SOFT }}>
-                    مؤتمر الإبداع والابتكار الرابع
+                    مؤتمر الإبداع والابتكار
                   </p>
                   <span style={{ width: 4, height: 4, borderRadius: '50%', background: GOLD, flexShrink: 0 }} />
                   <p dir="ltr" style={{ margin: 0, fontSize: 12, fontWeight: 600, color: INK_SOFT }}>
-                    Fourth Creativity &amp; Innovation Conference
+                    Creativity &amp; Innovation Conference
                   </p>
                 </div>
                 <p

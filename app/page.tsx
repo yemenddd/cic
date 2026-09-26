@@ -26,7 +26,7 @@ const eventJsonLd = {
   },
   image: [`${siteUrl}/opengraph-image`],
   description:
-    "انضم إلينا في مؤتمر الإبداع والابتكار الرابع يومي ٢–٣ أكتوبر ٢٠٢٦. اكتشف مستقبل الابتكار.",
+    "انضم إلينا في مؤتمر الإبداع والابتكار يومي ٢–٣ أكتوبر ٢٠٢٦. اكتشف مستقبل الابتكار.",
   organizer: { "@type": "Organization", name: "CIC", url: siteUrl },
 };
 

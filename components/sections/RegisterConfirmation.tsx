@@ -60,7 +60,7 @@ function ConfirmationContent() {
       >
         <p className="text-[14px] font-bold text-white">
           {lang === 'ar'
-            ? 'لديك حساب في منصة المؤتمر'
+            ? 'لديك حساب في منصة الإبداع والابتكار'
             : lang === 'tr'
               ? 'Konferans platformunda bir hesabınız var'
               : 'You have an account on the conference platform'}

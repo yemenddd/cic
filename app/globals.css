@@ -11,7 +11,6 @@
      invisible on a light background. These let it invert with the theme. */
   --logo-ink:        #f5f5f7;
   --logo-ink-soft:   #c8c8ce;
-  --logo-ink-muted:  #90909a;
   --logo-navy:       #1c1c39;
 
   /* Canvas */
@@ -155,7 +154,6 @@
   /* Logo ink — dark on light, mirroring the dark theme's white-on-dark. */
   --logo-ink:        #1c1c39;
   --logo-ink-soft:   #474770;
-  --logo-ink-muted:  #6b6b85;
   --logo-navy:       #e6e6f0;
 
   /* Canvas — Apple's exact light palette */

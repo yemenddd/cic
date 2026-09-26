@@ -66,7 +66,7 @@ export default function WelcomeHero({
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0">
           <p className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-            مؤتمر الإبداع والابتكار · النسخة الرابعة {CONFERENCE_DAYS.dayTwo.y}
+            مؤتمر الإبداع والابتكار · {CONFERENCE_DAYS.dayTwo.y}
           </p>
 
           <h1

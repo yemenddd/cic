@@ -6,7 +6,7 @@ import { getSiteSettings } from '@/lib/site-settings-server';
 
 export const metadata = pageMetadata({
   title: 'التسجيل | مؤتمر الإبداع والابتكار 2026',
-  description: 'سجّل الآن في مؤتمر الإبداع والابتكار — النسخة الرابعة، إسطنبول 2026.',
+  description: 'سجّل الآن في مؤتمر الإبداع والابتكار — إسطنبول 2026.',
 });
 
 /**

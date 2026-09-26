@@ -150,7 +150,6 @@ export default function AuthScreen({
               {
                 '--logo-ink': '#f5f5f7',
                 '--logo-ink-soft': '#c8c8ce',
-                '--logo-ink-muted': 'rgba(245,245,247,0.6)',
               } as React.CSSProperties
             }
           >
@@ -164,10 +163,11 @@ export default function AuthScreen({
               instead of centring it. */}
           <div className="my-auto max-w-3xl">
             {/* One heading, broken over two lines with a deliberate jump in
-                size: "منصة" is what this thing *is*, and the conference name
-                qualifies it. Set as two spans inside one h2 rather than as a
-                heading plus a subheading, because it is one sentence and a
-                screen reader should read it as one.
+                size: "منصة" is what this thing *is*, and "الإبداع والابتكار"
+                qualifies it — together they read as the platform's own name,
+                which is not the conference's. Set as two spans inside one h2
+                rather than as a heading plus a subheading, because it is one
+                sentence and a screen reader should read it as one.
 
                 The display face, not the panel's UI face. The shell sets
                 `font-platform`, which forces IBM Plex Sans Arabic across
@@ -180,7 +180,7 @@ export default function AuthScreen({
             >
               <span className="block text-[62px] xl:text-[92px] 2xl:text-[104px]">منصة</span>
               <span className="mt-2 block text-[32px] xl:text-[48px] 2xl:text-[54px]">
-                مؤتمر الإبداع والابتكار
+                الإبداع والابتكار
               </span>
             </h2>
 

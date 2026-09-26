@@ -1921,7 +1921,9 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('and names the address they sign in with', form.includes('accountEmailLabel'), true);
   check('a waiting account is offered sign-in, not the dashboard',
     form.includes("href=\"/login\"") && form.includes("href=\"/dashboard\""), true);
-  check('the shared link says so too', confirmation.includes('لديك حساب في منصة المؤتمر'), true);
+  // Matched on the claim, not on the platform's name: this broke the moment
+  // the platform was renamed, which is not a change this check is about.
+  check('the shared link says so too', confirmation.includes('لديك حساب في'), true);
 }
 
 // --- somebody who turned up without registering --------------------------------
@@ -2370,6 +2372,45 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('the sign-in screens offer a way back to the site',
     auth.includes('العودة إلى الموقع'), true);
   check('and so does the registration form', form.includes('backToSite'), true);
+}
+
+// --- one name, no edition number ---------------------------------------------
+//
+// "النسخة الرابعة" was written into the page titles, the certificate, the badge,
+// the hero and the logo artwork itself. A conference that runs again every year
+// should not have to be renamed in ten places each time.
+
+{
+  const EDITION = /الرابع|4th|Fourth|4\. Bask/;
+
+  const named = [
+    'app/layout.tsx',
+    'app/page.tsx',
+    'app/register/page.tsx',
+    'app/dashboard/WelcomeHero.tsx',
+    'components/ui/ConferenceBadge.tsx',
+    'components/ui/CICLogo.tsx',
+    'components/sections/HeroSlider.tsx',
+    'components/dashboard/ParticipationCertificate.tsx',
+    'lib/certificate-wording.ts',
+    'lib/dictionary.ts',
+  ];
+  check('no edition number in the naming',
+    named.filter((f) => EDITION.test(readFileSync(f, 'utf8'))).join(', '), '');
+
+  // The one that nearly shipped. lib/dictionary.ts is only the seed: the
+  // history timeline is served from HistoryEdition, so editing the dictionary
+  // changed nothing a visitor could see and the live rows still read "الدورة
+  // الرابعة". Source and database have to be checked separately.
+  const rows = await prisma.historyEdition.findMany();
+  const stale = rows.filter((row) =>
+    Object.values(row).some((v) => typeof v === 'string' && EDITION.test(v)));
+  check('nor in the rows the site actually serves', stale.length, 0);
+
+  // The platform and the conference are two different things with two
+  // different names, and the sign-in screen is where somebody meets both.
+  const auth = readFileSync('components/platform/AuthScreen.tsx', 'utf8');
+  check('the platform carries its own name', auth.includes('الإبداع والابتكار'), true);
 }
 
 // --- undo --------------------------------------------------------------------
