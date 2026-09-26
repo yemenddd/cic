@@ -10,7 +10,7 @@
  * here is a security bug, and none of it was verifiable without clicking
  * through the panel until now.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
 // .env.local is not committed, so fall back to whatever is already exported
 // rather than failing with a file-not-found nobody can act on.
@@ -2418,7 +2418,7 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   // year, the copyright, a download filename — never as part of a name.
   const NAMED_YEAR = /CIC\s*2026|الإبداع والابتكار\s*2026|2026\s*Creativity|2026\s*Yaratıcılık/;
   const sources = [
-    'app/layout.tsx', 'app/page.tsx', 'app/opengraph-image.tsx', 'app/not-found.tsx',
+    'app/layout.tsx', 'app/page.tsx', 'app/not-found.tsx',
     'app/register/page.tsx', 'app/login/page.tsx', 'app/program/page.tsx',
     'app/dashboard/layout.tsx', 'app/dashboard/badge/page.tsx',
     'components/ui/footer-section.tsx', 'components/ui/ConferenceBadge.tsx',
@@ -2435,6 +2435,40 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
     readFileSync('lib/confirmation-code.ts', 'utf8').includes('CIC-2026-'), true);
   check('and so does the date the conference is on',
     readFileSync('lib/conference.ts', 'utf8').includes('y: 2026'), true);
+}
+
+// --- the link preview --------------------------------------------------------
+//
+// The share image was a next/og ImageResponse. Satori, which renders those,
+// shapes Arabic letters but does not apply the Unicode bidirectional
+// algorithm — so "مؤتمر الإبداع والابتكار" came out with its words in reverse
+// order on every WhatsApp, Telegram and X preview of this site, while looking
+// correct in the source. It is a static PNG now, rendered by a browser.
+
+{
+  const og = 'app/opengraph-image.png';
+  check('the share image is a file, not a generated one',
+    existsSync(og) && !existsSync('app/opengraph-image.tsx'), true);
+  check('and the same one is offered to X', existsSync('app/twitter-image.png'), true);
+  check('both carry alt text',
+    existsSync('app/opengraph-image.alt.txt') && existsSync('app/twitter-image.alt.txt'), true);
+
+  // 1200×630 is what every scraper expects, and a PNG's dimensions live in
+  // the IHDR chunk: 8 bytes of signature, 8 of chunk header, then w and h.
+  const head = readFileSync(og).subarray(16, 24);
+  check('at the size link previews expect',
+    `${head.readUInt32BE(0)}×${head.readUInt32BE(4)}`, '1200×630');
+
+  // The route it used to live at is gone; anything still pointing there is a
+  // preview that resolves to nothing.
+  // Matched where a path ends — at the closing quote or backtick — so the
+  // prose above, which has to name the old route to explain it, is not a hit.
+  check('nothing still points at the old route',
+    /opengraph-image(?=[`'"])/.test(readFileSync('app/page.tsx', 'utf8')), false);
+
+  // Kept so the wording can be changed without reverse-engineering the design.
+  check('the source it was rendered from is in the repo',
+    existsSync('scripts/og-image.html'), true);
 }
 
 // --- undo --------------------------------------------------------------------

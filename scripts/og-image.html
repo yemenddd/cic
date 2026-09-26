@@ -1,0 +1,52 @@
+<!--
+  Source for app/opengraph-image.png and app/twitter-image.png.
+
+  These are static PNGs rather than a next/og ImageResponse on purpose.
+  ImageResponse renders through Satori, which shapes Arabic letters but does
+  not apply the Unicode bidirectional algorithm — so "مؤتمر الإبداع والابتكار"
+  came out with its words in reverse order, and that is what every WhatsApp,
+  Telegram and X preview of this site showed.
+
+  To change the wording, edit this file and re-render it at exactly 1200x630
+  in a real browser (which does apply bidi), saving over app/opengraph-image.png
+  and app/twitter-image.png. Serve it from the dev server rather than opening
+  it from disk, so the @font-face URLs below resolve:
+
+    cp scripts/og-image.html public/_og.html
+    # open http://localhost:3311/_og.html at 1200x630, capture #og, then
+    rm public/_og.html
+-->
+<!doctype html><meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'Thmanyah';
+    src: url('/fonts/ar/thmanyahserifdisplay-Bold.otf') format('opentype');
+    font-weight: 700; font-display: block;
+  }
+  @font-face {
+    font-family: 'ThmanyahBlack';
+    src: url('/fonts/ar/thmanyahserifdisplay-Black.otf') format('opentype');
+    font-weight: 900; font-display: block;
+  }
+  html,body { margin:0; padding:0; }
+  #og {
+    width: 1200px; height: 630px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #0d0d0f 0%, #14141a 60%, #1a1424 100%);
+    font-family: 'Thmanyah', serif;
+  }
+  .mark {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 96px; font-weight: 900; letter-spacing: -0.02em;
+    background-image: linear-gradient(90deg, #67e8f9, #60a5fa 50%, #8b5cf6);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .name { margin-top: 24px; font-size: 44px; color: rgba(255,255,255,0.88); }
+  .meta { margin-top: 20px; font-size: 26px; color: rgba(255,255,255,0.48); }
+</style>
+<div id="og" dir="rtl">
+  <div class="mark" dir="ltr">CIC</div>
+  <div class="name">مؤتمر الإبداع والابتكار</div>
+  <div class="meta">٢ – ٣ أكتوبر ٢٠٢٦ · إسطنبول</div>
+</div>

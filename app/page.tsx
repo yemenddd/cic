@@ -24,7 +24,9 @@ const eventJsonLd = {
     name: "إسطنبول، تركيا",
     address: { "@type": "PostalAddress", addressLocality: "Istanbul", addressCountry: "TR" },
   },
-  image: [`${siteUrl}/opengraph-image`],
+  // The file, not the route: this was a generated ImageResponse at
+  // /opengraph-image and is now a static PNG, so the extension is part of it.
+  image: [`${siteUrl}/opengraph-image.png`],
   description:
     "انضم إلينا في مؤتمر الإبداع والابتكار يومي ٢–٣ أكتوبر ٢٠٢٦. اكتشف مستقبل الابتكار.",
   organizer: { "@type": "Organization", name: "CIC", url: siteUrl },
