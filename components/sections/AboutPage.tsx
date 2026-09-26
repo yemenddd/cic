@@ -105,7 +105,7 @@ const PILLAR_ICONS = [Lightbulb, FlaskConical, Users];
 
 const STAT_META = [
   { target: 4,    suffix: '' },
-  { target: 1400, suffix: '+' },
+  { target: 1300, suffix: '+' },
   { target: 12,   suffix: '+' },
   { target: 4,    suffix: '' },
 ];
