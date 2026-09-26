@@ -12,8 +12,6 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 const SLIDES = [
   {
     image: '/images/gallery/DSC02311-Pano.jpg',
-    tagAr:      'إسطنبول',
-    tagEn:      'Istanbul',
     // Named a different conference than the one this site is for. What the
     // opening frame should carry instead is who is in the room.
     headlineAr: 'حضور رسمي\nومشاركة دولية',
@@ -23,8 +21,6 @@ const SLIDES = [
   },
   {
     image: '/images/gallery/DSC06230-Pano.jpg',
-    tagAr:      'إسطنبول · أكتوبر 2026',
-    tagEn:      'Istanbul · October 2026',
     headlineAr: 'حيث تلتقي\nالعقول بالآلة',
     headlineEn: 'Where Minds\nMeet Machines',
     subtitleAr: '+500 مشارك من مختلف القطاعات والتخصصات',
@@ -32,8 +28,6 @@ const SLIDES = [
   },
   {
     image: '/images/gallery/bg2.jpg',
-    tagAr:      'ورش عمل · معارض · مسابقات',
-    tagEn:      'Workshops · Exhibitions · Competitions',
     headlineAr: 'تجربة استثنائية\nلا تُنسى',
     headlineEn: 'An Extraordinary\nConference Experience',
     subtitleAr: 'تعلّم من الأفضل وتواصل مع رواد المجال',
@@ -41,8 +35,6 @@ const SLIDES = [
   },
   {
     image: '/images/gallery/feature.jpg',
-    tagAr:      'المقاعد محدودة',
-    tagEn:      'Limited Seats Available',
     headlineAr: 'انضم إلى رواد\nالتكنولوجيا',
     headlineEn: 'Join the\nTech Pioneers',
     subtitleAr: 'سجّل مبكراً واضمن مكانك في الحدث التقني الأبرز',
