@@ -10,6 +10,17 @@ export interface Category {
   id: string;
   recommended: boolean;
   labels: LocalizedText;
+  /**
+   * A line shown under the name on the registration form's tier card, and
+   * nowhere else.
+   *
+   * Deliberately not folded into `labels`: that string is the category's name
+   * everywhere the platform says it — the badge, the approval emails, the
+   * admin lists, the attendance export, the announcement audience picker —
+   * and a name carrying a parenthetical runs through all of them. This says
+   * the extra part once, where somebody is choosing.
+   */
+  note?: LocalizedText;
   features: { ar: string[]; en: string[]; tr: string[] };
 }
 
@@ -33,12 +44,14 @@ export const CATEGORIES: Category[] = [
     // for a committee decision is steering them into a queue.
     recommended: false,
     labels: {
-      // Just the tier. The two competitions were spelled out here for a while,
-      // which made the card's title three lines long and repeated a choice the
-      // form asks for directly a moment later, once this tier is picked.
       ar: 'مشارك',
       en: 'Participant',
       tr: 'Katılımcı',
+    },
+    note: {
+      ar: 'مسابقة الاختراع والابتكار — مسابقة الأوراق البحثية',
+      en: 'Invention & Innovation — Research Papers',
+      tr: 'İcat ve İnovasyon — Araştırma Makaleleri',
     },
     features: {
       ar: ['كل مميزات الزائر', 'المشاركة في ورشات العمل', 'عرض بحث أو مشروع'],

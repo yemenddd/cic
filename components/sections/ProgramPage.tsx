@@ -11,19 +11,33 @@ type Session = {
   readonly title: string;
   readonly speaker: string;
   readonly role: string;
-  readonly img: string;
   readonly color: string;
 };
 
 // Fallback accent colors when a session has no explicit `color` set.
 const SESSION_COLORS = ['#67e8f9', '#60a5fa', '#818cf8', '#a78bfa'];
 
-const CARD_H  = 144; // h-36 in px
+/**
+ * Split a `time` into its start and its end.
+ *
+ * The column stores free text — '09:00' on the old programme, '11:00 - 13:00'
+ * on this one — and lib/ics.ts already reads a range the same way, so the two
+ * agree on what the second number means.
+ */
+const TIME_RANGE = /^\s*(.+?)\s*[-–—]\s*(.+?)\s*$/;
+const startOf = (time: string) => TIME_RANGE.exec(time)?.[1] ?? time;
+const endOf = (time: string) => TIME_RANGE.exec(time)?.[2] ?? '';
+
+const CARD_H  = 112; // was h-36, before the photo and the speaker came off
 const CARD_GAP = 16; // gap between expanded cards
 const BASE_TOP = 24; // top-6 = 24px
 
-// Collapsed: doubling offsets so cards peek behind each other
-const COLLAPSED_TOPS = [0, 12, 24, 48].map(v => BASE_TOP + v);
+// Collapsed: each card peeks a little below the one in front of it.
+//
+// This was four hand-written offsets, which was fine while every day had four
+// sessions; the seventh card on day one landed on BASE_TOP, on top of the
+// first. Computed, so the stack holds for any number of sessions.
+const collapsedTop = (i: number) => BASE_TOP + i * 13;
 
 // Expanded: evenly spaced
 const expandedTop = (i: number) => BASE_TOP + i * (CARD_H + CARD_GAP);
@@ -69,9 +83,9 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
         {sessions.map((session, i) => (
           <motion.div
             key={i}
-            className="absolute right-0 left-0 flex flex-row items-start gap-4 h-36 rounded-2xl px-4 sm:px-5 pt-4 pb-3 backdrop-blur-xl"
-            initial={{ top: COLLAPSED_TOPS[i] ?? BASE_TOP }}
-            animate={{ top: isActive ? expandedTop(i) : (COLLAPSED_TOPS[i] ?? BASE_TOP) }}
+            className="absolute right-0 left-0 flex flex-row items-start gap-4 h-28 rounded-2xl px-4 sm:px-5 pt-4 pb-3 backdrop-blur-xl"
+            initial={{ top: collapsedTop(i) }}
+            animate={{ top: isActive ? expandedTop(i) : (collapsedTop(i)) }}
             transition={{
               ...SPRING,
               delay: isActive
@@ -85,9 +99,21 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
               zIndex: sessions.length - i,
             }}
           >
-            <span className="shrink-0 font-outfit font-black text-lg sm:text-2xl tabular-nums w-14 sm:w-16 text-right leading-none pt-0.5"
-              style={{ color: 'var(--text-primary)' }}>
-              {session.time}
+            {/* Split, rather than left to wrap: the column is too narrow for
+                "11:00 - 13:00" and the browser broke it as three centred lines
+                with a stranded dash. Start reads as the heading it is, end sits
+                under it as the detail. */}
+            <span className="shrink-0 w-14 sm:w-16 text-right leading-none pt-0.5" dir="ltr">
+              <span className="block font-outfit font-black text-lg sm:text-2xl tabular-nums"
+                style={{ color: 'var(--text-primary)' }}>
+                {startOf(session.time)}
+              </span>
+              {endOf(session.time) && (
+                <span className="mt-1 block font-outfit font-semibold text-[11px] sm:text-xs tabular-nums"
+                  style={{ color: 'var(--text-tertiary)' }}>
+                  {endOf(session.time)}
+                </span>
+              )}
             </span>
 
             <div className="flex-1 min-w-0">
@@ -95,24 +121,19 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
                 style={{ color: 'var(--text-primary)' }}>
                 {session.title}
               </p>
-              <p className="text-sm sm:text-base truncate" style={{ color: 'var(--text-secondary)' }}>
-                {session.speaker}
-              </p>
-              <p className="text-xs sm:text-sm mt-1 truncate" style={{ color: session.color, opacity: 0.85 }}>
-                {session.role}
-              </p>
-            </div>
-
-            <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden"
-              style={{ border: `1px solid ${session.color}30` }}>
-              <img
-                src={session.img}
-                alt={session.speaker}
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-              />
+              {/* Both optional: most sessions on this programme are not a
+                  talk by one person, and an empty line under the title reads
+                  as something that failed to load. */}
+              {session.speaker && (
+                <p className="text-sm sm:text-base truncate" style={{ color: 'var(--text-secondary)' }}>
+                  {session.speaker}
+                </p>
+              )}
+              {session.role && (
+                <p className="text-xs sm:text-sm mt-1 truncate" style={{ color: session.color, opacity: 0.85 }}>
+                  {session.role}
+                </p>
+              )}
             </div>
           </motion.div>
         ))}
@@ -154,7 +175,6 @@ export default function ProgramPage({ data }: { data?: { dayOne: ProgramSession[
     title: s.title[lang] || s.title.ar,
     speaker: s.speakerName?.[lang] || s.speakerName?.ar || '',
     role: s.speakerRole?.[lang] || s.speakerRole?.ar || s.track?.[lang] || s.track?.ar || '',
-    img: s.speakerPhotoUrl || '',
     color: s.color || SESSION_COLORS[i % SESSION_COLORS.length],
   });
 

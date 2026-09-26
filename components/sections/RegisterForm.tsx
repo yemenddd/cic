@@ -601,6 +601,11 @@ export default function RegisterForm() {
                               </span>
                             )}
                           </div>
+                          {cat.note && (
+                            <p className="-mt-1.5 mb-2.5 text-[11.5px] leading-snug" style={{ color: 'var(--text-tertiary)' }}>
+                              {cat.note[l]}
+                            </p>
+                          )}
                           <ul className="space-y-1.5">
                             {cat.features[l].map((f, i) => (
                               <li
