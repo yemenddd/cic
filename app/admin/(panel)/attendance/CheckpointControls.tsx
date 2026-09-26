@@ -65,7 +65,7 @@ export default function CheckpointControls({
             if (!ok) return;
             run(() => deleteCheckpoint(checkpointId));
           }}
-          className="rounded-lg p-1.5 transition-opacity disabled:opacity-50"
+          className="flex h-9 w-9 items-center justify-center rounded-lg transition-opacity disabled:opacity-50"
           style={{ color: 'var(--destructive)' }}
           aria-label="حذف نقطة الحضور"
         >

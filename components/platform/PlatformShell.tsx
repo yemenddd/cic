@@ -469,7 +469,10 @@ export default function PlatformShell({
             type="button"
             onClick={() => setOpenedOn(pathname)}
             aria-label="فتح القائمة"
-            className="rounded-lg p-1"
+            // -m-2 keeps the icon where it was drawn while the button itself
+            // grows to 44px: this is the only way into the navigation on a
+            // phone, and it was a 28px target.
+            className="-m-2 flex h-11 w-11 items-center justify-center rounded-lg"
             style={{ color: 'var(--text-primary)' }}
           >
             <Menu className="h-5 w-5" />

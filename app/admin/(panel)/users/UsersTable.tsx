@@ -193,14 +193,16 @@ export default function UsersTable({ rows, currentAdminId }: { rows: UserRow[]; 
       <ListTable>
         <thead>
           <tr style={{ borderBottom: '1px solid var(--mat-liquid-border)' }}>
-            <th className="p-3 w-10">
+            <th className="w-10 p-0">
+              <label className="flex h-11 w-11 cursor-pointer items-center justify-center">
               <input
                 type="checkbox"
                 checked={allSelected}
                 onChange={toggleAll}
                 aria-label="تحديد كل الصف في هذه الصفحة"
-                style={{ accentColor: 'var(--accent-violet)', width: 15, height: 15 }}
+                style={{ accentColor: 'var(--accent-violet)', width: 18, height: 18 }}
               />
+              </label>
             </th>
             {['المستخدم', 'الصلاحية', 'الفئة', 'الحضور', 'النشاط', 'الانضمام', ''].map((h, i) => (
               <th
@@ -227,14 +229,16 @@ export default function UsersTable({ rows, currentAdminId }: { rows: UserRow[]; 
                   background: isSelected ? 'color-mix(in srgb, var(--accent-violet) 7%, transparent)' : undefined,
                 }}
               >
-                <td className="p-3 w-10">
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => toggle(u.id)}
-                    aria-label={`تحديد ${u.name || u.email}`}
-                    style={{ accentColor: 'var(--accent-violet)', width: 15, height: 15 }}
-                  />
+                <td className="w-10 p-0">
+                  <label className="flex h-11 w-11 cursor-pointer items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggle(u.id)}
+                      aria-label={`تحديد ${u.name || u.email}`}
+                      style={{ accentColor: 'var(--accent-violet)', width: 18, height: 18 }}
+                    />
+                  </label>
                 </td>
 
                 <Cell color="var(--text-primary)">
@@ -267,7 +271,7 @@ export default function UsersTable({ rows, currentAdminId }: { rows: UserRow[]; 
                   <div className="flex items-center justify-end">
                     <Link
                       href={`/admin/users/${u.id}`}
-                      className="p-1.5 rounded-lg"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg"
                       style={{ color: 'var(--text-tertiary)' }}
                       aria-label="عرض"
                     >

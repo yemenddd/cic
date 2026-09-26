@@ -267,7 +267,7 @@ export default function Hero() {
                   >
                     {item.value.toString().padStart(2, '0')}
                   </span>
-                  <span className="mt-1 text-caption" style={{ fontSize: 'clamp(8px, 2.2vw, 11px)', letterSpacing: '0.10em', color: 'var(--text-tertiary)' }}>
+                  <span className="mt-1 text-caption" style={{ fontSize: 'clamp(10px, 2.2vw, 11px)', letterSpacing: '0.10em', color: 'var(--text-tertiary)' }}>
                     {item.label}
                   </span>
                 </motion.div>

@@ -62,6 +62,10 @@ export default function RegisterQrPage() {
             resolves against a container that has no width — which collapsed
             the poster into a strip down one side of the PDF. Nothing inside
             the captured node may be sized in percentages. */}
+        {/* Scrolls rather than scales on a narrow screen. Shrinking the poster
+            to fit would shrink what gets captured with it — html-to-image is
+            given this element's measured width — and the point of the page is
+            a print file, so its resolution outranks a tidier preview. */}
         <div style={{ overflowX: 'auto', display: 'flex', justifyContent: 'center' }}>
         <div
           id="cic-register-poster"

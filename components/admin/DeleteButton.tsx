@@ -19,7 +19,7 @@ export default function DeleteButton({ action, confirmText = 'حذف هذا ال
         if (!(await confirm({ title: confirmText, confirmLabel: 'حذف', tone: 'danger' }))) return;
         startTransition(() => action());
       }}
-      className="p-1.5 rounded-lg transition-colors disabled:opacity-50"
+      className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors disabled:opacity-50"
       style={{ color: '#ef4444' }}
       aria-label="حذف"
     >

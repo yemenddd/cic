@@ -230,7 +230,7 @@ export default async function AdminSubmissionsPage({ searchParams }: Props) {
                 <div className="flex items-center justify-end">
                   <Link
                     href={`/admin/submissions/${s.id}`}
-                    className="p-1.5 rounded-lg"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg"
                     style={{ color: 'var(--text-tertiary)' }}
                     aria-label="عرض"
                   >

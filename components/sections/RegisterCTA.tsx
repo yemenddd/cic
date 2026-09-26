@@ -60,7 +60,7 @@ function CountCard({ value, label }: { value: number; label: string }) {
       </div>
       <span
         className="font-semibold uppercase"
-        style={{ fontSize: 'clamp(9px, 1.5vw, 10px)', letterSpacing: '0.22em', color: 'var(--text-tertiary)' }}
+        style={{ fontSize: 'clamp(10px, 1.5vw, 11px)', letterSpacing: '0.22em', color: 'var(--text-tertiary)' }}
       >
         {label}
       </span>

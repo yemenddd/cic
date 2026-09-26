@@ -116,14 +116,16 @@ export default function RegistrationsTable({
       <ListTable>
         <thead>
           <tr style={{ borderBottom: '1px solid var(--mat-liquid-border)' }}>
-            <th className="p-3 w-10">
+            <th className="w-10 p-0">
+              <label className="flex h-11 w-11 cursor-pointer items-center justify-center">
               <input
                 type="checkbox"
                 checked={allSelected}
                 onChange={() => setSelected(allSelected ? new Set() : new Set(rows.map((r) => r.id)))}
                 aria-label="تحديد كل الصفوف في هذه الصفحة"
-                style={{ accentColor: 'var(--accent-violet)', width: 15, height: 15 }}
+                style={{ accentColor: 'var(--accent-violet)', width: 18, height: 18 }}
               />
+              </label>
             </th>
             {['المسجَّل', 'الهاتف', 'الدولة', 'الفئة', 'تاريخ التسجيل', ''].map((h, i) => (
               <th key={i} className="p-3 text-start text-[11.5px] font-semibold" style={{ color: 'var(--text-tertiary)' }}>
@@ -148,14 +150,16 @@ export default function RegistrationsTable({
                   background: isSelected ? 'color-mix(in srgb, var(--accent-violet) 7%, transparent)' : undefined,
                 }}
               >
-                <td className="p-3 w-10">
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => toggle(r.id)}
-                    aria-label={`تحديد ${r.fullName}`}
-                    style={{ accentColor: 'var(--accent-violet)', width: 15, height: 15 }}
-                  />
+                <td className="w-10 p-0">
+                  <label className="flex h-11 w-11 cursor-pointer items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggle(r.id)}
+                      aria-label={`تحديد ${r.fullName}`}
+                      style={{ accentColor: 'var(--accent-violet)', width: 18, height: 18 }}
+                    />
+                  </label>
                 </td>
 
                 <td className="p-3" style={{ color: 'var(--text-primary)' }}>
@@ -208,7 +212,7 @@ export default function RegistrationsTable({
                   <div className="flex items-center justify-end">
                     <Link
                       href={`/admin/registrations/${r.id}`}
-                      className="p-1.5 rounded-lg"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg"
                       style={{ color: 'var(--text-tertiary)' }}
                       aria-label={`عرض تسجيل ${r.fullName}`}
                     >

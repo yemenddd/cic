@@ -70,7 +70,7 @@ export default async function AdminAchievementStudentsPage({
               </td>
               <td className="p-3 w-24">
                 <div className="flex items-center gap-1 justify-end">
-                  <Link href={`/admin/achievements/${editionId}/students/${s.id}`} className="p-1.5 rounded-lg" style={{ color: 'var(--text-tertiary)' }}>
+                  <Link href={`/admin/achievements/${editionId}/students/${s.id}`} className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ color: 'var(--text-tertiary)' }}>
                     <Pencil className="h-4 w-4" />
                   </Link>
                   <DeleteButton action={deleteStudent.bind(null, editionId, s.id)} />

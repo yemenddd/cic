@@ -174,25 +174,33 @@ export default function HeroSlider() {
         {/* ── Bottom nav bar — always LTR layout so arrows never flip ── */}
         <div className="flex items-center justify-between mt-10" dir="ltr">
 
-          {/* Progress pills */}
-          <div className="flex items-center gap-2">
+          {/* Progress pills.
+
+              The pill a person sees is 4px tall, which is not a tap target —
+              on a phone it was 8×4. So the button is a transparent 44px-tall
+              box and the pill is drawn inside it: the design is unchanged and
+              a thumb has somewhere to land. The pill keeps its own
+              overflow-hidden, which is what clips the progress fill to its
+              rounded ends. */}
+          <div className="flex items-center gap-1">
             {SLIDES.map((_, i) => (
               <button
                 key={i}
                 onClick={() => goTo(i)}
-                className="relative overflow-hidden flex-shrink-0"
+                className="flex h-11 flex-shrink-0 items-center justify-center px-1"
                 aria-label={`Slide ${i + 1}`}
-                style={{
-                  width:      i === current ? 32 : 8,
-                  height:     4,
-                  borderRadius: 99,
-                  background: 'rgba(255,255,255,0.22)',
-                  border:     'none',
-                  cursor:     'pointer',
-                  padding:    0,
-                  transition: 'width 0.35s ease',
-                }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', touchAction: 'manipulation' }}
               >
+                <span
+                  className="relative block overflow-hidden"
+                  style={{
+                    width:      i === current ? 32 : 8,
+                    height:     4,
+                    borderRadius: 99,
+                    background: 'rgba(255,255,255,0.22)',
+                    transition: 'width 0.35s ease',
+                  }}
+                >
                 {i === current && (
                   <motion.span
                     key={tick}
@@ -203,6 +211,7 @@ export default function HeroSlider() {
                     transition={{ duration: INTERVAL / 1000, ease: 'linear' }}
                   />
                 )}
+                </span>
               </button>
             ))}
           </div>

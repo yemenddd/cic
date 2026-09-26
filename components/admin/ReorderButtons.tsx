@@ -17,7 +17,10 @@ export default function ReorderButtons({
 }) {
   const [pending, startTransition] = useTransition();
 
-  const btn = 'p-1 rounded-md transition-opacity disabled:opacity-25';
+  // 22px squares stacked in pairs, on a table row, on a phone: the two are
+  // close enough together that a thumb hits whichever it likes. The icon stays
+  // the size it was; only what a finger can land on grows.
+  const btn = 'flex h-8 w-9 items-center justify-center rounded-md transition-opacity disabled:opacity-25';
 
   return (
     <div className="flex flex-col">
