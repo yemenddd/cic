@@ -32,6 +32,9 @@ export async function createSession(_prev: ActionResult, formData: FormData): Pr
   const titleAr = String(formData.get('titleAr') || '').trim();
   const titleEn = String(formData.get('titleEn') || '').trim();
   const titleTr = String(formData.get('titleTr') || '').trim();
+  const descriptionAr = String(formData.get('descriptionAr') || '').trim();
+  const descriptionEn = String(formData.get('descriptionEn') || '').trim();
+  const descriptionTr = String(formData.get('descriptionTr') || '').trim();
   const speakerNameAr = String(formData.get('speakerNameAr') || '').trim();
   const speakerNameEn = String(formData.get('speakerNameEn') || '').trim();
   const speakerNameTr = String(formData.get('speakerNameTr') || '').trim();
@@ -58,6 +61,9 @@ export async function createSession(_prev: ActionResult, formData: FormData): Pr
       time,
       titleAr,
       titleEn: titleEn || null,
+      descriptionAr: descriptionAr || null,
+      descriptionEn: descriptionEn || null,
+      descriptionTr: descriptionTr || null,
       titleTr: titleTr || null,
       speakerNameAr: speakerNameAr || null,
       speakerNameEn: speakerNameEn || null,
@@ -85,6 +91,9 @@ export async function updateSession(id: string, _prev: ActionResult, formData: F
   const titleAr = String(formData.get('titleAr') || '').trim();
   const titleEn = String(formData.get('titleEn') || '').trim();
   const titleTr = String(formData.get('titleTr') || '').trim();
+  const descriptionAr = String(formData.get('descriptionAr') || '').trim();
+  const descriptionEn = String(formData.get('descriptionEn') || '').trim();
+  const descriptionTr = String(formData.get('descriptionTr') || '').trim();
   const speakerNameAr = String(formData.get('speakerNameAr') || '').trim();
   const speakerNameEn = String(formData.get('speakerNameEn') || '').trim();
   const speakerNameTr = String(formData.get('speakerNameTr') || '').trim();
@@ -114,6 +123,9 @@ export async function updateSession(id: string, _prev: ActionResult, formData: F
       time,
       titleAr,
       titleEn: titleEn || null,
+      descriptionAr: descriptionAr || null,
+      descriptionEn: descriptionEn || null,
+      descriptionTr: descriptionTr || null,
       titleTr: titleTr || null,
       speakerNameAr: speakerNameAr || null,
       speakerNameEn: speakerNameEn || null,

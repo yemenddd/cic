@@ -9,6 +9,7 @@ import type { ProgramSession } from '@/lib/db/queries';
 type Session = {
   readonly time: string;
   readonly title: string;
+  readonly desc: string;
   readonly speaker: string;
   readonly role: string;
   readonly color: string;
@@ -28,7 +29,7 @@ const TIME_RANGE = /^\s*(.+?)\s*[-–—]\s*(.+?)\s*$/;
 const startOf = (time: string) => TIME_RANGE.exec(time)?.[1] ?? time;
 const endOf = (time: string) => TIME_RANGE.exec(time)?.[2] ?? '';
 
-const CARD_H  = 112; // was h-36, before the photo and the speaker came off
+const CARD_H  = 132; // time, title and a sentence — no photo, no speaker
 const CARD_GAP = 16; // gap between expanded cards
 const BASE_TOP = 24; // top-6 = 24px
 
@@ -83,7 +84,7 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
         {sessions.map((session, i) => (
           <motion.div
             key={i}
-            className="absolute right-0 left-0 flex flex-row items-start gap-4 h-28 rounded-2xl px-4 sm:px-5 pt-4 pb-3 backdrop-blur-xl"
+            className="absolute right-0 left-0 flex flex-row items-start gap-4 h-[132px] rounded-2xl px-4 sm:px-5 pt-4 pb-3 backdrop-blur-xl"
             initial={{ top: collapsedTop(i) }}
             animate={{ top: isActive ? expandedTop(i) : (collapsedTop(i)) }}
             transition={{
@@ -121,6 +122,11 @@ function DayStack({ day, sessions, label, date, collapseLabel }: {
                 style={{ color: 'var(--text-primary)' }}>
                 {session.title}
               </p>
+              {session.desc && (
+                <p className="text-[12.5px] sm:text-sm leading-snug line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
+                  {session.desc}
+                </p>
+              )}
               {/* Both optional: most sessions on this programme are not a
                   talk by one person, and an empty line under the title reads
                   as something that failed to load. */}
@@ -173,6 +179,7 @@ export default function ProgramPage({ data }: { data?: { dayOne: ProgramSession[
   const toSession = (s: ProgramSession, i: number): Session => ({
     time: s.time,
     title: s.title[lang] || s.title.ar,
+    desc: s.description?.[lang] || s.description?.ar || '',
     speaker: s.speakerName?.[lang] || s.speakerName?.ar || '',
     role: s.speakerRole?.[lang] || s.speakerRole?.ar || s.track?.[lang] || s.track?.ar || '',
     color: s.color || SESSION_COLORS[i % SESSION_COLORS.length],

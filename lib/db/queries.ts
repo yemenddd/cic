@@ -21,6 +21,7 @@ export interface ProgramSession {
   day: 'dayOne' | 'dayTwo';
   time: string;
   title: LocaleString;
+  description?: LocaleString;
   speakerName?: LocaleString;
   speakerRole?: LocaleString;
   speakerPhotoUrl?: string | null;
@@ -121,6 +122,7 @@ export function getProgramSessions(): Promise<ProgramSession[]> {
       day: r.day as 'dayOne' | 'dayTwo',
       time: r.time,
       title: locale(r.titleAr, r.titleEn, r.titleTr),
+      description: optionalLocale(r.descriptionAr, r.descriptionEn, r.descriptionTr),
       speakerName: optionalLocale(r.speakerNameAr, r.speakerNameEn, r.speakerNameTr),
       speakerRole: optionalLocale(r.speakerRoleAr, r.speakerRoleEn, r.speakerRoleTr),
       speakerPhotoUrl: r.speakerPhotoUrl,

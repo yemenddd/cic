@@ -13,6 +13,7 @@ export default function NewProgramSessionPage() {
       <SelectField name="day" label="اليوم" options={DAY_OPTIONS} required />
       <TextField name="time" label="الوقت" dir="ltr" required />
       <LocaleTextField namePrefix="title" label="العنوان" required />
+      <LocaleTextField namePrefix="description" label="الوصف" />
       <LocaleTextField namePrefix="speakerName" label="اسم المتحدث" />
       <LocaleTextField namePrefix="speakerRole" label="صفة المتحدث" />
       <ImageUploadField name="speakerPhoto" label="صورة المتحدث" />

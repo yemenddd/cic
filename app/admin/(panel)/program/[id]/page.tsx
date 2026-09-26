@@ -27,6 +27,11 @@ export default async function EditProgramSessionPage({ params }: { params: Promi
         required
       />
       <LocaleTextField
+        namePrefix="description"
+        label="الوصف"
+        defaultValue={{ ar: session.descriptionAr, en: session.descriptionEn, tr: session.descriptionTr }}
+      />
+      <LocaleTextField
         namePrefix="speakerName"
         label="اسم المتحدث"
         defaultValue={{ ar: session.speakerNameAr, en: session.speakerNameEn, tr: session.speakerNameTr }}

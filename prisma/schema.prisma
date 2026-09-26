@@ -351,6 +351,19 @@ model ProgramSession {
   titleAr         String
   titleEn         String?
   titleTr         String?
+
+  /**
+   * A sentence saying what happens in the session.
+   *
+   * Added when the programme stopped being a list of talks by named people:
+   * with the speaker and the photograph gone, a card was a time and a title
+   * and a lot of empty space. Deliberately its own column rather than reusing
+   * `track` — a description is not a track, and a field that quietly means
+   * something else is a thing the next person has to decode.
+   */
+  descriptionAr   String?
+  descriptionEn   String?
+  descriptionTr   String?
   speakerNameAr   String?
   speakerNameEn   String?
   speakerNameTr   String?
