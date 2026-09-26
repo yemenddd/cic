@@ -252,7 +252,7 @@ export const dict = {
       statsTitleB: 'real impact.',
       statsItems: [
         { label: 'Consecutive Editions' },
-        { label: 'Expected Attendees' },
+        { label: 'Attendees' },
         { label: 'International Speakers' },
         { label: 'Specialized Tracks' },
       ],
@@ -605,7 +605,7 @@ export const dict = {
       statsTitleB: 'الأثر الحقيقي.',
       statsItems: [
         { label: 'دورات متتالية' },
-        { label: 'حضور متوقع' },
+        { label: 'حضور' },
         { label: 'متحدث دولي' },
         { label: 'مسار متخصص' },
       ],
@@ -955,7 +955,7 @@ export const dict = {
       statsTitleB: 'gerçek etki.',
       statsItems: [
         { label: 'Ardışık Baskı' },
-        { label: 'Beklenen Katılımcı' },
+        { label: 'Katılımcı' },
         { label: 'Uluslararası Konuşmacı' },
         { label: 'Uzman Alan' },
       ],
