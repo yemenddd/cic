@@ -2437,6 +2437,23 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
     readFileSync('lib/conference.ts', 'utf8').includes('y: 2026'), true);
 }
 
+// --- deleting an account takes its signup with it -----------------------------
+
+{
+  // Registration.userId is SetNull, not Cascade — so `prisma.user.delete`
+  // alone leaves the signup behind with no owner, counted in every total and
+  // belonging to nobody. Found while emptying the database before launch:
+  // seven accounts remained and five registrations.
+  const actions = readFileSync('app/admin/(panel)/users/actions.ts', 'utf8');
+  check('the registration is deleted with the account',
+    actions.includes('prisma.registration.deleteMany({ where: { userId } })'), true);
+  check('and both in one transaction', actions.includes('prisma.$transaction(['), true);
+
+  // The live proof: no signup outlives its owner.
+  check('no registration has lost its owner',
+    await prisma.registration.count({ where: { userId: null } }), 0);
+}
+
 // --- the link preview --------------------------------------------------------
 //
 // The share image was a next/og ImageResponse. Satori, which renders those,

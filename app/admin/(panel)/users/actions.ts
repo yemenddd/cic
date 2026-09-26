@@ -146,8 +146,21 @@ export async function deleteUser(userId: string): Promise<ActionResult> {
     return { error: 'لا يمكن حذف آخر مدير في المنصة — عيّن مديراً آخر أولاً' };
   }
 
-  const { count } = await prisma.user.deleteMany({ where: { id: userId } });
-  if (count === 0) return { error: 'المستخدم غير موجود' };
+  // The registration goes with the account, in one transaction.
+  //
+  // Registration.userId is SetNull rather than Cascade, so deleting a user on
+  // its own left the signup behind with no owner — still counted in the
+  // totals, still in the attendance analysis, and belonging to nobody. For
+  // this platform the registration *is* the signup: there is no such thing as
+  // one without an account, so it should not outlive it.
+  //
+  // Registrations first: once the user row is gone the link is null and there
+  // is nothing left to match them on.
+  const [, deleted] = await prisma.$transaction([
+    prisma.registration.deleteMany({ where: { userId } }),
+    prisma.user.deleteMany({ where: { id: userId } }),
+  ]);
+  if (deleted.count === 0) return { error: 'المستخدم غير موجود' };
 
   revalidatePath('/admin/users');
   redirect('/admin/users');
