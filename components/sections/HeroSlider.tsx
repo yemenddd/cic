@@ -23,8 +23,8 @@ const SLIDES = [
   },
   {
     image: '/images/gallery/DSC06230-Pano.jpg',
-    tagAr:      'صنعاء · أكتوبر 2026',
-    tagEn:      "Sana'a · October 2026",
+    tagAr:      'إسطنبول · أكتوبر 2026',
+    tagEn:      'Istanbul · October 2026',
     headlineAr: 'حيث تلتقي\nالعقول بالآلة',
     headlineEn: 'Where Minds\nMeet Machines',
     subtitleAr: '+500 مشارك من مختلف القطاعات والتخصصات',
