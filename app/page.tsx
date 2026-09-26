@@ -30,8 +30,24 @@ const eventJsonLd = {
   organizer: { "@type": "Organization", name: "CIC", url: siteUrl },
 };
 
+/**
+ * Whether the keynote speakers section appears on the homepage.
+ *
+ * Hidden for now, at the organizers' request — the line-up is not settled and
+ * the section named people as confirmed speakers. Nothing about them is
+ * deleted: the six rows are still in the database and still editable from
+ * /admin/speakers, and the section itself is untouched. Set this to true to
+ * bring it back.
+ */
+const SHOW_SPEAKERS: boolean = false;
+
 export default async function Home() {
-  const [partners, speakers] = await Promise.all([getPartners(), getSpeakers()]);
+  // Not queried while the section is hidden — there is nothing to render it
+  // into, and the homepage should not pay for a round-trip it discards.
+  const [partners, speakers] = await Promise.all([
+    getPartners(),
+    SHOW_SPEAKERS ? getSpeakers() : [],
+  ]);
 
   return (
     <div className="overflow-x-clip bg-black">
@@ -54,8 +70,8 @@ export default async function Home() {
       {/* 04 · Horizontal photo gallery — pinned, scroll-driven */}
       <HorizontalGallery />
 
-      {/* 05 · Keynote speakers — dark, flip cards */}
-      <Speakers data={speakers} />
+      {/* 05 · Keynote speakers — dark, flip cards. See SHOW_SPEAKERS above. */}
+      {SHOW_SPEAKERS && <Speakers data={speakers} />}
 
       {/* 05 · Program streams — Fluent light */}
       <Program />
