@@ -14,10 +14,12 @@ const SLIDES = [
     image: '/images/gallery/DSC02311-Pano.jpg',
     tagAr:      'إسطنبول',
     tagEn:      'Istanbul',
-    headlineAr: 'المؤتمر الدولي\nلتكنولوجيا المعلومات',
-    headlineEn: 'International Conference\non ICT',
-    subtitleAr: 'التقنية، الابتكار، والمستقبل في مكان واحد',
-    subtitleEn: 'Technology, Innovation & the Future — in one place',
+    // Named a different conference than the one this site is for. What the
+    // opening frame should carry instead is who is in the room.
+    headlineAr: 'حضور رسمي\nومشاركة دولية',
+    headlineEn: 'Official Presence\nInternational Participation',
+    subtitleAr: 'شخصيات رسمية ووفود من عدة دول تلتقي في إسطنبول',
+    subtitleEn: 'Officials and delegations from several countries, meeting in Istanbul',
   },
   {
     image: '/images/gallery/DSC06230-Pano.jpg',
