@@ -77,7 +77,6 @@ export default function Footer({ social }: { social: SocialLinks }) {
         { href: "/program", label: t("nav.program") },
         { href: "/gallery", label: t("nav.gallery") },
       ]}
-      legalLinks={[{ href: "/privacy", label: t("footer.privacy") }]}
       copyright={{
         text: `© 2026 ${t("footer.license")} - ${t("footer.copyright")}`,
       }}

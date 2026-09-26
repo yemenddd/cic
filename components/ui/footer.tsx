@@ -12,7 +12,8 @@ interface FooterProps {
     href: string
     label: string
   }>
-  legalLinks: Array<{
+  /** Optional: there are none while the site has no privacy page. */
+  legalLinks?: Array<{
     href: string
     label: string
   }>

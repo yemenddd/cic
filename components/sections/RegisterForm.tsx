@@ -874,7 +874,7 @@ export default function RegisterForm() {
             )}
           </button>
 
-          {/* Footer row: cancel + privacy note */}
+          {/* Footer row: cancel */}
           <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
             <Link
               href="/"
