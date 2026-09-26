@@ -173,13 +173,6 @@ export default function ConferenceBadge({
                 alt="CIC"
                 style={{ height: 36, width: 'auto', objectFit: 'contain', maxWidth: '70%' }}
               />
-              <span style={{
-                color: 'rgba(255,255,255,0.25)',
-                fontSize: 18, fontWeight: 700,
-                letterSpacing: '-0.02em', lineHeight: 1,
-              }}>
-                2026
-              </span>
             </div>
 
           </div>

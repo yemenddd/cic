@@ -5,8 +5,8 @@ import { pageMetadata } from '@/lib/page-metadata';
 import { getSiteSettings } from '@/lib/site-settings-server';
 
 export const metadata = pageMetadata({
-  title: 'التسجيل | مؤتمر الإبداع والابتكار 2026',
-  description: 'سجّل الآن في مؤتمر الإبداع والابتكار — إسطنبول 2026.',
+  title: 'التسجيل | مؤتمر الإبداع والابتكار',
+  description: 'سجّل الآن في مؤتمر الإبداع والابتكار — إسطنبول.',
 });
 
 /**

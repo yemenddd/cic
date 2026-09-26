@@ -3,7 +3,7 @@ import { getHistoryEditions } from '@/lib/db/queries';
 import { pageMetadata } from '@/lib/page-metadata';
 
 export const metadata = pageMetadata({
-  title: 'رحلتنا | مؤتمر الإبداع والابتكار 2026',
+  title: 'رحلتنا | مؤتمر الإبداع والابتكار',
   description: 'أربع دورات، رؤية واحدة — استعرض مسيرة مؤتمر الإبداع والابتكار.',
 });
 

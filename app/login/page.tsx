@@ -4,7 +4,7 @@ import { currentUser } from '@/lib/auth-guards';
 import LoginForm from '@/components/dashboard/LoginForm';
 
 export const metadata: Metadata = {
-  title: 'تسجيل الدخول | مؤتمر الإبداع والابتكار 2026',
+  title: 'تسجيل الدخول | مؤتمر الإبداع والابتكار',
   robots: { index: false, follow: false },
 };
 

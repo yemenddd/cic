@@ -14,7 +14,7 @@ import DashboardBadge from '@/components/dashboard/DashboardBadge';
 import GatePass from './GatePass';
 
 export const metadata = {
-  title: 'بطاقتي | CIC 2026',
+  title: 'بطاقتي | CIC',
 };
 
 const DAY_ONLY = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric' });

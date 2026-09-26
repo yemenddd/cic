@@ -77,7 +77,7 @@ export default function CinematicBreak() {
           <motion.div className="flex justify-center mb-8" {...inView(0)}>
             <Image
               src="/images/logos/logo_text_horizonal.png"
-              alt="CIC 2026"
+              alt="CIC"
               width={640}
               height={128}
               className="h-10 sm:h-16 lg:h-24 w-auto object-contain"

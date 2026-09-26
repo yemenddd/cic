@@ -12,7 +12,7 @@ import { arabicCountBare, SESSION, CLASH } from '@/lib/arabic-plural';
 import SaveSessionButton from '@/components/dashboard/SaveSessionButton';
 
 export const metadata: Metadata = {
-  title: 'جدولي | مؤتمر الإبداع والابتكار 2026',
+  title: 'جدولي | مؤتمر الإبداع والابتكار',
   robots: { index: false, follow: false },
 };
 

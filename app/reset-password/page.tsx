@@ -5,7 +5,7 @@ import { checkResetToken } from '@/lib/password-reset';
 import ResetPasswordForm from './ResetPasswordForm';
 
 export const metadata: Metadata = {
-  title: 'كلمة مرور جديدة | مؤتمر الإبداع والابتكار 2026',
+  title: 'كلمة مرور جديدة | مؤتمر الإبداع والابتكار',
   robots: { index: false, follow: false },
 };
 

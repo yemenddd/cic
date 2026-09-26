@@ -2411,6 +2411,30 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   // different names, and the sign-in screen is where somebody meets both.
   const auth = readFileSync('components/platform/AuthScreen.tsx', 'utf8');
   check('the platform carries its own name', auth.includes('الإبداع والابتكار'), true);
+
+  // The year went the same way as the edition, and for the same reason: a
+  // name that carries a date has to be rewritten every year. It survives only
+  // where it is information — a real date, a confirmation code, a timeline
+  // year, the copyright, a download filename — never as part of a name.
+  const NAMED_YEAR = /CIC\s*2026|الإبداع والابتكار\s*2026|2026\s*Creativity|2026\s*Yaratıcılık/;
+  const sources = [
+    'app/layout.tsx', 'app/page.tsx', 'app/opengraph-image.tsx', 'app/not-found.tsx',
+    'app/register/page.tsx', 'app/login/page.tsx', 'app/program/page.tsx',
+    'app/dashboard/layout.tsx', 'app/dashboard/badge/page.tsx',
+    'components/ui/footer-section.tsx', 'components/ui/ConferenceBadge.tsx',
+    'components/dashboard/ParticipationCertificate.tsx',
+    'components/sections/HeroSlider.tsx', 'components/sections/AboutConference.tsx',
+    'lib/dictionary.ts', 'lib/account-emails.ts',
+  ];
+  check('the year is not part of the name',
+    sources.filter((f) => NAMED_YEAR.test(readFileSync(f, 'utf8'))).join(', '), '');
+
+  // Still information, and must not be swept away with the branding: every
+  // badge already issued carries this prefix, and the scanner matches on it.
+  check('but confirmation codes keep theirs',
+    readFileSync('lib/confirmation-code.ts', 'utf8').includes('CIC-2026-'), true);
+  check('and so does the date the conference is on',
+    readFileSync('lib/conference.ts', 'utf8').includes('y: 2026'), true);
 }
 
 // --- undo --------------------------------------------------------------------

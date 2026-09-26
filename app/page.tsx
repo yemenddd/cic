@@ -14,7 +14,7 @@ import { siteUrl } from "@/lib/site";
 const eventJsonLd = {
   "@context": "https://schema.org",
   "@type": "Event",
-  name: "مؤتمر الإبداع والابتكار 2026 (CIC 2026)",
+  name: "مؤتمر الإبداع والابتكار (CIC)",
   startDate: "2026-10-02",
   endDate: "2026-10-03",
   eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",

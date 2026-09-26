@@ -5,7 +5,7 @@ import { currentUser } from '@/lib/auth-guards';
 import DashboardShell from '@/components/dashboard/DashboardShell';
 
 export const metadata: Metadata = {
-  title: 'حسابي | CIC 2026',
+  title: 'حسابي | CIC',
   robots: { index: false, follow: false },
 };
 

@@ -50,7 +50,7 @@ export async function approveAccount(userId: string, note?: string): Promise<Act
         userId,
         title: 'تم قبول طلب انضمامك',
         body: note?.trim()
-          || `أهلاً بك في مؤتمر CIC 2026 بصفة ${categoryLabel(user.category, 'ar') || 'مشارك'}. يمكنك الآن الدخول إلى حسابك.`,
+          || `أهلاً بك في مؤتمر الإبداع والابتكار بصفة ${categoryLabel(user.category, 'ar') || 'مشارك'}. يمكنك الآن الدخول إلى حسابك.`,
         link: '/dashboard',
       },
     }),

@@ -34,11 +34,11 @@ export function approvalEmail(params: {
   const role = params.categoryLabel || 'مشارك';
 
   return {
-    subject: 'تم قبول طلب انضمامك — مؤتمر الإبداع والابتكار 2026',
+    subject: 'تم قبول طلب انضمامك — مؤتمر الإبداع والابتكار',
     text: [
       greeting(params.name),
       '',
-      `قُبل طلب انضمامك إلى مؤتمر الإبداع والابتكار 2026 بصفة ${role}.`,
+      `قُبل طلب انضمامك إلى مؤتمر الإبداع والابتكار بصفة ${role}.`,
       '',
       'يمكنك الآن الدخول إلى حسابك:',
       `${siteUrl}/login`,
@@ -60,11 +60,11 @@ export function rejectionEmail(params: {
   const reason = params.reason.trim();
 
   return {
-    subject: 'بخصوص طلب انضمامك — مؤتمر الإبداع والابتكار 2026',
+    subject: 'بخصوص طلب انضمامك — مؤتمر الإبداع والابتكار',
     text: [
       greeting(params.name),
       '',
-      'نشكرك على اهتمامك بمؤتمر الإبداع والابتكار 2026.',
+      'نشكرك على اهتمامك بمؤتمر الإبداع والابتكار.',
       '',
       // The reason is the message. A refusal without one generates a reply
       // asking why, which somebody then has to answer by hand.
@@ -90,7 +90,7 @@ export function rejectionEmail(params: {
  */
 export function testEmail(params: { to: string; sentBy: string }): DecisionEmail {
   return {
-    subject: 'اختبار البريد — منصة CIC 2026',
+    subject: 'اختبار البريد — منصة الإبداع والابتكار',
     text: [
       'وصلت هذه الرسالة، إذن إعدادات البريد سليمة.',
       '',

@@ -12,8 +12,8 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 const SLIDES = [
   {
     image: '/images/gallery/DSC02311-Pano.jpg',
-    tagAr:      'إسطنبول · 2026',
-    tagEn:      'Istanbul · 2026',
+    tagAr:      'إسطنبول',
+    tagEn:      'Istanbul',
     headlineAr: 'المؤتمر الدولي\nلتكنولوجيا المعلومات',
     headlineEn: 'International Conference\non ICT',
     subtitleAr: 'التقنية، الابتكار، والمستقبل في مكان واحد',

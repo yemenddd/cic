@@ -13,7 +13,7 @@ import PasswordMeter from './PasswordMeter';
 import { updateProfile, changePassword } from './actions';
 
 export const metadata: Metadata = {
-  title: 'بياناتي | مؤتمر الإبداع والابتكار 2026',
+  title: 'بياناتي | مؤتمر الإبداع والابتكار',
   robots: { index: false, follow: false },
 };
 

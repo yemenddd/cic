@@ -213,7 +213,7 @@ export default function ParticipationCertificate({
                     letterSpacing: '0.34em', textTransform: 'uppercase',
                   }}
                 >
-                  CIC 2026 · Istanbul
+                  CIC · Istanbul
                 </p>
 
                 {/* ── Titles, facing each other ── */}
@@ -399,9 +399,6 @@ export default function ParticipationCertificate({
                       <span style={{ fontSize: 8, fontWeight: 600, color: GOLD, letterSpacing: '0.04em' }}>
                         ختم المؤتمر
                       </span>
-                      <span dir="ltr" style={{ fontSize: 9.5, fontWeight: 600, color: INK_SOFT, letterSpacing: '0.1em' }}>
-                        2026
-                      </span>
                     </div>
                   </div>
 
@@ -417,7 +414,7 @@ export default function ParticipationCertificate({
                     </p>
                     <div style={{ height: 1, background: INK_SOFT, opacity: 0.45, margin: '5px 0' }} />
                     <p dir="ltr" style={{ margin: 0, fontSize: 9.5, color: INK_SOFT, textAlign: 'center' }}>
-                      The Organizing Committee · CIC 2026
+                      The Organizing Committee · CIC
                     </p>
                   </div>
                 </div>

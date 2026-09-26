@@ -96,7 +96,7 @@ export function Footer() {
 						<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-purple-500 text-xl font-bold tracking-tighter text-white">
 							C4
 						</div>
-						<span className="font-outfit text-2xl font-bold text-white">CIC 2026</span>
+						<span className="font-outfit text-2xl font-bold text-white">CIC</span>
 					</div>
 					<p className="mt-8 text-sm text-white/55 md:mt-0">
 						© {new Date().getFullYear()} Creativity & Innovation Conference. All rights reserved.

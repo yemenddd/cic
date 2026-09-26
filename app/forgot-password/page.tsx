@@ -4,7 +4,7 @@ import AuthCard from '@/components/platform/AuthCard';
 import ForgotPasswordForm from './ForgotPasswordForm';
 
 export const metadata: Metadata = {
-  title: 'استعادة كلمة المرور | مؤتمر الإبداع والابتكار 2026',
+  title: 'استعادة كلمة المرور | مؤتمر الإبداع والابتكار',
   robots: { index: false, follow: false },
 };
 

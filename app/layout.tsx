@@ -40,7 +40,7 @@ const thmanyah = localFont({
   ],
 });
 
-const title = "CIC 2026 | مؤتمر الإبداع والابتكار";
+const title = "CIC | مؤتمر الإبداع والابتكار";
 const description =
   "انضم إلينا في مؤتمر الإبداع والابتكار يومي ٢–٣ أكتوبر ٢٠٢٦. اكتشف مستقبل الابتكار.";
 
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     title,
     description,
     url: siteUrl,
-    siteName: "CIC 2026",
+    siteName: "CIC",
     locale: "ar_AR",
     type: "website",
   },

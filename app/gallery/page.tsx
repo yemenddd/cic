@@ -3,7 +3,7 @@ import { getGalleryImages } from "@/lib/db/queries";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata = pageMetadata({
-  title: "معرض الصور | مؤتمر الإبداع والابتكار 2026",
+  title: "معرض الصور | مؤتمر الإبداع والابتكار",
   description: "لقطات من فعاليات وجلسات وكواليس مؤتمر الإبداع والابتكار عبر دوراته.",
 });
 

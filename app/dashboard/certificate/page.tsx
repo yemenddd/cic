@@ -21,7 +21,7 @@ const ISSUE_STYLE: Record<CertificateIssueLevel, { icon: typeof Award; color: st
 };
 
 export const metadata: Metadata = {
-  title: 'شهادتي | CIC 2026',
+  title: 'شهادتي | CIC',
   robots: { index: false, follow: false },
 };
 

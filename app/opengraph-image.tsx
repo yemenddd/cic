@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 // ASCII-only: Next mirrors this into an HTTP Link preload header for the
 // generated image, and non-Latin1 characters there throw a ByteString error.
-export const alt = 'CIC 2026 - Creativity & Innovation Conference';
+export const alt = 'CIC - Creativity & Innovation Conference';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -39,7 +39,7 @@ export default async function Image() {
             display: 'flex',
           }}
         >
-          CIC 2026
+          CIC
         </div>
         <div style={{ marginTop: 24, fontSize: 40, color: 'rgba(255,255,255,0.85)', display: 'flex', fontFamily: 'Thmanyah' }}>
           مؤتمر الإبداع والابتكار

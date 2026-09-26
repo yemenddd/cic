@@ -14,7 +14,7 @@ import ShiftButton, { MineChip } from './ShiftButton';
 import { volunteerAccess, NotEntitled } from './access';
 
 export const metadata: Metadata = {
-  title: 'تطوّعي | CIC 2026',
+  title: 'تطوّعي | CIC',
   robots: { index: false, follow: false },
 };
 

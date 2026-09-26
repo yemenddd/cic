@@ -17,7 +17,7 @@ import {
 } from '@/lib/attendance-analytics';
 import ArrivalChart from './ArrivalChart';
 
-export const metadata = { title: 'تحليل الحضور | CIC 2026' };
+export const metadata = { title: 'تحليل الحضور | CIC' };
 
 // Read live: this is opened the evening of day two and again a month later,
 // and a cached copy of either is the wrong one.

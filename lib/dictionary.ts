@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-//  CIC 2026 — i18n dictionary
+//  CIC — i18n dictionary
 //  Arabic values are BASELINE placeholders — replace with your
 //  exact, professionally-phrased wording. Search this file by key.
 // ─────────────────────────────────────────────────────────────
@@ -61,7 +61,7 @@ export const dict = {
       titleMeet: 'meet ',
       titleMachines: 'machines.',
       description:
-        'The 2026 Creativity & Innovation Conference arrives at a turning point for Yemeni youth — where individual ambition meets the collective need to build a more stable, prosperous future.',
+        'The Creativity & Innovation Conference arrives at a turning point for Yemeni youth — where individual ambition meets the collective need to build a more stable, prosperous future.',
       description2:
         'Innovation is no longer an extra skill. Research is no longer merely academic. Together they have become a national necessity — a tool to reshape reality.',
       explore: 'Explore the program',
@@ -328,7 +328,7 @@ export const dict = {
     },
     registerPage: {
       title: 'Conference Registration',
-      subtitle: 'Join 500+ innovators, researchers, and creators at CIC 2026.',
+      subtitle: 'Join 500+ innovators, researchers, and creators at CIC.',
       sectionPersonal: 'Personal Information',
       sectionParticipation: 'Participation Type',
       fieldName: 'Full Name',
@@ -357,7 +357,7 @@ export const dict = {
       catLabel: 'Select your participation type',
       catBadge: 'Most Popular',
       catLearnMore: 'Learn more',
-      cardTitle: 'Why join CIC 2026?',
+      cardTitle: 'Why join CIC?',
       cardDesc: 'Two days of world-class sessions, workshops, and networking designed to turn ideas into real impact.',
       cardF1: '500+ expected attendees',
       cardF2: 'International speakers & experts',
@@ -430,7 +430,7 @@ export const dict = {
       titleMeet: 'مع ',
       titleMachines: 'الآلات..',
       description:
-        'يأتي مؤتمر الإبداع والابتكار 2026 في لحظة فارقة للشباب اليمني، حيث يلتقي الطموح الفردي بالحاجة الجماعية لبناء مستقبل أكثر استقرارًا وازدهارًا.',
+        'يأتي مؤتمر الإبداع والابتكار في لحظة فارقة للشباب اليمني، حيث يلتقي الطموح الفردي بالحاجة الجماعية لبناء مستقبل أكثر استقرارًا وازدهارًا.',
       description2:
         'لم يعد الابتكار مهارة إضافية، ولم يعد البحث العلمي نشاطًا أكاديميًا فحسب. لقد أصبحا معًا ضرورة وطنية — أداة لإعادة تشكيل الواقع.',
       explore: 'استكشف البرنامج',
@@ -697,7 +697,7 @@ export const dict = {
     },
     registerPage: {
       title: 'التسجيل في المؤتمر',
-      subtitle: 'انضم إلى أكثر من 500 مبتكر وباحث ومبدع في مؤتمر الإبداع والابتكار 2026.',
+      subtitle: 'انضم إلى أكثر من 500 مبتكر وباحث ومبدع في مؤتمر الإبداع والابتكار.',
       sectionPersonal: 'المعلومات الشخصية',
       sectionParticipation: 'نوع المشاركة',
       fieldName: 'الاسم الكامل',
@@ -726,7 +726,7 @@ export const dict = {
       catLabel: 'اختر نوع مشاركتك',
       catBadge: 'الأكثر طلبًا',
       catLearnMore: 'اعرف أكثر',
-      cardTitle: 'لماذا تنضم إلى CIC 2026؟',
+      cardTitle: 'لماذا تنضم إلى CIC؟',
       cardDesc: 'يومان من الجلسات والورشات والتواصل المصمم لتحويل الأفكار إلى أثر حقيقي.',
       cardF1: '+500 حضور متوقع',
       cardF2: 'متحدثون وخبراء دوليون',
@@ -799,7 +799,7 @@ export const dict = {
       titleMeet: 'makinelerle ',
       titleMachines: 'buluştuğu yer.',
       description:
-        '2026 Yaratıcılık ve İnovasyon Konferansı, Yemenli gençler için kritik bir dönüm noktasında kapılarını açıyor — bireysel hırsın, daha istikrarlı ve müreffeh bir gelecek inşa etme kolektif ihtiyacıyla buluştuğu yerde.',
+        'Yaratıcılık ve İnovasyon Konferansı, Yemenli gençler için kritik bir dönüm noktasında kapılarını açıyor — bireysel hırsın, daha istikrarlı ve müreffeh bir gelecek inşa etme kolektif ihtiyacıyla buluştuğu yerde.',
       description2:
         'İnovasyon artık fazladan bir beceri değil. Araştırma artık yalnızca akademik bir faaliyet değil. Birlikte ulusal bir zorunluluk hâline geldiler — gerçekliği yeniden şekillendirmek için bir araç.',
       explore: 'Programı keşfet',
@@ -1063,7 +1063,7 @@ export const dict = {
     },
     registerPage: {
       title: 'Konferans Kaydı',
-      subtitle: "CIC 2026'da 500'den fazla yenilikçi, araştırmacı ve yaratıcıya katılın.",
+      subtitle: "CIC'de 500'den fazla yenilikçi, araştırmacı ve yaratıcıya katılın.",
       sectionPersonal: 'Kişisel Bilgiler',
       sectionParticipation: 'Katılım Türü',
       fieldName: 'Ad Soyad',
@@ -1092,7 +1092,7 @@ export const dict = {
       catLabel: 'Katılım türünüzü seçin',
       catBadge: 'En Çok Tercih Edilen',
       catLearnMore: 'Daha fazla bilgi',
-      cardTitle: "Neden CIC 2026'a katılmalısınız?",
+      cardTitle: "Neden CIC'e katılmalısınız?",
       cardDesc: 'Fikirleri etkiye dönüştürmek için tasarlanmış iki günlük dünya standartlarında oturumlar, atölyeler ve ağ kurma.',
       cardF1: '500+ beklenen katılımcı',
       cardF2: 'Uluslararası konuşmacılar ve uzmanlar',

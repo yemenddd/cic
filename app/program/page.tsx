@@ -3,8 +3,8 @@ import { getProgramSessions } from '@/lib/db/queries';
 import { pageMetadata } from '@/lib/page-metadata';
 
 export const metadata = pageMetadata({
-  title: 'البرنامج | مؤتمر الإبداع والابتكار 2026',
-  description: 'جدول أعمال مؤتمر الإبداع والابتكار 2026 — يومان، أربعة مسارات، رسالة واحدة.',
+  title: 'البرنامج | مؤتمر الإبداع والابتكار',
+  description: 'جدول أعمال مؤتمر الإبداع والابتكار — يومان، أربعة مسارات، رسالة واحدة.',
 });
 
 export default async function Program() {
