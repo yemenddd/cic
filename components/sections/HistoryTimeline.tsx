@@ -14,8 +14,14 @@ type Edition = {
   year: string;
   title: string;
   desc: string;
-  attendees: string;
-  speakers: string;
+  /**
+   * Both optional: an edition that has not happened yet has no attendance to
+   * report, and a figure nobody has counted should not be on the page. Absent
+   * means the pill is not drawn — not a pill reading "حضور" with nothing in
+   * front of it.
+   */
+  attendees?: string | null;
+  speakers?: string | null;
   current?: boolean;
 };
 
@@ -99,16 +105,20 @@ function Card({ edition, isRtl, t, visible, fromLeft }: {
           animate={visible ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.5, delay: 0.42, ease: EASE }}
         >
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
-            style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)', color: 'var(--text-secondary)' }}>
-            <span className="font-bold">{edition.attendees}</span>
-            <span className="opacity-70">{t('history.attendeesLabel')}</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
-            style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)', color: 'var(--text-secondary)' }}>
-            <span className="font-bold">{edition.speakers}</span>
-            <span className="opacity-70">{t('history.speakersLabel')}</span>
-          </div>
+          {edition.attendees && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
+              style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)', color: 'var(--text-secondary)' }}>
+              <span className="font-bold">{edition.attendees}</span>
+              <span className="opacity-70">{t('history.attendeesLabel')}</span>
+            </div>
+          )}
+          {edition.speakers && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
+              style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)', color: 'var(--text-secondary)' }}>
+              <span className="font-bold">{edition.speakers}</span>
+              <span className="opacity-70">{t('history.speakersLabel')}</span>
+            </div>
+          )}
         </motion.div>
       </div>
     </motion.div>
@@ -411,23 +421,29 @@ export default function HistoryTimeline({ data }: { data?: HistoryEdition[] }) {
                 {t('history.ambition')}
               </motion.p>
 
-              <motion.div
-                className="flex items-center gap-3 mt-4 flex-wrap justify-center"
-                initial={{ opacity: 0 }}
-                animate={progress >= 0.97 ? { opacity: 1 } : { opacity: 0 }}
-                transition={{ duration: 0.5, delay: 0.8 }}
-              >
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
-                  style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.12)' }}>
-                  <span className="font-bold">{editions[3].attendees}</span>
-                  <span className="opacity-70">{t('history.attendeesLabel')}</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
-                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
-                  <span className="font-bold">{editions[3].speakers}</span>
-                  <span className="opacity-70">{t('history.speakersLabel')}</span>
-                </div>
-              </motion.div>
+              {(editions[3].attendees || editions[3].speakers) && (
+                <motion.div
+                  className="flex items-center gap-3 mt-4 flex-wrap justify-center"
+                  initial={{ opacity: 0 }}
+                  animate={progress >= 0.97 ? { opacity: 1 } : { opacity: 0 }}
+                  transition={{ duration: 0.5, delay: 0.8 }}
+                >
+                  {editions[3].attendees && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
+                      style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.12)' }}>
+                      <span className="font-bold">{editions[3].attendees}</span>
+                      <span className="opacity-70">{t('history.attendeesLabel')}</span>
+                    </div>
+                  )}
+                  {editions[3].speakers && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
+                      style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
+                      <span className="font-bold">{editions[3].speakers}</span>
+                      <span className="opacity-70">{t('history.speakersLabel')}</span>
+                    </div>
+                  )}
+                </motion.div>
+              )}
             </div>
           )}
 

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
 import { DynamicFrameLayout } from '@/components/ui/dynamic-frame-layout';
-import { X, Film, Tv, Play } from 'lucide-react';
+import { X, Film, Tv } from 'lucide-react';
 import UniversalPlayer from '@/components/ui/video-player';
 import type { Video as DbVideo } from '@/lib/db/queries';
 
@@ -85,22 +85,9 @@ const TV_SECTION: FlatSection = {
   ],
 };
 
-const MULHAMOON_SECTION: FlatSection = {
-  key: 'mulhamoon',
-  labelAr: 'برنامج ملهمون',
-  labelEn: 'Mulhamoon',
-  labelTr: 'Mulhamoon',
-  icon: <Play size={14} />,
-  videos: [
-    { id: 'XMZ4htBi20s', titleAr: 'ملهمون — الحلقة الأولى',   titleEn: 'Mulhamoon — Episode 1', titleTr: 'Mulhamoon — Bölüm 1' },
-    { id: 'REGcpGlNvC8', titleAr: 'ملهمون — الحلقة الثانية',  titleEn: 'Mulhamoon — Episode 2', titleTr: 'Mulhamoon — Bölüm 2' },
-    { id: 'XMZ4htBi20s', titleAr: 'ملهمون — الحلقة الثالثة', titleEn: 'Mulhamoon — Episode 3', titleTr: 'Mulhamoon — Bölüm 3' },
-    { id: 'REGcpGlNvC8', titleAr: 'ملهمون — الحلقة الرابعة', titleEn: 'Mulhamoon — Episode 4', titleTr: 'Mulhamoon — Bölüm 4' },
-  ],
-};
 
-type SectionKey = 'films' | 'tv' | 'mulhamoon';
-const SECTION_ORDER: SectionKey[] = ['films', 'tv', 'mulhamoon'];
+type SectionKey = 'films' | 'tv';
+const SECTION_ORDER: SectionKey[] = ['films', 'tv'];
 const GRID_COLS = 2;
 
 function toLocalVideo(v: DbVideo): Video {
@@ -185,14 +172,10 @@ export default function VideosPage({ filmData, tvData }: { filmData?: DbVideo[];
     currentVideos = ed.videos;
     currentLabel = label(ed, lang);
     currentCount = ed.videos.length;
-  } else if (activeSection === 'tv') {
+  } else {
     currentVideos = tvSection.videos;
     currentLabel = label(tvSection, lang);
     currentCount = tvSection.videos.length;
-  } else {
-    currentVideos = MULHAMOON_SECTION.videos;
-    currentLabel = label(MULHAMOON_SECTION, lang);
-    currentCount = MULHAMOON_SECTION.videos.length;
   }
 
   const frames = videosToFrames(currentVideos, lang);
@@ -201,14 +184,12 @@ export default function VideosPage({ filmData, tvData }: { filmData?: DbVideo[];
 
   const sectionLabel = (key: SectionKey) => {
     if (key === 'films') return lang === 'ar' ? 'الأفلام' : lang === 'tr' ? 'Filmler' : 'Films';
-    if (key === 'tv') return label(tvSection, lang);
-    return label(MULHAMOON_SECTION, lang);
+    return label(tvSection, lang);
   };
 
   const sectionIcon = (key: SectionKey) => {
     if (key === 'films') return <Film size={14} />;
-    if (key === 'tv') return <Tv size={14} />;
-    return <Play size={14} />;
+    return <Tv size={14} />;
   };
 
   return (

@@ -73,13 +73,18 @@ async function seedHistoryEditions(prisma: Prisma, dict: Dict) {
   const tr = dict.tr.history.editions;
 
   for (let i = 0; i < ar.length; i++) {
+    // Bound to a local so the `in` checks below actually narrow: TypeScript
+    // does not carry a narrowing across repeated `ar[i]` index expressions.
+    const edition = ar[i];
     await prisma.historyEdition.create({
       data: {
-        year: ar[i].year,
-        titleAr: ar[i].title, titleEn: en[i]?.title, titleTr: tr[i]?.title,
-        descriptionAr: ar[i].desc, descriptionEn: en[i]?.desc, descriptionTr: tr[i]?.desc,
-        attendees: ar[i].attendees,
-        speakersCount: ar[i].speakers,
+        year: edition.year,
+        titleAr: edition.title, titleEn: en[i]?.title, titleTr: tr[i]?.title,
+        descriptionAr: edition.desc, descriptionEn: en[i]?.desc, descriptionTr: tr[i]?.desc,
+        // Absent on an edition that has not happened yet — there is no
+        // attendance to report before the doors open.
+        attendees: 'attendees' in edition ? edition.attendees : null,
+        speakersCount: 'speakers' in edition ? edition.speakers : null,
         order: i,
       },
     });

@@ -191,10 +191,10 @@ export const dict = {
       currentBadge: 'Current Edition',
       ambition: 'Our most ambitious edition yet.',
       editions: [
-        { year: '2023', title: 'The Inaugural Gathering', desc: 'Launched with a bold vision to create a real space where talented Yemeni youth could connect, exchange ideas, and lay the foundation for national innovation.', attendees: '500+', speakers: '20' },
-        { year: '2024', title: 'Expanding Horizons', desc: 'Scaled nationally with a sharp focus on AI adoption and sustainable tech. Introduced interactive workshops and mentorship tracks that changed the game.', attendees: '1,200+', speakers: '45' },
-        { year: '2025', title: 'Going Global', desc: 'Went international, welcoming delegates from 30+ countries. Featured groundbreaking keynotes from global industry pioneers and live startup demos.', attendees: '3,000+', speakers: '80' },
-        { year: '2026', title: 'The Future Is Now', desc: 'This edition promises to be our most ambitious yet — pushing boundaries in spatial computing, AGI, and human-centered design.', attendees: '5,000+', speakers: '120+', current: true },
+        { year: '2023', title: 'The Inaugural Gathering', desc: 'Launched with a bold vision to create a real space where talented Yemeni youth could connect, exchange ideas, and lay the foundation for national innovation.', attendees: '300+', speakers: '20' },
+        { year: '2024', title: 'Expanding Horizons', desc: 'Scaled nationally with a sharp focus on AI adoption and sustainable tech. Introduced interactive workshops and mentorship tracks that changed the game.', attendees: '400+', speakers: '18' },
+        { year: '2025', title: 'Deeper Impact', desc: 'Built on the two before it with keynotes from leading practitioners, live startup demos, and a wider set of tracks and workshops.', attendees: '600+', speakers: '16' },
+        { year: '2026', title: 'The Future Is Now', desc: 'This edition promises to be our most ambitious yet — pushing boundaries in spatial computing, AGI, and human-centered design.', current: true },
       ],
     },
     gallery: {
@@ -544,10 +544,10 @@ export const dict = {
       currentBadge: 'الدورة الحالية',
       ambition: 'الفصل الأكثر طموحاً حتى الآن.',
       editions: [
-        { year: '2023', title: 'الانطلاقة الأولى', desc: 'انطلقنا برؤية جريئة: خلق مساحة حقيقية يلتقي فيها الشباب اليمني الموهوب، يتبادل الأفكار، ويضع الأسس لمنظومة ابتكار وطنية متكاملة.', attendees: '+500', speakers: '20' },
-        { year: '2024', title: 'آفاق أوسع', desc: 'توسّعنا على المستوى الوطني مع تركيز حاد على تبنّي الذكاء الاصطناعي والتقنية المستدامة، وأطلقنا ورش عمل تفاعلية ومسارات إرشادية غيّرت المعادلة.', attendees: '+1,200', speakers: '45' },
-        { year: '2025', title: 'أثر عالمي', desc: 'انطلقنا دولياً باستقبال وفود من أكثر من 30 دولة، وعرضنا كلمات رئيسية استثنائية من رواد الصناعة العالميين وعروضاً حية لشركات ناشئة واعدة.', attendees: '+3,000', speakers: '80' },
-        { year: '2026', title: 'المستقبل الآن', desc: 'هذه الدورة تعد بأن تكون الأكثر طموحاً — دفعاً للحدود في الحوسبة المكانية والذكاء الاصطناعي العام والتصميم المتمحور حول الإنسان.', attendees: '+5,000', speakers: '+120', current: true },
+        { year: '2023', title: 'الانطلاقة الأولى', desc: 'انطلقنا برؤية جريئة: خلق مساحة حقيقية يلتقي فيها الشباب اليمني الموهوب، يتبادل الأفكار، ويضع الأسس لمنظومة ابتكار وطنية متكاملة.', attendees: '+300', speakers: '20' },
+        { year: '2024', title: 'آفاق أوسع', desc: 'توسّعنا على المستوى الوطني مع تركيز حاد على تبنّي الذكاء الاصطناعي والتقنية المستدامة، وأطلقنا ورش عمل تفاعلية ومسارات إرشادية غيّرت المعادلة.', attendees: '+400', speakers: '18' },
+        { year: '2025', title: 'أثر أعمق', desc: 'بنينا على ما سبق بكلمات رئيسية من رواد المجال، وعروض حية لشركات ناشئة واعدة، وتوسّع في المسارات وورش العمل.', attendees: '+600', speakers: '16' },
+        { year: '2026', title: 'المستقبل الآن', desc: 'هذه الدورة تعد بأن تكون الأكثر طموحاً — دفعاً للحدود في الحوسبة المكانية والذكاء الاصطناعي العام والتصميم المتمحور حول الإنسان.', current: true },
       ],
     },
     gallery: {
@@ -897,10 +897,10 @@ export const dict = {
       currentBadge: 'Güncel Baskı',
       ambition: 'Şimdiye kadar en iddialı baskımız.',
       editions: [
-        { year: '2023', title: 'İlk Buluşma', desc: 'Yetenekli Yemenli gençlerin bir araya geleceği, fikir alışverişi yapacağı ve ulusal inovasyon için zemin atacağı gerçek bir alan yaratma cesur vizyonuyla yola çıktık.', attendees: '500+', speakers: '20' },
-        { year: '2024', title: 'Ufukları Genişletmek', desc: 'YZ benimsenmesi ve sürdürülebilir teknolojiye keskin odakla ulusal ölçeğe taşındık. Oyunun kurallarını değiştiren interaktif atölyeler ve mentorluk programları başlattık.', attendees: '1.200+', speakers: '45' },
-        { year: '2025', title: 'Küresel Etki', desc: "30'dan fazla ülkeden delegeleri ağırlayarak uluslararası alana açıldık. Küresel sektör öncülerinden çığır açan konuşmalar ve canlı girişim demoları sunduk.", attendees: '3.000+', speakers: '80' },
-        { year: '2026', title: 'Gelecek Şimdi', desc: 'Bu baskı en iddialı baskımız olmaya aday — uzamsal bilişim, AGI ve insan merkezli tasarımda sınırları zorluyor.', attendees: '5.000+', speakers: '120+', current: true },
+        { year: '2023', title: 'İlk Buluşma', desc: 'Yetenekli Yemenli gençlerin bir araya geleceği, fikir alışverişi yapacağı ve ulusal inovasyon için zemin atacağı gerçek bir alan yaratma cesur vizyonuyla yola çıktık.', attendees: '300+', speakers: '20' },
+        { year: '2024', title: 'Ufukları Genişletmek', desc: 'YZ benimsenmesi ve sürdürülebilir teknolojiye keskin odakla ulusal ölçeğe taşındık. Oyunun kurallarını değiştiren interaktif atölyeler ve mentorluk programları başlattık.', attendees: '400+', speakers: '18' },
+        { year: '2025', title: 'Daha Derin Etki', desc: 'Kendinden öncekilerin üzerine inşa ettik: alanın önde gelen isimlerinden konuşmalar, canlı girişim demoları ve daha geniş bir atölye ve program yelpazesi.', attendees: '600+', speakers: '16' },
+        { year: '2026', title: 'Gelecek Şimdi', desc: 'Bu baskı en iddialı baskımız olmaya aday — uzamsal bilişim, AGI ve insan merkezli tasarımda sınırları zorluyor.', current: true },
       ],
     },
     gallery: {
