@@ -44,9 +44,16 @@ export const CATEGORIES: Category[] = [
     // for a committee decision is steering them into a queue.
     recommended: false,
     labels: {
-      ar: 'مشارك',
-      en: 'Participant',
-      tr: 'Katılımcı',
+      // The tier is a competitor, not merely somebody attending: this is the
+      // one that enters the two competitions and is judged. "مشارك" also had
+      // the problem of being the ordinary word for an attendee, which is what
+      // the badge, the role chip and the figures all use it for.
+      //
+      // The id stays `participant` — it is written on every registration in
+      // the database, and the label is the only part anybody reads.
+      ar: 'متسابق',
+      en: 'Competitor',
+      tr: 'Yarışmacı',
     },
     note: {
       ar: 'مسابقة الاختراع والابتكار — مسابقة الأوراق البحثية',
