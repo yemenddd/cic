@@ -12,7 +12,7 @@ export default function Partners({ data, logos = [] }: { data?: DbPartner[]; log
   const isRtl = dir === 'rtl';
 
   // Partners entered in the admin panel win; otherwise the files in
-  // public/images/sponsors, read on the server and handed down.
+  // public/images/sponsor, read on the server and handed down.
   const partners = data?.length
     ? data.map(p => ({ src: p.logoUrl, alt: p.name }))
     : logos;

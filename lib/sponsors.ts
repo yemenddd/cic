@@ -4,7 +4,7 @@ import { join } from 'node:path';
 /**
  * The partner logos, read from the folder rather than listed in code.
  *
- * They used to be a hand-written array of `/images/sponsors/1.png` … `10.png`,
+ * They used to be a hand-written array of `/images/sponsor/1.png` … `10.png`,
  * which meant an eleventh file sat on disk and never appeared on the page
  * until somebody edited a component. Dropping a file into the folder is now
  * the whole of the job, and removing one is too.
@@ -13,7 +13,7 @@ import { join } from 'node:path';
  * the result is passed down to the client component that draws them.
  */
 
-const DIR = 'public/images/sponsors';
+const DIR = 'public/images/sponsor';
 const IMAGE = /\.(png|jpe?g|webp|svg|avif)$/i;
 
 export interface SponsorLogo {
