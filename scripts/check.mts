@@ -2332,8 +2332,11 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   // so a light-mode visitor watches a dark page flip. This has to be in <head>.
   check('the theme is stamped before the first paint',
     layout.includes("document.documentElement.setAttribute('data-theme'"), true);
+  // Anchored on the line that actually stamps the attribute, not on the first
+  // "prefers-color-scheme" in the file — the favicon's light/dark media
+  // queries sit in the metadata above <head> and matched first.
   check('by a script in the document head',
-    layout.indexOf('<head>') < layout.indexOf('prefers-color-scheme'), true);
+    layout.indexOf('<head>') < layout.indexOf("document.documentElement.setAttribute('data-theme'"), true);
   // The two decide the same thing and must not drift.
   check('reading the same key as the provider',
     layout.includes("localStorage.getItem('cic-theme')")
@@ -2486,6 +2489,32 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   // Kept so the wording can be changed without reverse-engineering the design.
   check('the source it was rendered from is in the repo',
     existsSync('scripts/og-image.html'), true);
+}
+
+// --- the tab icon ------------------------------------------------------------
+//
+// One icon cannot suit both tab strips: the mark's navy half disappears on a
+// dark one, and a white mark disappears on a light one.
+
+{
+  const layout = readFileSync('app/layout.tsx', 'utf8');
+  check('there is a mark for each tab strip',
+    existsSync('app/icon.png') && existsSync('public/icon-dark.png'), true);
+  check('each declared with the scheme it is for',
+    layout.includes('media: "(prefers-color-scheme: dark)"')
+      && layout.includes('media: "(prefers-color-scheme: light)"'), true);
+
+  // The bug this is here for: a browser uses the LAST icon link whose media
+  // matches, so an extra entry with no media — meant as a fallback — matches
+  // always and beat the dark one. There must be no unconditional icon.
+  const icons = layout.slice(layout.indexOf('icon: ['), layout.indexOf('],', layout.indexOf('icon: [')));
+  check('and none without one, which would win over both',
+    /\{\s*url:\s*"[^"]+"\s*\}/.test(icons), false);
+
+  // Ordering is the fallback for a browser that ignores media entirely: it
+  // treats both as matching and takes the last, which must be the colour one.
+  check('the colour mark is last, for browsers that ignore media',
+    icons.lastIndexOf('/icon.png') > icons.lastIndexOf('/icon-dark.png'), true);
 }
 
 // --- undo --------------------------------------------------------------------

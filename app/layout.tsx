@@ -49,11 +49,23 @@ export const metadata: Metadata = {
   title: { default: title, template: "%s" },
   description,
   icons: {
+    // The square mark, in two versions, because a tab strip is either light or
+    // dark and one icon cannot suit both. The colour mark is the real logo; on
+    // a dark tab its navy half sinks into the background, so that case gets the
+    // mark in white instead.
+    //
+    // Order matters and there is no third, unconditional entry. A browser
+    // picks the LAST link whose media matches, so an entry with no media at
+    // all — added as a fallback — matches always and wins over both of these.
+    // With just the two, a browser that honours media gets the right one, and
+    // one that ignores media treats both as matching and takes the last, which
+    // is why the colour mark is last: white on a light tab strip is invisible.
+    //
+    // Both are the square mark, never the wide lockup: a favicon is drawn into
+    // a square, so a 3.5:1 lockup arrives as an unreadable sliver.
     icon: [
-      // Both point at the square mark. The light one used to point at the
-      // colour logo in /public, which is now a 3.5:1 lockup — a favicon is
-      // drawn into a square, so a wide lockup arrives as an unreadable sliver.
-      { url: "/icon.png" },
+      { url: "/icon-dark.png", media: "(prefers-color-scheme: dark)" },
+      { url: "/icon.png", media: "(prefers-color-scheme: light)" },
     ],
   },
   openGraph: {
