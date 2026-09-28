@@ -61,7 +61,7 @@ export const dict = {
       titleMeet: 'meet ',
       titleMachines: 'machines.',
       description:
-        'The Creativity & Innovation Conference arrives at a turning point for Yemeni youth — where individual ambition meets the collective need to build a more stable, prosperous future.',
+        'The Creativity & Innovation Conference arrives at a turning point for young people — where individual ambition meets the collective need to build a more stable, prosperous future.',
       description2:
         'Innovation is no longer an extra skill. Research is no longer merely academic. Together they have become a national necessity — a tool to reshape reality.',
       explore: 'Explore the program',
@@ -213,11 +213,11 @@ export const dict = {
       eyebrow: 'Registration Open',
       titleA: 'Conference of Creativity & Innovation..',
       titleB: 'We turn ideas into lasting impact.',
-      subtext: "Reserve your place among Yemen's future makers!",
+      subtext: "Reserve your place among the makers of what comes next!",
       register: 'Reserve Your Seat Now',
       cardTitleA: 'The future belongs to the bold.',
       cardTitleB: '',
-      cardSubtext: "Your impact on Yemen's future starts here.",
+      cardSubtext: "Your impact on the future starts here.",
       notify: 'Not ready yet? Get notified when tickets drop.',
       emailPlaceholder: 'your@email.com',
       notifyBtn: 'Notify me',
@@ -414,7 +414,7 @@ export const dict = {
       titleMeet: 'مع ',
       titleMachines: 'الآلات..',
       description:
-        'يأتي مؤتمر الإبداع والابتكار في لحظة فارقة للشباب اليمني، حيث يلتقي الطموح الفردي بالحاجة الجماعية لبناء مستقبل أكثر استقرارًا وازدهارًا.',
+        'يأتي مؤتمر الإبداع والابتكار في لحظة فارقة للشباب، حيث يلتقي الطموح الفردي بالحاجة الجماعية لبناء مستقبل أكثر استقرارًا وازدهارًا.',
       description2:
         'لم يعد الابتكار مهارة إضافية، ولم يعد البحث العلمي نشاطًا أكاديميًا فحسب. لقد أصبحا معًا ضرورة وطنية — أداة لإعادة تشكيل الواقع.',
       explore: 'استكشف البرنامج',
@@ -566,11 +566,11 @@ export const dict = {
       eyebrow: 'التسجيل مفتوح',
       titleA: 'مؤتمر الإبداع والابتكار..',
       titleB: 'نحوّل الأفكار إلى أثر مستدام.',
-      subtext: 'احجز مكانك بين صنّاع مستقبل اليمن!',
+      subtext: 'احجز مكانك بين صنّاع المستقبل!',
       register: 'احجز مقعدك الآن',
       cardTitleA: 'المستقبل لمن يصنعه.',
       cardTitleB: '',
-      cardSubtext: 'أثرك في مستقبل اليمن يبدأ من هنا.',
+      cardSubtext: 'أثرك في المستقبل يبدأ من هنا.',
       notify: 'لست مستعدًا بعد؟ سنخطرك عند توفّر التذاكر.',
       emailPlaceholder: 'بريدك@الإلكتروني.com',
       notifyBtn: 'أخطرني',
@@ -767,7 +767,7 @@ export const dict = {
       titleMeet: 'makinelerle ',
       titleMachines: 'buluştuğu yer.',
       description:
-        'Yaratıcılık ve İnovasyon Konferansı, Yemenli gençler için kritik bir dönüm noktasında kapılarını açıyor — bireysel hırsın, daha istikrarlı ve müreffeh bir gelecek inşa etme kolektif ihtiyacıyla buluştuğu yerde.',
+        'Yaratıcılık ve İnovasyon Konferansı, gençler için kritik bir dönüm noktasında kapılarını açıyor — bireysel hırsın, daha istikrarlı ve müreffeh bir gelecek inşa etme kolektif ihtiyacıyla buluştuğu yerde.',
       description2:
         'İnovasyon artık fazladan bir beceri değil. Araştırma artık yalnızca akademik bir faaliyet değil. Birlikte ulusal bir zorunluluk hâline geldiler — gerçekliği yeniden şekillendirmek için bir araç.',
       explore: 'Programı keşfet',
@@ -919,7 +919,7 @@ export const dict = {
       eyebrow: 'Kayıtlar Açık',
       titleA: 'Geleceğin bir',
       titleB: 'parçası ol.',
-      subtext: "İki gün. Tek misyon. Yemen'in geleceğini şekillendiren yapıcılar arasındaki yerini güvence altına al.",
+      subtext: "İki gün. Tek misyon. Geleceği şekillendiren yapıcılar arasındaki yerini güvence altına al.",
       register: 'Kayıt Ol',
       notify: 'Henüz hazır değil misin? Biletler çıktığında haberdar ol.',
       emailPlaceholder: 'eposta@adresin.com',
