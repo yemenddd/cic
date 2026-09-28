@@ -9,6 +9,7 @@ import ScrollGallery from "@/components/sections/ScrollGallery";
 import Partners from "@/components/sections/Partners";
 import RegisterCTA from "@/components/sections/RegisterCTA";
 import { getPartners, getSpeakers } from "@/lib/db/queries";
+import { sponsorLogos } from "@/lib/sponsors";
 import { siteUrl } from "@/lib/site";
 
 const eventJsonLd = {
@@ -85,7 +86,7 @@ export default async function Home() {
       <RegisterCTA />
 
       {/* 08 · Partners & sponsors */}
-      <Partners data={partners} />
+      <Partners data={partners} logos={sponsorLogos()} />
     </div>
   );
 }

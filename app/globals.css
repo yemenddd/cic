@@ -13,6 +13,12 @@
   --logo-ink-soft:   #c8c8ce;
   --logo-navy:       #1c1c39;
 
+  /* Partner logo tiles. The logos are dark artwork on transparency, so the
+     tile stays light in BOTH themes — on a dark tile they would vanish. It is
+     dimmed a little here so a row of them does not glare on the dark page. */
+  --partner-tile-bg:     #e8e9ef;
+  --partner-tile-border: rgba(255,255,255,0.10);
+
   /* Canvas */
   --bg-base:        #0d0d0f;
   --bg-elevated:    #161618;
@@ -155,6 +161,11 @@
   --logo-ink:        #1c1c39;
   --logo-ink-soft:   #474770;
   --logo-navy:       #e6e6f0;
+
+  /* Full white against the light canvas, with a hairline to give each tile an
+     edge where the page behind it is nearly the same colour. */
+  --partner-tile-bg:     #ffffff;
+  --partner-tile-border: rgba(0,0,0,0.07);
 
   /* Canvas — Apple's exact light palette */
   --bg-base:        #f2f2f7;

@@ -4,28 +4,24 @@ import { motion } from 'framer-motion';
 import { useLang } from '@/lib/i18n';
 import { ProgressiveBlur } from '@/components/ui/progressive-blur';
 import type { Partner as DbPartner } from '@/lib/db/queries';
+import type { SponsorLogo } from '@/lib/sponsors';
 
-const FALLBACK_PARTNERS = [
-  { src: '/images/sponsors/1.png',  alt: 'Sponsor 1' },
-  { src: '/images/sponsors/2.png',  alt: 'Sponsor 2' },
-  { src: '/images/sponsors/3.png',  alt: 'Sponsor 3' },
-  { src: '/images/sponsors/4.png',  alt: 'Sponsor 4' },
-  { src: '/images/sponsors/5.png',  alt: 'Sponsor 5' },
-  { src: '/images/sponsors/6.png',  alt: 'Sponsor 6' },
-  { src: '/images/sponsors/7.png',  alt: 'Sponsor 7' },
-  { src: '/images/sponsors/8.png',  alt: 'Sponsor 8' },
-  { src: '/images/sponsors/9.png',  alt: 'Sponsor 9' },
-  { src: '/images/sponsors/10.png', alt: 'Sponsor 10' },
-];
 
-export default function Partners({ data }: { data?: DbPartner[] }) {
+export default function Partners({ data, logos = [] }: { data?: DbPartner[]; logos?: SponsorLogo[] }) {
   const { t, dir } = useLang();
   const isRtl = dir === 'rtl';
 
+  // Partners entered in the admin panel win; otherwise the files in
+  // public/images/sponsors, read on the server and handed down.
   const partners = data?.length
     ? data.map(p => ({ src: p.logoUrl, alt: p.name }))
-    : FALLBACK_PARTNERS;
-  const track = [...partners, ...partners];
+    : logos;
+
+  // Enough copies that the track is always wider than the screen plus one
+  // copy — with only two, a monitor wider than a single copy ran out of
+  // logos and showed empty track before the loop came round.
+  const REPEATS = 4;
+  const track = Array.from({ length: REPEATS }, () => partners).flat();
 
   return (
     <section className="pb-16 pt-16 md:pb-32 overflow-hidden" style={{ background: 'var(--bg-base)' }}>
@@ -64,29 +60,56 @@ export default function Partners({ data }: { data?: DbPartner[] }) {
 
         {/* Scrolling track */}
         <div className="overflow-hidden">
+          {/* The loop is seamless only if the distance travelled is exactly
+              one copy of the row.
+
+              This used `gap-8` and translated by 50%. With a gap, a track of
+              N copies is N×items wide plus (N×items − 1) gaps — one gap short
+              of a whole number of copies — so 50% landed half a gap off and
+              the row visibly jumped on every cycle. The spacing is padding on
+              each tile now, which belongs to the tile and repeats exactly with
+              it, so one copy is precisely 100/REPEATS percent of the track. */}
           <style>{`
             @keyframes marquee-ltr {
               from { transform: translateX(0); }
-              to   { transform: translateX(-50%); }
+              to   { transform: translateX(-${100 / REPEATS}%); }
             }
             @keyframes marquee-rtl {
               from { transform: translateX(0); }
-              to   { transform: translateX(50%); }
+              to   { transform: translateX(${100 / REPEATS}%); }
             }
             .marquee-track {
-              animation: ${isRtl ? 'marquee-rtl' : 'marquee-ltr'} 24s linear infinite;
+              animation: ${isRtl ? 'marquee-rtl' : 'marquee-ltr'} ${partners.length * 3}s linear infinite;
+              will-change: transform;
             }
           `}</style>
-          <div className="marquee-track flex gap-16 items-center w-max">
+          <div className="marquee-track flex items-center w-max">
             {track.map((logo, i) => (
               <div key={i} className="flex items-center justify-center shrink-0 px-4">
-                <img
-                  src={logo.src}
-                  alt={logo.alt}
-                  className="h-10 w-auto object-contain opacity-60 hover:opacity-100 transition-opacity duration-300"
-                  loading="lazy"
-                  decoding="async"
-                />
+                {/* Each logo sits on its own rounded tile.
+                    The artwork is dark on transparency and the files differ in
+                    how much padding they carry, so a tile does two things: it
+                    gives every partner the same footprint whatever their file
+                    looks like, and it keeps them legible on the dark theme,
+                    where they would otherwise be dark-on-dark. */}
+                <div
+                  className="flex h-24 w-24 items-center justify-center rounded-2xl p-3.5 transition-transform duration-300 hover:scale-105"
+                  style={{
+                    background: 'var(--partner-tile-bg)',
+                    border: '1px solid var(--partner-tile-border)',
+                  }}
+                >
+                  <img
+                    src={logo.src}
+                    alt={logo.alt}
+                    // No opacity: the logos were dimmed to sit quietly on the
+                    // page, but on a light tile that only makes them look
+                    // washed out. The tile is what keeps them quiet now.
+                    className="h-full w-full object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
               </div>
             ))}
           </div>
