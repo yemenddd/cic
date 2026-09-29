@@ -8,6 +8,16 @@ export interface LocalizedText {
 
 export interface Category {
   id: string;
+  /**
+   * Whether somebody can still choose this on the registration form.
+   *
+   * A tier that closes is not a tier that never existed: people have already
+   * registered under it, and their badge, their approval email, the figures
+   * and the organizers' filters all still have to name it. So a closed tier
+   * stays in this list with everything it had, and only two places consult
+   * `open` — the form and the endpoint behind it.
+   */
+  open: boolean;
   recommended: boolean;
   labels: LocalizedText;
   /**
@@ -30,6 +40,7 @@ export interface Category {
 export const CATEGORIES: Category[] = [
   {
     id: 'visitor',
+    open: true,
     recommended: false,
     labels: { ar: 'زائر', en: 'Visitor', tr: 'Ziyaretçi' },
     features: {
@@ -40,6 +51,10 @@ export const CATEGORIES: Category[] = [
   },
   {
     id: 'participant',
+    // Closed to new registrations at the organizers' request. Nine people had
+    // already signed up under it; they keep the tier, its label and their
+    // track — this only takes the card off the form.
+    open: false,
     // No "most requested" badge. Steering people toward the tier that waits
     // for a committee decision is steering them into a queue.
     recommended: false,
@@ -68,6 +83,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     id: 'volunteer',
+    open: true,
     recommended: false,
     labels: { ar: 'متطوع', en: 'Volunteer', tr: 'Gönüllü' },
     features: {
@@ -154,3 +170,13 @@ export const MAX_SHIFTS_PER_VOLUNTEER = 8;
  * bury the review committee.
  */
 export const MAX_SUBMISSIONS_PER_ATTENDEE = 10;
+
+/**
+ * The tiers still open to new registrations.
+ *
+ * Only the public form and app/api/register use this. Everything else — the
+ * labels, the admin filters, the announcement audiences, the walk-in form,
+ * the analytics — reads CATEGORIES, so a closed tier keeps working for the
+ * people already in it.
+ */
+export const OPEN_CATEGORIES: Category[] = CATEGORIES.filter((c) => c.open);

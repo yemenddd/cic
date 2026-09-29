@@ -9,7 +9,7 @@ import { useTheme } from '@/lib/theme-context';
 import { cn } from '@/lib/utils';
 import ConferenceBadge from '@/components/ui/ConferenceBadge';
 import { downloadBadgePDF } from '@/lib/download-badge-pdf';
-import { CATEGORIES, type Lang } from '@/lib/categories';
+import { OPEN_CATEGORIES, type Lang } from '@/lib/categories';
 import { COMMITTEES } from '@/lib/committees';
 import { DEFAULT_COUNTRY, countryByCode, countryOptions, flagOf } from '@/lib/countries';
 import { signIn } from 'next-auth/react';
@@ -33,7 +33,7 @@ export default function RegisterForm() {
   const p = tx<Record<string, string>>('registerPage');
   const isRtl = dir === 'rtl';
   const l = lang as Lang;
-  const [selected, setSelected] = useState(CATEGORIES[0].id);
+  const [selected, setSelected] = useState(OPEN_CATEGORIES[0].id);
   const [track, setTrack] = useState('');
   const [committee, setCommittee] = useState('');
   const [fields, setFields] = useState({ fullName: '', email: '', organization: '' });
@@ -157,7 +157,7 @@ export default function RegisterForm() {
   }, [fields.fullName]);
 
   const handleCopyLink = useCallback(() => {
-    const cat = CATEGORIES.find(c => c.id === selected);
+    const cat = OPEN_CATEGORIES.find(c => c.id === selected);
     // Carries the badge token too, so the saved link renders the same working
     // pass rather than a picture of one. The QR is a bearer credential either
     // way — a screenshot of the badge is exactly as transferable — so this
@@ -171,7 +171,7 @@ export default function RegisterForm() {
 
   // ── Success state: Conference Badge ────────────────────────────────────────
   if (status === 'success') {
-    const cat = CATEGORIES.find(c => c.id === selected)!;
+    const cat = OPEN_CATEGORIES.find(c => c.id === selected)!;
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-16" style={{ background: 'var(--bg-base)' }}>
         <ConferenceBadge
@@ -542,7 +542,7 @@ export default function RegisterForm() {
             <p className="mb-6 text-[13px]" style={{ color: 'var(--text-secondary)', paddingInlineStart: '1rem' }}>{p.catLabel}</p>
 
               <div className="space-y-3">
-                {CATEGORIES.map(cat => {
+                {OPEN_CATEGORIES.map(cat => {
                   const isSelected = selected === cat.id;
                   const CatIcon = CATEGORY_ICONS[cat.id];
                   return (
@@ -827,7 +827,7 @@ export default function RegisterForm() {
                       {p.selectedLabel ?? 'نوع المشاركة المختار'}
                     </p>
                     <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>
-                      {CATEGORIES.find(c => c.id === selected)?.labels[l]}
+                      {OPEN_CATEGORIES.find(c => c.id === selected)?.labels[l]}
                     </p>
                   </div>
                 </motion.div>

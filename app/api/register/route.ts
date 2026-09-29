@@ -10,6 +10,7 @@ import { MIN_PASSWORD_LENGTH } from '@/lib/password-rules';
 import { initialStatus, needsApproval } from '@/lib/account-status';
 import { badgeToken } from '@/lib/badge-token';
 import { placeholderEmail } from '@/lib/walk-in';
+import { OPEN_CATEGORIES } from '@/lib/categories';
 import { canonicalCommittee } from '@/lib/committees';
 import { normalizePhone } from '@/lib/digits';
 import { canonicalTrack } from '@/lib/submissions';
@@ -30,7 +31,13 @@ const RegistrationSchema = z.object({
   phone: z.string().trim().min(1).max(50).transform(normalizePhone),
   country: z.string().trim().min(1).max(100),
   organization: z.string().trim().max(200).optional().default(''),
-  category: z.enum(['visitor', 'participant', 'volunteer']),
+  // Only the tiers still open, read from lib/categories.ts rather than listed
+  // again here. Closing a tier on the form and leaving the endpoint accepting
+  // it would close nothing: this is a public POST, and the form is only one of
+  // the things that can reach it.
+  category: z.string().refine((c) => OPEN_CATEGORIES.some((x) => x.id === c), {
+    message: 'هذه الفئة غير متاحة للتسجيل',
+  }),
   // Accepted in any of the three languages the form is offered in, and stored
   // in the canonical Arabic. The form posts the label the visitor saw, so
   // validating against the Arabic list alone would have refused every English
