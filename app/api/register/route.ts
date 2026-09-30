@@ -10,7 +10,9 @@ import { MIN_PASSWORD_LENGTH } from '@/lib/password-rules';
 import { initialStatus, needsApproval } from '@/lib/account-status';
 import { badgeToken } from '@/lib/badge-token';
 import { placeholderEmail } from '@/lib/walk-in';
-import { OPEN_CATEGORIES } from '@/lib/categories';
+import { sendEmail } from '@/lib/email';
+import { welcomeEmail } from '@/lib/account-emails';
+import { OPEN_CATEGORIES, categoryLabel } from '@/lib/categories';
 import { canonicalCommittee } from '@/lib/committees';
 import { normalizePhone } from '@/lib/digits';
 import { canonicalTrack } from '@/lib/submissions';
@@ -176,6 +178,34 @@ export async function POST(req: Request) {
       // Counted only now, against the generous ceiling: a completed signup is
       // not an attack signal, it is the thing this endpoint is for.
       if (ip) await recordFailure('register:ip', ip, REGISTER_BY_IP);
+
+      // The welcome, with their code in it.
+      //
+      // Wrapped so that nothing mail does can undo a registration: the account
+      // exists by this point, and a provider that is down, slow or misconfigured
+      // must not turn a successful signup into an error on the visitor's screen.
+      // sendEmail already refuses the placeholder address generated for
+      // somebody who gave none, so no check for that is needed here.
+      try {
+        const welcome = welcomeEmail({
+          name: fields.fullName,
+          categoryLabel: categoryLabel(fields.category, 'ar'),
+          code: confirmationCode,
+          pending: needsApproval(fields.category),
+          // The same token the dashboard and the door use — a pure function of
+          // the account id, so the card in this mail is the card at the gate.
+          badgeToken: badgeToken(created.id),
+        });
+        await sendEmail({
+          to: email,
+          subject: welcome.subject,
+          text: welcome.text,
+          html: welcome.html,
+          attachments: welcome.attachments,
+        });
+      } catch (err) {
+        console.error('[register] welcome email failed:', err);
+      }
 
       // The client signs in straight after registering, which now fails for a
       // category that waits — so it is told here, rather than discovering it

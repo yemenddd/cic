@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db/client';
 import { sendEmail } from '@/lib/email';
 import { clearFailures } from '@/lib/rate-limit';
 import { siteUrl } from '@/lib/site';
+import { renderHtml, renderText, type EmailContent } from '@/lib/email-template';
 
 /**
  * Losing your password, and getting back in.
@@ -65,20 +66,17 @@ export function resetLink(token: string): string {
   return `${siteUrl}/reset-password?token=${encodeURIComponent(token)}`;
 }
 
-function resetMessage(name: string | null, link: string): string {
-  const greeting = name?.trim() ? `مرحباً ${name.trim()}،` : 'مرحباً،';
-  return `${greeting}
-
-وصلنا طلب لإعادة تعيين كلمة مرور حسابك في منصة الإبداع والابتكار.
-
-افتح الرابط التالي لاختيار كلمة مرور جديدة:
-${link}
-
-الرابط صالح لمدة ساعة واحدة، ويعمل مرة واحدة فقط.
-
-إن لم تطلب هذا، تجاهل هذه الرسالة — لم يتغيّر شيء في حسابك، وكلمة مرورك الحالية ما زالت تعمل.
-
-فريق مؤتمر CIC`;
+function resetContent(name: string | null, link: string): EmailContent {
+  const first = (name ?? '').trim().split(/\s+/)[0];
+  return {
+    greeting: first ? `مرحباً ${first}،` : 'مرحباً،',
+    title: 'إعادة تعيين كلمة المرور',
+    paragraphs: [
+      'وصلنا طلب لإعادة تعيين كلمة مرور حسابك في منصة الإبداع والابتكار. افتح الزر أدناه لاختيار كلمة مرور جديدة.',
+    ],
+    button: { label: 'اختيار كلمة مرور جديدة', href: link },
+    note: 'الرابط صالح لمدة ساعة واحدة ويعمل مرة واحدة فقط. إن لم تطلب هذا فتجاهل الرسالة — لم يتغيّر شيء في حسابك، وكلمة مرورك الحالية ما زالت تعمل.',
+  };
 }
 
 /**
@@ -115,10 +113,12 @@ export async function requestPasswordReset(rawEmail: string): Promise<void> {
     }),
   ]);
 
+  const content = resetContent(user.name, resetLink(token));
   await sendEmail({
     to: user.email,
     subject: 'إعادة تعيين كلمة المرور — منصة الإبداع والابتكار',
-    text: resetMessage(user.name, resetLink(token)),
+    text: renderText(content),
+    html: renderHtml(content),
   });
 }
 

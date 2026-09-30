@@ -49,7 +49,19 @@ const GUARDS = [
  */
 const PUBLIC_MARKER = '@public-action';
 
-const EXPORTED_ACTION = /export async function (\w+)\([\s\S]*?\): Promise<[^>]*> \{\n/g;
+/**
+ * An exported action's signature, up to the brace that opens its body.
+ *
+ * The return type is matched as "anything up to the brace on that line"
+ * rather than as `Promise<…>`, because `[^>]*` cannot cross the `>` inside a
+ * nested generic. `Promise<Record<string, number>>` therefore failed to match
+ * here — and failing to match was not a miss, it was worse: the lazy run
+ * before it simply carried on to the *next* action's signature, so the audit
+ * read one action's name with its neighbour's body, and a guard in the
+ * neighbour laundered it. Two unguarded actions sat behind that for as long
+ * as this file has existed, and the audit reported zero.
+ */
+const EXPORTED_ACTION = /export async function (\w+)\([\s\S]*?\)\s*(?::[^\n{]*)?\{\n/g;
 const GUARD_CALL = new RegExp(`\\b(${GUARDS.join('|')})\\s*\\(`);
 
 export interface ActionRef {

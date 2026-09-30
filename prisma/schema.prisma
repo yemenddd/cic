@@ -140,6 +140,7 @@ model User {
   scansRecorded       Attendance[]         @relation("AttendanceRecorder")
   passwordResetTokens PasswordResetToken[]
   volunteerShifts     VolunteerAssignment[]
+  emailBlasts         EmailBlast[]          @relation("EmailBlastSender")
 
   /**
    * The admin directory's default order — admins first, then newest signups.
@@ -213,6 +214,43 @@ enum NotificationKind {
 
 // In-platform notification. The committee's decision on a submission would
 // otherwise only reach the attendee if they happened to log in and check.
+/**
+ * A message the organizers sent by email, and to whom.
+ *
+ * Separate from Announcement because the two reach people in different places
+ * and fail in different ways: an announcement lands in a feed inside the
+ * platform and either writes a row or does not, while an email leaves the
+ * building and can be refused per address. Mixing them would put messages
+ * nobody can see in the feed, and messages nobody received in the sent list.
+ *
+ * Kept because a broadcast to every attendee is the one action here that
+ * cannot be taken back, and afterwards the only question is what was sent, by
+ * whom, and who actually got it.
+ */
+model EmailBlast {
+  id        String   @id @default(cuid())
+  subject   String
+  body      String
+  /** 'all', a category id, or 'one' for a single address. */
+  audience  String
+  /** Set when the audience is one person. */
+  toEmail   String?
+  buttonLabel String?
+  buttonHref  String?
+
+  /** Filled in as the send finishes, so an interrupted one still says so. */
+  attempted Int      @default(0)
+  delivered Int      @default(0)
+  skipped   Int      @default(0)
+  failed    Int      @default(0)
+
+  sentBy    User?    @relation("EmailBlastSender", fields: [sentById], references: [id], onDelete: SetNull)
+  sentById  String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 model Notification {
   id     String @id @default(cuid())
   userId String

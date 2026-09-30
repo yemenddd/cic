@@ -2123,8 +2123,26 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('and never says the word rejected at them',
     refused.subject.includes('رفض'), false);
 
+  // Matched on the claim rather than one exact sentence: the point is that
+  // the message says its own arrival is the proof, not that it phrases it in
+  // the words it happened to use when this was written.
   check('a test message says what it proves', testEmail({ to: 'a@b.com', sentBy: 'c@d.com' })
-    .text.includes('إعدادات البريد سليمة'), true);
+    .text.includes('البريد يعمل'), true);
+
+  // Every message now goes out as HTML and as plain text, from one source.
+  // An HTML-only send is the kind a filter treats as suspicious, and a
+  // text-only client has nothing to show.
+  for (const [what, msg] of [
+    ['approval', approvalEmail({ name: 'x', categoryLabel: 'متطوع' })],
+    ['refusal', rejectionEmail({ name: 'x', reason: 'y' })],
+    ['test', testEmail({ to: 'a@b.com', sentBy: 'c@d.com' })],
+  ] as const) {
+    check(`the ${what} mail carries both parts`,
+      msg.html.startsWith('<!doctype html>') && msg.text.length > 40, true);
+    // Right-to-left is not a detail in an Arabic message: without it the
+    // punctuation lands on the wrong end of every line.
+    check(`and the ${what} is marked right-to-left`, msg.html.includes('dir="rtl"'), true);
+  }
 
   // Both decisions must actually attempt a send — this is the wiring that was
   // missing, and it is invisible from the panel when it regresses.
@@ -2135,6 +2153,113 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   // decision.
   check('and the decision is committed first',
     approvals.indexOf('$transaction') < approvals.indexOf('sendEmail('), true);
+}
+
+// --- nothing in a message may be wider than the message --------------------------
+//
+// A mail client is free to lay an image out at its natural size, and a
+// percentage width has nothing definite to resolve against inside a table
+// whose width the client is still working out from its contents. Either one
+// turns a 600px message into a message as wide as the picture in it, with a
+// horizontal scrollbar under every paragraph — which is what Gmail was showing.
+//
+// So: every image states both dimensions in pixels, in the attributes and in
+// the style, and the files themselves are small enough that the worst a
+// client can do is draw one slightly large.
+
+{
+  const { welcomeEmail } = await import('../lib/account-emails');
+  const mail = welcomeEmail({
+    name: 'سارة أحمد', categoryLabel: 'متطوع', code: 'CIC-2026-ZZMU5S',
+    pending: true, badgeToken: 'a.b.c',
+  });
+
+  const imgs = mail.html.match(/<img[^>]*>/g) ?? [];
+  check('the message carries the logo and the badge QR', imgs.length, 2);
+
+  for (const img of imgs) {
+    const what = img.includes('cid:') ? 'the QR' : 'the logo';
+    check(`${what} states both dimensions as attributes`,
+      /\swidth="\d+"/.test(img) && /\sheight="\d+"/.test(img), true);
+    // The failure this exists for: max-width:62% on the logo, which a table
+    // may resolve against a containing block it is sizing from the image.
+    check(`and ${what} carries no percentage width`, /(?:max-)?width:\s*[\d.]+%/.test(img), false);
+  }
+
+  // No element may declare itself wider than the card. Read off the markup
+  // with the <style> block removed first, or the media query's own breakpoint
+  // reads as an element that is 620px wide.
+  const markup = mail.html.replace(/<style>[\s\S]*?<\/style>/g, '');
+  const widths = [...markup.matchAll(/width:\s*(\d+)px/g)].map((m) => Number(m[1]));
+  check('and no declared width exceeds the card', widths.filter((w) => w > 600).length, 0);
+
+  // The mark is fetched over HTTP, so its own pixel size is the ceiling on
+  // what a client can draw when it ignores the rest.
+  const logo = readFileSync('public/images/logos/email_logo.png');
+  const logoWidth = logo.readUInt32BE(16);
+  check('the mail logo is sized for mail, not for print', logoWidth <= 400, true);
+  check('and the message asks for that file', mail.html.includes('email_logo.png'), true);
+}
+
+// --- writing to people by mail ---------------------------------------------------
+//
+// Announcements reach whoever signs in, which at a conference is most people
+// exactly once. This is the other half: the same message to the address they
+// gave. It is also the most dangerous button in the panel — mail cannot be
+// withdrawn — so what is checked here is who may press it and where it may
+// point.
+
+{
+  const { validateBlast } = await import('../app/admin/(panel)/emails/send');
+  const { mailAudienceOptions, MAIL_ONE } = await import('../app/admin/(panel)/emails/audience');
+
+  const ok = {
+    subject: 'تذكير', body: 'نص', audience: 'all',
+    toEmail: '', buttonLabel: '', buttonHref: '',
+  };
+
+  check('a complete message passes', validateBlast(ok), null);
+  check('an unknown audience does not', validateBlast({ ...ok, audience: 'nobody' }) !== null, true);
+  check('one person without an address does not',
+    validateBlast({ ...ok, audience: MAIL_ONE }) !== null, true);
+  // The door's invented addresses are refused here as well as at the sender.
+  check('nor an address the platform made up',
+    validateBlast({ ...ok, audience: MAIL_ONE, toEmail: 'x@walkin.invalid' }) !== null, true);
+
+  // A button in a message signed by the conference is the conference vouching
+  // for wherever it goes, so it may only go inside the site. `//evil.com` is a
+  // protocol-relative URL, which is why the second character matters.
+  for (const href of ['https://evil.com', '//evil.com', 'javascript:alert(1)']) {
+    check(`a button to ${href} is refused`,
+      validateBlast({ ...ok, buttonLabel: 'افتح', buttonHref: href }) !== null, true);
+  }
+  check('an internal path is allowed',
+    validateBlast({ ...ok, buttonLabel: 'افتح', buttonHref: '/program' }), null);
+  // Half a button is a bug the recipient sees, not the organizer.
+  check('and neither half stands alone', [
+    validateBlast({ ...ok, buttonLabel: 'افتح' }) !== null,
+    validateBlast({ ...ok, buttonHref: '/program' }) !== null,
+  ], [true, true]);
+
+  check('the composer offers one person as well as a tier',
+    mailAudienceOptions().some((o) => o.value === MAIL_ONE), true);
+
+  // Every export of a 'use server' module is a callable endpoint, so the
+  // mechanism must not live in one — an unguarded core there would be a way
+  // to mail the whole conference without being an admin at all.
+  const blastActions = readFileSync('app/admin/(panel)/emails/actions.ts', 'utf8');
+  const blastSend = readFileSync('app/admin/(panel)/emails/send.ts', 'utf8');
+  // The directive only counts as one on the first line; the phrase also
+  // appears in the comment explaining why it is not there.
+  check('the sender is not a server action', blastSend.trimStart().startsWith("'use server'"), false);
+  check('and the action is', blastActions.trimStart().startsWith("'use server'"), true);
+  check('and the action proves the caller is an admin first',
+    blastActions.indexOf('requireAdmin()') < blastActions.indexOf('deliverBlast('), true);
+  check('and refuses without the confirmation', blastActions.includes("get('confirm')"), true);
+
+  // Reachable from the panel, next to the announcements it complements.
+  const shell = readFileSync('components/admin/AdminShell.tsx', 'utf8');
+  check('and the panel has a way in', shell.includes("href: '/admin/emails'"), true);
 }
 
 // --- registering without an email -----------------------------------------------

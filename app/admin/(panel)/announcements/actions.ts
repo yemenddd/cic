@@ -13,6 +13,11 @@ type ActionResult = { error?: string; success?: string } | void;
 
 /** How many people each audience would reach, for the composer's preview. */
 export async function audienceSizes(): Promise<Record<string, number>> {
+  // Guarded like every other export here. It only returns counts, but this is
+  // a public POST endpoint like the rest of them, and how many people are
+  // registered in each tier is the organizers' business.
+  if (!(await requireAdmin())) return {};
+
   const counts = await prisma.user.groupBy({
     by: ['category'],
     where: { role: 'ATTENDEE' },

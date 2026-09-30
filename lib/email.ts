@@ -44,6 +44,23 @@ export interface EmailMessage {
   subject: string;
   /** Plain text. Every message here is transactional, none of it is marketing. */
   text: string;
+  /**
+   * The same message as HTML, when there is one.
+   *
+   * Always sent alongside `text`, never instead of it: a text-only client
+   * has to have something to show, and a filter that cannot find a plain part
+   * treats the message as more suspicious than one that has both.
+   */
+  html?: string;
+  /**
+   * Files sent with the message.
+   *
+   * `contentId` makes one available to the HTML as `cid:<id>` — which is how
+   * the badge QR is shown without the client having to fetch anything. A
+   * client that will not render it inline still shows it as an attachment,
+   * which is the fallback a hosted image never had.
+   */
+  attachments?: Array<{ filename: string; content: Buffer; contentId?: string }>;
 }
 
 export type EmailResult =
@@ -90,6 +107,16 @@ export async function sendEmail(message: EmailMessage): Promise<EmailResult> {
         to: [message.to],
         subject: message.subject,
         text: message.text,
+        ...(message.html ? { html: message.html } : {}),
+        ...(message.attachments?.length
+          ? {
+              attachments: message.attachments.map((a) => ({
+                filename: a.filename,
+                content: a.content.toString('base64'),
+                ...(a.contentId ? { content_id: a.contentId } : {}),
+              })),
+            }
+          : {}),
       }),
       // A hung provider must not hold a server action open until the platform's
       // own request timeout; the caller's flow does not depend on the result.
@@ -107,4 +134,83 @@ export async function sendEmail(message: EmailMessage): Promise<EmailResult> {
     console.error('[email] send failed:', err);
     return { ok: false, reason: 'rejected' };
   }
+}
+
+/**
+ * Many messages in one call.
+ *
+ * The provider rate-limits single sends, so a broadcast to eighty people sent
+ * one at a time is eighty requests spread over most a minute — long enough for
+ * a server action to be cut off half way, leaving nobody able to say who had
+ * been written to. Its batch endpoint takes a hundred at once, which turns the
+ * same broadcast into a single request.
+ *
+ * Returns per-message outcomes rather than one verdict: a broadcast where four
+ * addresses bounced and seventy-six arrived is not a failure, and the four
+ * have to be nameable.
+ */
+export const EMAIL_BATCH_LIMIT = 100;
+
+export interface BatchOutcome {
+  to: string;
+  ok: boolean;
+  reason?: string;
+}
+
+export async function sendEmailBatch(messages: EmailMessage[]): Promise<BatchOutcome[]> {
+  const outcomes: BatchOutcome[] = [];
+
+  // Addresses the platform invented are refused before anything is sent, and
+  // counted as skipped rather than failed — nobody typed them.
+  const deliverable = messages.filter((m) => {
+    if (isDeliverable(m.to)) return true;
+    outcomes.push({ to: m.to, ok: false, reason: 'undeliverable' });
+    return false;
+  });
+
+  if (!deliverable.length) return outcomes;
+
+  if (!emailConfigured()) {
+    for (const m of deliverable) outcomes.push({ to: m.to, ok: false, reason: 'not-configured' });
+    return outcomes;
+  }
+
+  for (let i = 0; i < deliverable.length; i += EMAIL_BATCH_LIMIT) {
+    const slice = deliverable.slice(i, i + EMAIL_BATCH_LIMIT);
+
+    try {
+      const response = await fetch(`${ENDPOINT}/batch`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(
+          slice.map((m) => ({
+            from: emailFrom(),
+            to: [m.to],
+            subject: m.subject,
+            text: m.text,
+            ...(m.html ? { html: m.html } : {}),
+          })),
+        ),
+        // Longer than a single send: this is up to a hundred messages.
+        signal: AbortSignal.timeout(30_000),
+      });
+
+      if (!response.ok) {
+        const detail = await response.text().catch(() => '');
+        console.error(`[email] batch refused (${response.status}): ${detail.slice(0, 500)}`);
+        for (const m of slice) outcomes.push({ to: m.to, ok: false, reason: String(response.status) });
+        continue;
+      }
+
+      for (const m of slice) outcomes.push({ to: m.to, ok: true });
+    } catch (err) {
+      console.error('[email] batch failed:', err);
+      for (const m of slice) outcomes.push({ to: m.to, ok: false, reason: 'network' });
+    }
+  }
+
+  return outcomes;
 }
