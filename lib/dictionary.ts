@@ -247,7 +247,6 @@ export const dict = {
       presidentImgAlt: 'Conference President',
       presidentName: 'Dr. Ahmad Al-Aqabi',
       presidentRole1: 'Conference President',
-      presidentRole2: 'Chairman of the Board, Yemeni Friendship and Cooperation Association',
       statsTitleA: 'Four years of',
       statsTitleB: 'real impact.',
       statsItems: [
@@ -600,7 +599,6 @@ export const dict = {
       presidentImgAlt: 'رئيس المؤتمر',
       presidentName: 'د. أحمد العقبي',
       presidentRole1: 'رئيس مؤتمر الإبداع والابتكار',
-      presidentRole2: 'رئيس مجلس الإدارة بجمعية الصداقة والتعاون اليمنية',
       statsTitleA: 'أربع سنوات من',
       statsTitleB: 'الأثر الحقيقي.',
       statsItems: [
@@ -950,7 +948,6 @@ export const dict = {
       presidentImgAlt: 'Konferans Başkanı',
       presidentName: 'Dr. Ahmad Al-Aqabi',
       presidentRole1: 'Konferans Başkanı',
-      presidentRole2: 'Yemen Dostluk ve İşbirliği Derneği Yönetim Kurulu Başkanı',
       statsTitleA: 'Dört yıllık',
       statsTitleB: 'gerçek etki.',
       statsItems: [

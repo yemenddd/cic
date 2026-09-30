@@ -369,9 +369,6 @@ function PresidentSection() {
                 <p className="text-xs md:text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
                   {t('about.presidentRole1')}
                 </p>
-                <p className="text-xs md:text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                  {t('about.presidentRole2')}
-                </p>
               </div>
             </div>
           </motion.div>
