@@ -5,6 +5,7 @@ import { ListPageHeader } from '@/components/admin/ListPage';
 import Pagination from '@/components/admin/Pagination';
 import SortSelect from '@/components/admin/SortSelect';
 import StatCard from '@/components/admin/StatCard';
+import RefreshButton from '@/components/admin/RefreshButton';
 import { CATEGORIES } from '@/lib/categories';
 import { LIST_PAGE_SIZE, listHref, pageCountFor } from '@/lib/admin-list';
 import {
@@ -141,6 +142,11 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
           {category && <input type="hidden" name="category" value={category} />}
           {linked && <input type="hidden" name="linked" value={linked} />}
         </form>
+
+        {/* Fetches the list again in place. The desk sits on this screen while
+            people are registering, and a browser reload would cost them the
+            search, the filters and the scroll position every time. */}
+        <RefreshButton fetchedAt={new Date().toISOString()} />
 
         {/* Carries the current filters, so the file is the filtered list —
             every row matching it, not just this page. */}

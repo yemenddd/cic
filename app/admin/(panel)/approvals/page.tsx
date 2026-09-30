@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { UserRoundCheck, Clock, CircleCheck, CircleX } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
 import { ListPageHeader } from '@/components/admin/ListPage';
+import RefreshButton from '@/components/admin/RefreshButton';
 import { categoryLabel } from '@/lib/categories';
 import { committeeLabel } from '@/lib/committees';
 import { relativeArabicDate } from '@/lib/relative-time';
@@ -87,35 +88,41 @@ export default async function ApprovalsPage({
         description="المشاركون والمتطوعون يُنشئون حساباتهم فوراً ولا يدخلونها حتى تقبلوها. الزوار يدخلون مباشرة."
       />
 
-      <div
-        className="mb-5 inline-flex rounded-xl p-1"
-        style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)' }}
-      >
-        {VIEWS.map((tab) => {
-          const active = tab.key === view;
-          const count = countOf(STATUS_OF[tab.key]);
-          return (
-            <Link
-              key={tab.key}
-              href={`/admin/approvals?view=${tab.key}`}
-              aria-current={active ? 'page' : undefined}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors"
-              style={{
-                background: active ? 'var(--bg-elevated)' : 'transparent',
-                color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
-                boxShadow: active ? 'var(--shadow-sm)' : undefined,
-              }}
-            >
-              <tab.icon className="h-3.5 w-3.5" aria-hidden />
-              {tab.label}
-              {tab.key === 'pending' && count > 0 && (
-                <span className="tabular-nums" style={{ color: 'var(--destructive)' }}>
-                  {count}
-                </span>
-              )}
-            </Link>
-          );
-        })}
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div
+          className="inline-flex rounded-xl p-1"
+          style={{ background: 'var(--mat-liquid-bg)', border: '1px solid var(--mat-liquid-border)' }}
+        >
+          {VIEWS.map((tab) => {
+            const active = tab.key === view;
+            const count = countOf(STATUS_OF[tab.key]);
+            return (
+              <Link
+                key={tab.key}
+                href={`/admin/approvals?view=${tab.key}`}
+                aria-current={active ? 'page' : undefined}
+                className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors"
+                style={{
+                  background: active ? 'var(--bg-elevated)' : 'transparent',
+                  color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  boxShadow: active ? 'var(--shadow-sm)' : undefined,
+                }}
+              >
+                <tab.icon className="h-3.5 w-3.5" aria-hidden />
+                {tab.label}
+                {tab.key === 'pending' && count > 0 && (
+                  <span className="tabular-nums" style={{ color: 'var(--destructive)' }}>
+                    {count}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* The queue this page exists for fills up while it is open — a
+            decision taken here is worth taking on the current list. */}
+        <RefreshButton fetchedAt={new Date().toISOString()} />
       </div>
 
       {applicants.length === 0 ? (

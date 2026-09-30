@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/auth-guards';
 import { redirect } from 'next/navigation';
 import StatCard from '@/components/admin/StatCard';
 import { ListPageHeader } from '@/components/admin/ListPage';
+import RefreshButton from '@/components/admin/RefreshButton';
 import Pagination from '@/components/admin/Pagination';
 import {
   USERS_PAGE_SIZE,
@@ -130,6 +131,10 @@ export default async function AdminUsersPage({ searchParams }: Props) {
           <Download className="h-4 w-4" />
           تصدير CSV
         </a>
+
+        {/* Accounts are created while this list is open — by people
+            registering, and by an organizer at the desk next to you. */}
+        <RefreshButton fetchedAt={new Date().toISOString()} />
       </div>
 
       <UsersFilters filters={filters} countries={countries} resultCount={total} />
