@@ -8,6 +8,7 @@ import {
 import type { CheckInOutcome } from '@/lib/attendance';
 import { OUTCOME_LABELS } from '@/lib/attendance';
 import { scanBadge } from '../actions';
+import AttendeeSearch from './AttendeeSearch';
 
 export interface ScannerCheckpoint {
   id: string;
@@ -117,6 +118,44 @@ export default function Scanner({
     }
   }, []);
 
+  /**
+   * Announce one result, however it was arrived at.
+   *
+   * Split out of `submit` because a person found by name is counted the same
+   * way as a badge held up to the lens — same sound, same tally, same list of
+   * what has just come through. Only the lookup differs.
+   */
+  const report = useCallback(
+    (result: CheckInOutcome) => {
+      const tone = OUTCOME_TONE[result.status];
+
+      setOutcome(result);
+      beep(tone);
+      // A door is loud and the operator is not looking at the screen.
+      navigator.vibrate?.(tone === 'ok' ? 60 : [60, 60, 60]);
+
+      if (result.status === 'recorded') setCounted((n) => n + 1);
+
+      if (result.status === 'recorded' || result.status === 'duplicate') {
+        setRecent((prev) =>
+          [
+            {
+              key: Date.now(),
+              name: result.attendee.name || result.attendee.email,
+              detail:
+                result.status === 'recorded'
+                  ? TIME.format(new Date(result.at))
+                  : `مسجَّل منذ ${TIME.format(new Date(result.at))}`,
+              tone,
+            },
+            ...prev,
+          ].slice(0, 12),
+        );
+      }
+    },
+    [beep],
+  );
+
   /** Send one payload to the server and report what came back. */
   const submit = useCallback(
     async (payload: string) => {
@@ -130,38 +169,13 @@ export default function Scanner({
       inFlightRef.current = true;
       setBusy(true);
       try {
-        const result = await scanBadge(id, payload);
-        const tone = OUTCOME_TONE[result.status];
-
-        setOutcome(result);
-        beep(tone);
-        // A door is loud and the operator is not looking at the screen.
-        navigator.vibrate?.(tone === 'ok' ? 60 : [60, 60, 60]);
-
-        if (result.status === 'recorded') setCounted((n) => n + 1);
-
-        if (result.status === 'recorded' || result.status === 'duplicate') {
-          setRecent((prev) =>
-            [
-              {
-                key: Date.now(),
-                name: result.attendee.name || result.attendee.email,
-                detail:
-                  result.status === 'recorded'
-                    ? TIME.format(new Date(result.at))
-                    : `مسجَّل منذ ${TIME.format(new Date(result.at))}`,
-                tone,
-              },
-              ...prev,
-            ].slice(0, 12),
-          );
-        }
+        report(await scanBadge(id, payload));
       } finally {
         inFlightRef.current = false;
         setBusy(false);
       }
     },
-    [beep],
+    [report],
   );
 
   /** Decoded text from either decoder lands here. */
@@ -505,6 +519,12 @@ export default function Scanner({
               </button>
             </div>
           </form>
+
+          {/* The desk registered most of the first day's attendees itself, so
+              most of them have no badge to scan and no code to type. This is
+              the only way to reach them — and the only thing standing between
+              the second day and a second account for each of them. */}
+          <AttendeeSearch checkpointId={checkpointId} onResult={report} />
         </div>
 
         {/* ── what has just been counted ── */}

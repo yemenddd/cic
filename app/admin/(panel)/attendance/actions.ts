@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db/client';
 import { requireAdmin } from '@/lib/auth-guards';
+import { findAttendees, type AttendeeMatch } from '@/lib/attendee-lookup';
 import { isDayKey, type CheckInOutcome } from '@/lib/attendance';
 import { recordAttendance } from '@/lib/attendance-record';
 import { generateConfirmationCode, isCodeCollision } from '@/lib/confirmation-code';
@@ -71,6 +72,27 @@ export async function manualCheckIn(checkpointId: string, userId: string): Promi
   }
 
   return outcome;
+}
+
+/**
+ * Find somebody at the door who has nothing to present.
+ *
+ * Most of the first day's attendees were registered at the desk itself: they
+ * have an account and a code, but no email, no printed badge and nothing to
+ * scan. On the second day there is no way to reach them from the scanner, and
+ * the desk's only remaining move would be to add them as a walk-in again —
+ * which creates a second account for somebody who already has one and counts
+ * them twice in every figure the conference reports.
+ *
+ * Guarded like everything else here. lib/attendee-lookup.ts is the mechanism
+ * and has no opinion about who may use it.
+ */
+export async function searchAttendees(
+  query: string,
+  checkpointId: string | null,
+): Promise<AttendeeMatch[]> {
+  if (!(await requireAdmin())) return [];
+  return findAttendees(query, checkpointId);
 }
 
 /**
