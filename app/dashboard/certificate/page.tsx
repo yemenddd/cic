@@ -108,13 +108,25 @@ export default async function CertificatePage() {
     : [];
 
   /**
+   * Whether this person was ever counted through a door.
+   *
    * The certificate states in the past tense that its holder attended, and
-   * carries the organising committee's name and seal. Issuing it before the
-   * conference has happened would make it a false document — and one anybody
-   * could obtain by registering, which is exactly what devalues it for the
-   * people who do attend. So it is withheld until the event is actually over.
+   * carries the organising committee's name and seal. Two different things
+   * could make that false, and until now only one of them was checked: the
+   * conference not having happened yet, and the holder not having come.
+   *
+   * Registering was enough to obtain one, which is precisely what devalues it
+   * for the people who did turn up — and the platform had the answer all
+   * along, in the rows the scanners wrote at the gates.
+   *
+   * Any checkpoint counts, on either day: somebody who came for one day
+   * attended, and the sheet does not claim otherwise.
    */
-  const available = conferenceHasEnded();
+  const attendances = await prisma.attendance.count({ where: { userId: session.user.id } });
+  const attended = attendances > 0;
+
+  const ended = conferenceHasEnded();
+  const available = ended && attended;
 
   const readiness = certificateReadiness({
     name: user.name,
@@ -160,26 +172,47 @@ export default async function CertificatePage() {
               className="mt-4 font-outfit font-bold text-[17px]"
               style={{ color: 'var(--text-primary)' }}
             >
-              {days > 0 ? 'شهادتك تصدر بعد المؤتمر' : 'شهادتك تصدر عند ختام الفعاليات'}
+              {ended
+                ? 'لم نسجّل حضورك في المؤتمر'
+                : days > 0
+                  ? 'شهادتك تصدر بعد المؤتمر'
+                  : 'شهادتك تصدر عند ختام الفعاليات'}
             </h2>
 
             <p className="mt-2 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              {kind} تشهد بحضورك فعلياً، ولذلك تُصدر بعد انتهاء الفعاليات لا قبلها — فبذلك
-              تبقى لها قيمتها عند من يطّلع عليها.
+              {ended
+                ? `${kind} تشهد بحضورك فعلياً، وتُصدر لمن مُسحت بطاقته عند إحدى بوابات المؤتمر. لا يوجد لحسابك تسجيل حضور.`
+                : `${kind} تشهد بحضورك فعلياً، ولذلك تُصدر بعد انتهاء الفعاليات لا قبلها — فبذلك تبقى لها قيمتها عند من يطّلع عليها.`}
             </p>
 
-            <p
-              className="mt-4 inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-[12.5px] font-semibold"
-              style={{
-                background: 'var(--mat-liquid-bg)',
-                border: '1px solid var(--mat-liquid-border)',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              <CalendarClock className="h-3.5 w-3.5" style={{ color: 'var(--accent-violet)' }} />
-              {range}
-              {days > 0 && <span style={{ color: 'var(--text-tertiary)' }}>· بعد {arabicCountBare(days, DAY)}</span>}
-            </p>
+            {/* Somebody who was there and was never scanned is a real case —
+                a desk misses people — and the honest answer to them is a way
+                to be counted, not a closed door. */}
+            {ended ? (
+              <p className="mt-3 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                إن كنت قد حضرت ولم يُمسح رمزك عند الباب، راسلنا بالرد على أي رسالة وصلتك من
+                المؤتمر ومعها رمز تأكيدك{user.confirmationCode ? ' ' : ''}
+                {user.confirmationCode && (
+                  <span dir="ltr" style={{ unicodeBidi: 'isolate', fontWeight: 600 }}>
+                    {user.confirmationCode}
+                  </span>
+                )}
+                ، وسنراجع سجل البوابة.
+              </p>
+            ) : (
+              <p
+                className="mt-4 inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-[12.5px] font-semibold"
+                style={{
+                  background: 'var(--mat-liquid-bg)',
+                  border: '1px solid var(--mat-liquid-border)',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                <CalendarClock className="h-3.5 w-3.5" style={{ color: 'var(--accent-violet)' }} />
+                {range}
+                {days > 0 && <span style={{ color: 'var(--text-tertiary)' }}>· بعد {arabicCountBare(days, DAY)}</span>}
+              </p>
+            )}
           </div>
         </section>
 
