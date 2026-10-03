@@ -42,7 +42,12 @@ export const CATEGORIES: Category[] = [
     id: 'visitor',
     open: true,
     recommended: false,
-    labels: { ar: 'زائر', en: 'Visitor', tr: 'Ziyaretçi' },
+    // Renamed at the organizers' request, after the conference: everybody on
+    // this tier attended as a participant, and «زائر» read as somebody who
+    // merely looked in. The id stays `visitor` — it is written on every
+    // registration in the database, and the label is the only part anybody
+    // reads.
+    labels: { ar: 'مشارك', en: 'Participant', tr: 'Katılımcı' },
     features: {
       ar: ['حضور جميع الجلسات العامة', 'استكشاف المعرض التقني', 'التواصل مع الخبراء', 'شهادة مشاركة رسمية'],
       en: ['Access to all public sessions', 'Explore the innovation exhibition', 'Network with experts', 'Official participation certificate'],
@@ -76,9 +81,9 @@ export const CATEGORIES: Category[] = [
       tr: 'İcat ve İnovasyon — Araştırma Makaleleri',
     },
     features: {
-      ar: ['كل مميزات الزائر', 'المشاركة في ورشات العمل', 'عرض بحث أو مشروع'],
-      en: ['All Visitor benefits', 'Join workshops & competitions', 'Present a research or project'],
-      tr: ['Tüm Ziyaretçi hakları', 'Atölye ve yarışmalara katılım', 'Araştırma veya proje sunumu'],
+      ar: ['كل مميزات المشارك', 'المشاركة في ورشات العمل', 'عرض بحث أو مشروع'],
+      en: ['All Participant benefits', 'Join workshops & competitions', 'Present a research or project'],
+      tr: ['Tüm Katılımcı hakları', 'Atölye ve yarışmalara katılım', 'Araştırma veya proje sunumu'],
     },
   },
   {

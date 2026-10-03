@@ -1853,18 +1853,22 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
     certificateWording({ ...base, categoryId: 'participant', track: 'مسار البحث العلمي', approvedProjects: 3, projectTitle: 'أ' })
       .bodyAr.includes('بأعماله المقبولة'), true);
 
-  const visitor = certificateWording({ ...base, categoryId: 'visitor', categoryLabel: 'زائر' });
-  check('a visitor gets an attendance certificate', visitor.titleAr, 'شهادة حضور');
-  check('and it says attendance in English', visitor.titleEn, 'Certificate of Attendance');
-  check('it claims attendance', visitor.bodyAr.includes('حضر فعاليات'), true);
-  // Claiming participation for somebody who came to watch is what makes every
-  // other certificate here worth less.
-  check('and claims nothing more', visitor.bodyAr.includes('شارك في'), false);
-  check('nor in English', visitor.bodyEn.includes('participated'), false);
+  const visitor = certificateWording({ ...base, categoryId: 'visitor', categoryLabel: 'مشارك' });
+  check('an attendee gets a participation certificate', visitor.titleAr, 'شهادة مشاركة');
+  check('and it says so in English', visitor.titleEn, 'Certificate of Participation');
+  check('it claims participation', visitor.bodyAr.includes('شارك في فعاليات'), true);
+  // What the title used to carry, the sentence carries now: this sheet names
+  // no work and no review committee, because this tier presented neither.
+  check('and names no work', visitor.bodyAr.includes('«'), false);
+  check('nor a review committee', visitor.bodyAr.includes('لجنة التحكيم'), false);
+  check('nor in English', visitor.bodyEn.includes('review committee'), false);
+  // The chip and the sheet have to agree — disagreeing is what this change
+  // was made to fix.
+  check('and the sheet agrees with the chip', visitor.kindAr, 'صفة المشاركة');
 
   // An account with no category at all still has to print something true.
   const unknown = certificateWording({ ...base, categoryId: '', categoryLabel: '' });
-  check('an unknown category falls back to attendance', unknown.titleAr, 'شهادة حضور');
+  check('an unknown category falls back to the plain sheet', unknown.titleAr, 'شهادة مشاركة');
 
   // Both halves of one sheet, always: a document with an empty English column
   // is a document somebody has to explain.
@@ -2112,7 +2116,7 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   // generates the question it was meant to answer.
   check('and links to sign-in', approved.text.includes('/login'), true);
   check('a nameless account still gets a greeting',
-    approvalEmail({ name: null, categoryLabel: 'زائر' }).text.startsWith('مرحباً،'), true);
+    approvalEmail({ name: null, categoryLabel: 'مشارك' }).text.startsWith('مرحباً،'), true);
 
   const refused = rejectionEmail({ name: 'خالد', reason: 'الفئة لا تناسب طلبك' });
   // The reason is the message: a refusal without one produces a reply asking

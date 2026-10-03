@@ -152,22 +152,33 @@ function participantWording(f: CertificateFacts): CertificateWording {
   };
 }
 
+/**
+ * The ordinary attendee's sheet.
+ *
+ * This used to be a certificate of attendance, worded so as to claim nothing
+ * beyond having been there. The organizers renamed the tier to «مشارك» after
+ * the conference, which left the sheet saying "صفة الحضور: مشارك" — a document
+ * disagreeing with its own chip. So it is a participation certificate now.
+ *
+ * What still separates it from the competitor's is the body: that one names
+ * the work and the review committee it was presented to, and this one does
+ * not. The distinction that was carried by the title is carried by the
+ * sentence instead, which is where it was always more honestly made.
+ */
 function visitorWording(f: CertificateFacts): CertificateWording {
   return {
-    titleAr: 'شهادة حضور',
-    titleEn: 'Certificate of Attendance',
+    titleAr: 'شهادة مشاركة',
+    titleEn: 'Certificate of Participation',
     leadAr: 'تشهد اللجنة المنظمة للمؤتمر بأنّ',
     leadEn: 'The organizing committee hereby certifies that',
-    // Says attendance and nothing more. Claiming participation for somebody
-    // who came to watch is what makes every other certificate here worth less.
     bodyAr:
-      `قد حضر فعاليات ${CONFERENCE_AR}، المنعقد يومي ${f.dateAr} في ${f.locationAr}،`
+      `قد شارك في فعاليات ${CONFERENCE_AR}، المنعقد يومي ${f.dateAr} في ${f.locationAr}،`
       + ` وتابع جلساته العلمية ومعرض الابتكار.`,
     bodyEn:
-      `attended ${CONFERENCE_EN}, held ${f.dateEn} in ${f.locationEn},`
+      `participated in ${CONFERENCE_EN}, held ${f.dateEn} in ${f.locationEn},`
       + ` following its sessions and the innovation exhibition.`,
-    kindAr: 'صفة الحضور',
-    kindEn: 'Attendance',
+    kindAr: 'صفة المشاركة',
+    kindEn: 'Participation',
   };
 }
 
