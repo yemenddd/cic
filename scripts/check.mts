@@ -2215,7 +2215,7 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
 
 {
   const { validateBlast } = await import('../app/admin/(panel)/emails/send');
-  const { mailAudienceOptions, MAIL_ONE } = await import('../app/admin/(panel)/emails/audience');
+  const { mailAudienceOptions, MAIL_ONE, MAIL_ATTENDED } = await import('../app/admin/(panel)/emails/audience');
 
   const ok = {
     subject: 'تذكير', body: 'نص', audience: 'all',
@@ -2247,6 +2247,24 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
 
   check('the composer offers one person as well as a tier',
     mailAudienceOptions().some((o) => o.value === MAIL_ONE), true);
+
+  // After the conference, "who was there" and "who signed up" are different
+  // lists — on the first day they differed by more than half — and a
+  // thank-you sent to the second reads as a form letter to all of them.
+  check('and everybody who actually turned up',
+    mailAudienceOptions().some((o) => o.value === MAIL_ATTENDED), true);
+  check('which the validator accepts',
+    validateBlast({ ...ok, audience: MAIL_ATTENDED }), null);
+  // A relation, not a column: the audience is "has a row at any checkpoint",
+  // and a filter written as a category would silently reach nobody.
+  const attendedReach = await prisma.user.count({
+    where: { role: 'ATTENDEE', attendance: { some: {} }, NOT: { email: { endsWith: '.invalid' } } },
+  });
+  const countedByHand = (await prisma.user.findMany({
+    where: { id: { in: [...new Set((await prisma.attendance.findMany({ select: { userId: true } })).map((a) => a.userId))] } },
+    select: { email: true },
+  })).filter((u) => !u.email.endsWith('.invalid')).length;
+  check('and it reaches exactly the people a gate counted', attendedReach, countedByHand);
 
   // Every export of a 'use server' module is a callable endpoint, so the
   // mechanism must not live in one — an unguarded core there would be a way

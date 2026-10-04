@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db/client';
 import { requireAdmin } from '@/lib/auth-guards';
 import { CATEGORIES } from '@/lib/categories';
-import { MAIL_ALL } from './audience';
+import { MAIL_ALL, MAIL_ATTENDED } from './audience';
 import { deliverBlast } from './send';
 
 type ActionResult = { error?: string; success?: string } | void;
@@ -35,6 +35,17 @@ export async function mailAudienceSizes(): Promise<Record<string, number>> {
     if (row.category) sizes[row.category] = row._count._all;
   }
   for (const c of CATEGORIES) sizes[c.id] ??= 0;
+
+  // Counted separately because it is a relation rather than a column: the
+  // groupBy above cannot answer "has a row at any checkpoint".
+  sizes[MAIL_ATTENDED] = await prisma.user.count({
+    where: {
+      role: 'ATTENDEE',
+      attendance: { some: {} },
+      NOT: { email: { endsWith: '.invalid' } },
+    },
+  });
+
   return sizes;
 }
 

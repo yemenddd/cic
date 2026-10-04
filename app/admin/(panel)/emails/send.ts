@@ -4,7 +4,7 @@ import { inPages } from '@/lib/export-pages';
 import { siteUrl } from '@/lib/site';
 import { isDeliverable, sendEmailBatch, type EmailMessage } from '@/lib/email';
 import { renderHtml, renderText, type EmailContent } from '@/lib/email-template';
-import { MAIL_ALL, MAIL_ONE } from './audience';
+import { MAIL_ALL, MAIL_ATTENDED, MAIL_ONE } from './audience';
 
 /**
  * Writing to people by mail rather than into the platform.
@@ -48,7 +48,13 @@ export type BlastResult =
 function recipientWhere(audience: string) {
   return {
     role: 'ATTENDEE' as const,
-    ...(audience === MAIL_ALL ? {} : { category: audience }),
+    // Three shapes, not two: everybody, one tier, or everybody a gate
+    // actually counted — which is a relation, not a column.
+    ...(audience === MAIL_ALL
+      ? {}
+      : audience === MAIL_ATTENDED
+        ? { attendance: { some: {} } }
+        : { category: audience }),
     NOT: { email: { endsWith: '.invalid' } },
   };
 }
@@ -61,6 +67,7 @@ export function validateBlast(input: BlastInput): string | null {
 
   const known =
     input.audience === MAIL_ALL ||
+    input.audience === MAIL_ATTENDED ||
     input.audience === MAIL_ONE ||
     CATEGORIES.some((c) => c.id === input.audience);
   if (!known) return 'الفئة المستهدفة غير صالحة';
