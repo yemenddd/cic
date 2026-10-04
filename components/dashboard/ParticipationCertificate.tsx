@@ -315,18 +315,14 @@ export default function ParticipationCertificate({
                   </div>
                 </div>
 
-                {/* ── Category / path chips, labelled in both ── */}
-                <div style={{ display: 'flex', gap: 9, marginTop: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <span
-                    style={{
-                      padding: '4px 14px', borderRadius: 999, fontSize: 11.5, fontWeight: 600,
-                      color: INK, background: 'rgba(168,134,60,0.10)', border: `1px solid ${GOLD_SOFT}`,
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {w.kindAr}: {categoryLabel || '—'} · {w.kindEn}
-                  </span>
-                  {track && (
+                {/* ── The path, when there is one ──
+                    The tier used to be stamped here too, beside the name, as
+                    "صفة المشاركة: مشارك". It was saying a second time what the
+                    citation above already says in a sentence, and a signed
+                    document that labels its holder twice reads as a form. The
+                    name stands on its own now. ── */}
+                {track && (
+                  <div style={{ display: 'flex', gap: 9, marginTop: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
                     <span
                       style={{
                         padding: '4px 14px', borderRadius: 999, fontSize: 11.5, fontWeight: 600,
@@ -336,8 +332,8 @@ export default function ParticipationCertificate({
                     >
                       المسار: {track}
                     </span>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* ── Footer: code · seal · signature, labelled in both ── */}
                 <div

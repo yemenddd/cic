@@ -1862,9 +1862,6 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('and names no work', visitor.bodyAr.includes('«'), false);
   check('nor a review committee', visitor.bodyAr.includes('لجنة التحكيم'), false);
   check('nor in English', visitor.bodyEn.includes('review committee'), false);
-  // The chip and the sheet have to agree — disagreeing is what this change
-  // was made to fix.
-  check('and the sheet agrees with the chip', visitor.kindAr, 'صفة المشاركة');
 
   // An account with no category at all still has to print something true.
   const unknown = certificateWording({ ...base, categoryId: '', categoryLabel: '' });

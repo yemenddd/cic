@@ -52,9 +52,6 @@ export interface CertificateWording {
   leadEn: string;
   bodyAr: string;
   bodyEn: string;
-  /** The label on the category chip. */
-  kindAr: string;
-  kindEn: string;
 }
 
 const CONFERENCE_AR = 'مؤتمر الإبداع والابتكار';
@@ -100,8 +97,6 @@ function volunteerWording(f: CertificateFacts): CertificateWording {
     bodyEn:
       `served on the volunteer team of ${CONFERENCE_EN}, held ${f.dateEn} in ${f.locationEn},`
       + `${withCommitteeEn}${hoursEn} carrying out their organizing duties with commitment and dedication.`,
-    kindAr: 'صفة التطوّع',
-    kindEn: 'Volunteering',
   };
 }
 
@@ -147,8 +142,6 @@ function participantWording(f: CertificateFacts): CertificateWording {
     bodyEn:
       `participated in ${CONFERENCE_EN}, held ${f.dateEn} in ${f.locationEn},`
       + `${pathEn}${workEn} ${verbEn}, contributing to the work of the conference.`,
-    kindAr: 'صفة المشاركة',
-    kindEn: 'Participation',
   };
 }
 
@@ -177,8 +170,6 @@ function visitorWording(f: CertificateFacts): CertificateWording {
     bodyEn:
       `participated in ${CONFERENCE_EN}, held ${f.dateEn} in ${f.locationEn},`
       + ` following its sessions and the innovation exhibition.`,
-    kindAr: 'صفة المشاركة',
-    kindEn: 'Participation',
   };
 }
 
