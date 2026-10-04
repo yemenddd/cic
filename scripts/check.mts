@@ -1853,6 +1853,20 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
     certificateWording({ ...base, categoryId: 'participant', track: 'مسار البحث العلمي', approvedProjects: 3, projectTitle: 'أ' })
       .bodyAr.includes('بأعماله المقبولة'), true);
 
+  // What a volunteer's sheet is for: it names the committee they served on,
+  // which is the only thing on it an employer can act on. Fifteen of ours had
+  // no committee set — the clause is dropped rather than invented, and the
+  // page says so before they download.
+  const withCommittee = certificateWording({
+    ...base, categoryId: 'volunteer', categoryLabel: 'متطوع',
+    committeeAr: 'اللوجستيك', committeeEn: 'Logistics',
+  });
+  check('a volunteer sheet names the committee', withCommittee.bodyAr.includes('ضمن لجنة اللوجستيك'), true);
+  check('and in English too', withCommittee.bodyEn.includes('Logistics'), true);
+  const noCommittee = certificateWording({ ...base, categoryId: 'volunteer', categoryLabel: 'متطوع' });
+  check('and invents none when there is none', noCommittee.bodyAr.includes('ضمن لجنة'), false);
+  check('while still certifying the volunteering', noCommittee.bodyAr.includes('الفريق التطوّعي'), true);
+
   const visitor = certificateWording({ ...base, categoryId: 'visitor', categoryLabel: 'مشارك' });
   check('an attendee gets a participation certificate', visitor.titleAr, 'شهادة مشاركة');
   check('and it says so in English', visitor.titleEn, 'Certificate of Participation');

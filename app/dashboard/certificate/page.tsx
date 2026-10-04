@@ -126,7 +126,25 @@ export default async function CertificatePage() {
   const attended = attendances > 0;
 
   const ended = conferenceHasEnded();
-  const available = ended && attended;
+
+  /**
+   * A volunteer is not counted the way an attendee is.
+   *
+   * The gate is where attendees are proved, and for most people it is the
+   * only proof there is. A volunteer is the exception: they are the ones
+   * holding the scanner, letting people in through a side door, or on a shift
+   * that started before the gate opened — and five of ours finished two days
+   * of work with no row against their name. Refusing them the certificate for
+   * the committee they served on would be the platform reading its own
+   * records backwards.
+   *
+   * Being an approved volunteer is itself the organizers' decision that this
+   * person was on the team, which is what their certificate attests to. The
+   * dashboard only opens for an approved account at all, so reaching this
+   * page as a volunteer is the whole of the test.
+   */
+  const isVolunteerTier = user.category === 'volunteer';
+  const available = ended && (attended || isVolunteerTier);
 
   const readiness = certificateReadiness({
     name: user.name,
@@ -342,6 +360,29 @@ export default async function CertificatePage() {
         {kind} الخاصة بك — حمّلها بصيغة PDF واحتفظ بها. رمز التحقق المطبوع عليها هو ما يرجع
         إليه فريق المؤتمر عند الاستفسار عنها.
       </p>
+
+      {/* The sheet drops the committee clause rather than inventing one, so a
+          volunteer whose committee was never set downloads a certificate that
+          is quietly missing the line naming what they did. Said here, where
+          there is still time to fix it. */}
+      {user.category === 'volunteer' && !user.committee && (
+        <div
+          className="mb-6 flex items-start gap-3 rounded-2xl p-4"
+          style={{
+            background: 'color-mix(in srgb, #f59e0b 10%, var(--bg-elevated))',
+            border: '1px solid color-mix(in srgb, #f59e0b 30%, transparent)',
+          }}
+        >
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" style={{ color: '#f59e0b' }} />
+          <p className="text-[12.5px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            لجنتك غير محددة في حسابك، ولذلك لا تذكرها الشهادة. حدّدها من{' '}
+            <Link href="/dashboard/volunteering" className="font-semibold underline">
+              صفحة التطوّع
+            </Link>{' '}
+            ثم أعد تحميل الشهادة.
+          </p>
+        </div>
+      )}
 
       {!user.confirmationCode && (
         <div
