@@ -140,8 +140,6 @@ export default function SurveyForm({
     );
   }
 
-  const requiredCount = questions.filter((q) => q.required).length;
-
   return (
     // The site header is fixed, 56px tall on a phone and 60 above it, so the
     // page has to start below it rather than at the top of the viewport. At
@@ -151,10 +149,13 @@ export default function SurveyForm({
       <h1 className="font-outfit font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
         استبيان المؤتمر
       </h1>
+      {/* A thank-you first, then why the form exists. The mechanics that used
+          to open this page — how many questions are required, that no account
+          is needed — are said where they are needed instead: the required ones
+          carry an asterisk, and the note under the button covers the rest. */}
       <p className="mt-2 text-[13.5px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-        دقيقتان من وقتك. {requiredCount > 0 && `المطلوب منها ${requiredCount} فقط، وما عداه اختياري — `}
-        أجب عمّا تعرفه واترك الباقي.
-        {!signedIn && ' لا حاجة لتسجيل الدخول.'}
+        شكراً لحضورك مؤتمر الإبداع والابتكار ومشاركتك في فعالياته. هذا استبيان لتقييم هذه
+        الدورة وتطوير القادمة — ورأيك هو ما نبني عليه.
       </p>
 
       <div className="mt-8 space-y-8">
@@ -218,11 +219,12 @@ export default function SurveyForm({
         {busy ? '...جارٍ الإرسال' : 'إرسال إجابتي'}
       </button>
 
+      {/* Only what the opening paragraph does not already say — it carries the
+          purpose now, and repeating it here read as filler. */}
       <p className="mt-4 text-[12px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
-        تُقرأ الإجابات مجتمعة لتحسين الدورة القادمة.
         {signedIn
-          ? ' إجابتك مرتبطة بحسابك، ويمكن إرسالها مرة واحدة.'
-          : ' لا نطلب اسمك ولا بريدك في هذا النموذج.'}
+          ? 'إجابتك مرتبطة بحسابك، ويمكن إرسالها مرة واحدة.'
+          : 'لا نطلب اسمك ولا بريدك في هذا النموذج.'}
       </p>
     </div>
   );
