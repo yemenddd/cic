@@ -22,8 +22,16 @@ interface Answer {
   choices?: string[];
 }
 
-/** The ends of the 1–5 scale, named. A bare row of numbers means nothing. */
-const RATING_ENDS = { low: 'ضعيف', high: 'ممتاز' };
+/**
+ * What the ends of the 1–5 scale mean.
+ *
+ * The 0–10 question explains itself in a line under its prompt, written into
+ * the question itself. A rating has no such line and had its ends captioned
+ * under the buttons instead, in small grey type nobody reads before answering.
+ * Said here in the same place and the same shape — above the buttons, under
+ * the prompt — so both scales are read the same way.
+ */
+const RATING_HELP = 'من 1 (ضعيف) إلى 5 (ممتاز)';
 
 export default function SurveyForm({
   questions,
@@ -154,8 +162,8 @@ export default function SurveyForm({
           is needed — are said where they are needed instead: the required ones
           carry an asterisk, and the note under the button covers the rest. */}
       <p className="mt-2 text-[13.5px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-        شكراً لحضورك مؤتمر الإبداع والابتكار ومشاركتك في فعالياته. هذا استبيان لتقييم هذه
-        الدورة وتطوير القادمة — ورأيك هو ما نبني عليه.
+        شكراً لحضورك ومشاركتك في مؤتمر الإبداع، هذا استبيان لتقييم هذه الدورة والمساهمة في
+        التطوير والتحسين.
       </p>
 
       <div className="mt-8 space-y-8">
@@ -185,9 +193,11 @@ export default function SurveyForm({
                       {q.prompt}
                       {q.required && <span style={{ color: 'var(--destructive)' }}> *</span>}
                     </p>
-                    {q.help && (
+                    {/* The question's own line when it has one, and the scale's
+                        ends when it does not. */}
+                    {(q.help ?? (q.kind === 'RATING' ? RATING_HELP : null)) && (
                       <p className="mt-1 text-[12px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
-                        {q.help}
+                        {q.help ?? RATING_HELP}
                       </p>
                     )}
 
@@ -247,8 +257,7 @@ function QuestionInput({
     for (let i = scale.min; i <= scale.max; i++) points.push(i);
 
     return (
-      <div>
-        <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={q.prompt}>
+      <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={q.prompt}>
           {points.map((p) => {
             const on = value?.rating === p;
             return (
@@ -273,13 +282,6 @@ function QuestionInput({
               </button>
             );
           })}
-        </div>
-        {q.kind === 'RATING' && (
-          <div className="mt-1.5 flex justify-between text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-            <span>{RATING_ENDS.low}</span>
-            <span>{RATING_ENDS.high}</span>
-          </div>
-        )}
       </div>
     );
   }
