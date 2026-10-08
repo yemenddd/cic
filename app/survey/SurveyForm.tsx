@@ -143,7 +143,11 @@ export default function SurveyForm({
   const requiredCount = questions.filter((q) => q.required).length;
 
   return (
-    <div dir="rtl" className="mx-auto w-full max-w-2xl px-4 py-12 sm:px-6 sm:py-16">
+    // The site header is fixed, 56px tall on a phone and 60 above it, so the
+    // page has to start below it rather than at the top of the viewport. At
+    // py-12 the heading slid underneath and was cut in half. The same offset
+    // the registration form uses, for the same reason.
+    <div dir="rtl" className="mx-auto w-full max-w-2xl px-4 pb-16 pt-28 sm:px-6 sm:pb-24 sm:pt-32">
       <h1 className="font-outfit font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
         استبيان المؤتمر
       </h1>
