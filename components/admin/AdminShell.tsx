@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Mic2, CalendarDays, Images, Handshake,
   History, Trophy, Clapperboard, ClipboardList, Lightbulb, Users, BarChart3,
   LogOut, Megaphone, KeyRound, ExternalLink, ScanLine, PanelsTopLeft, Settings,
-  HandHeart, UserRoundCheck, QrCode, Mail,
+  HandHeart, UserRoundCheck, QrCode, Mail, ClipboardCheck,
 } from 'lucide-react';
 import PlatformShell, { type NavGroup, type UtilAction } from '@/components/platform/PlatformShell';
 
@@ -60,6 +60,7 @@ function buildGroups(pendingApprovals: number): NavGroup[] {
     items: [
       { href: '/admin/announcements', label: 'الإعلانات', icon: Megaphone },
       { href: '/admin/emails', label: 'البريد', icon: Mail },
+      { href: '/admin/survey', label: 'الاستبيان', icon: ClipboardCheck },
       { href: '/admin/qr', label: 'رمز التسجيل', icon: QrCode },
       { href: '/admin/insights', label: 'الإحصاءات', icon: BarChart3 },
     ],

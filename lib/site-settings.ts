@@ -21,6 +21,9 @@ export interface SiteSettingsValues {
   xUrl: string;
   registrationOpen: boolean;
   registrationClosedNote: string;
+  /** Whether the post-conference survey takes answers. */
+  surveyOpen: boolean;
+  surveyClosedNote: string;
 }
 
 /** What the site said before any of this was editable. */
@@ -33,6 +36,11 @@ export const DEFAULT_SETTINGS: SiteSettingsValues = {
   registrationOpen: true,
   registrationClosedNote:
     'التسجيل مغلق حالياً. تابع حساباتنا ليصلك إعلان فتح التسجيل في النسخة القادمة.',
+  // Closed until an organizer opens it: a survey asking how the conference
+  // went, answerable before it has happened, collects answers about nothing.
+  surveyOpen: false,
+  surveyClosedNote:
+    'الاستبيان مغلق حالياً. شكراً لاهتمامك — سيُفتح عند انتهاء فعاليات المؤتمر.',
 };
 
 /**
@@ -93,5 +101,10 @@ export function resolveSettings(
     // worst possible failure here.
     registrationOpen: row?.registrationOpen === false ? false : true,
     registrationClosedNote: str('registrationClosedNote') || DEFAULT_SETTINGS.registrationClosedNote,
+    // The opposite default to registration, and for the same reason read the
+    // other way round: only an explicit `true` opens the survey. An absent row
+    // must not put a live form in front of attendees that nobody opened.
+    surveyOpen: row?.surveyOpen === true,
+    surveyClosedNote: str('surveyClosedNote') || DEFAULT_SETTINGS.surveyClosedNote,
   };
 }

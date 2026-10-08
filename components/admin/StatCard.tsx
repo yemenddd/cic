@@ -15,7 +15,14 @@ export default function StatCard({
   hint,
 }: {
   label: string;
-  value: number;
+  /**
+   * A count, or something already shaped — "4.3 / 5", "+42".
+   *
+   * A number is grouped for reading; a string is printed as given, because the
+   * figures that are not counts (an average with its scale, a signed index)
+   * carry their own formatting and grouping them again would corrupt it.
+   */
+  value: number | string;
   icon: LucideIcon;
   accent?: string;
   hint?: string;
@@ -37,7 +44,7 @@ export default function StatCard({
         className="mt-3 font-outfit font-bold text-[28px] leading-none"
         style={{ color: accent ?? 'var(--text-primary)' }}
       >
-        {value.toLocaleString('en-US')}
+        {typeof value === 'number' ? value.toLocaleString('en-US') : value}
       </p>
 
       {hint && (

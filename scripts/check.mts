@@ -2295,6 +2295,117 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('and the panel has a way in', shell.includes("href: '/admin/emails'"), true);
 }
 
+// --- the survey ------------------------------------------------------------------
+//
+// The one place on the platform where the attendees write and the organizers
+// read, and the only public form that takes a submission without an account —
+// which it has to be, since most of the people worth hearing from were
+// registered at the door and have no password. That openness is also its whole
+// exposure, so what is checked here is what a posted body is allowed to do.
+
+{
+  const { nps, average, distribution, tally, scaleOf, SEED_QUESTIONS } = await import('../lib/survey');
+  const { resolveSettings } = await import('../lib/site-settings');
+
+  // Closed unless somebody opened it, and read the opposite way round from
+  // registration: a survey asking how the conference went, live because a row
+  // was missing, collects answers about nothing.
+  check('the survey is closed when nothing says otherwise', resolveSettings(null).surveyOpen, false);
+  check('and an unset column does not open it', resolveSettings({}).surveyOpen, false);
+  check('only an explicit true opens it', resolveSettings({ surveyOpen: true }).surveyOpen, true);
+  // The opposite default to registration, which must stay open on an empty row.
+  check('while registration still fails open', resolveSettings(null).registrationOpen, true);
+
+  check('a rating runs 1 to 5', scaleOf('RATING'), { min: 1, max: 5 });
+  check('and the recommendation scale 0 to 10', scaleOf('SCALE_10'), { min: 0, max: 10 });
+  check('text has no scale', scaleOf('TEXT'), null);
+
+  // An average of 0–10 answers hides exactly what it measures: a room split
+  // between enthusiasts and the disappointed averages to the same place as a
+  // room of shrugs. NPS is reported instead, and these are its edges.
+  check('all promoters is +100', nps([9, 10, 10])?.score, 100);
+  check('all detractors is -100', nps([0, 3, 6])?.score, -100);
+  check('passives count against neither', nps([7, 8, 9, 0])?.score, 0);
+  check('nobody answering is not a zero', nps([]), null);
+  check('and the bands are 0-6, 7-8, 9-10', [
+    nps([6])?.detractors, nps([7])?.passives, nps([9])?.promoters,
+  ], [1, 1, 1]);
+
+  check('an average is one decimal', average([5, 4, 4]), 4.3);
+  check('and nothing averages to nothing', average([]), null);
+
+  // Every point of the scale, including the ones nobody chose: a bar chart
+  // with a missing column reads as a narrower scale rather than as a zero.
+  check('a distribution keeps its empty points',
+    distribution([5, 5, 3], 1, 5).map((d) => d.count), [0, 0, 1, 0, 2]);
+  check('and ignores values off the scale',
+    distribution([9, 3], 1, 5).reduce((n, d) => n + d.count, 0), 1);
+
+  check('a tally keeps the question order',
+    tally(['أ', 'ب', 'ج'], [['ج'], ['أ'], ['ج']]).map((t) => t.count), [1, 0, 2]);
+  check('and counts nothing it was not offered',
+    tally(['أ'], [['ليس خياراً']]).map((t) => t.count), [0]);
+
+  // The shipped set covers what the organizers asked for by name.
+  for (const needle of ['الجلسات', 'الافتتاح', 'الختامي', 'الاستقبال', 'اللجان']) {
+    check(`the default questions ask about ${needle}`,
+      SEED_QUESTIONS.some((q) => q.promptAr.includes(needle) || q.section.includes(needle)), true);
+  }
+  // Every extra required question costs responses, so the ones that must be
+  // answered are the two an organizer actually plans from.
+  check('and keep the required ones few',
+    SEED_QUESTIONS.filter((q) => q.required).length <= 3, true);
+  check('and every choice question offers a choice',
+    SEED_QUESTIONS.every((q) => (q.kind !== 'CHOICE' && q.kind !== 'MULTI') || (q.options?.length ?? 0) >= 2), true);
+
+  // The mechanism is not a server action — a public survey endpoint that is
+  // also a callable action would be two doors into the same room.
+  const submitSource = readFileSync('lib/survey-submit.ts', 'utf8');
+  check('the submission core is not a server action', submitSource.trimStart().startsWith("'use server'"), false);
+  const surveyActions = readFileSync('app/admin/(panel)/survey/actions.ts', 'utf8');
+  check('and the admin actions are', surveyActions.trimStart().startsWith("'use server'"), true);
+  // Nine ways to change the survey, and every one of them behind the same guard.
+  check('every one of them proves the caller first',
+    (surveyActions.match(/export async function/g) ?? []).length,
+    (surveyActions.match(/requireAdmin\(\)/g) ?? []).length);
+
+  // The route is where the throttle and the closed check live, because a
+  // closed survey that still accepts a posted body is not closed.
+  const surveyRoute = readFileSync('app/api/survey/route.ts', 'utf8');
+  check('the endpoint refuses a closed survey', surveyRoute.includes('settings.surveyOpen'), true);
+  check('and throttles by address', surveyRoute.includes('SURVEY_BY_IP'), true);
+
+  // Every day between the first answer and the last, including the silent
+  // ones: a chart that skips a quiet day draws a steady trickle where there
+  // was a gap, which is the opposite of what happened.
+  const { dailyCounts } = await import('../app/admin/(panel)/survey/results');
+  const span = dailyCounts([
+    new Date('2026-10-04T09:00:00Z'), new Date('2026-10-04T20:00:00Z'),
+    new Date('2026-10-07T09:00:00Z'),
+  ]);
+  check('a daily count keeps the empty days', span.map((d) => d.count), [2, 0, 0, 1]);
+  check('and spans first to last inclusive', [span[0].day, span[span.length - 1].day],
+    ['2026-10-04', '2026-10-07']);
+  check('and nothing answered is no chart', dailyCounts([]), []);
+
+  // Measured in a browser: a bar asking for a percentage of a column that is
+  // sized by its contents renders at the 3px minimum, so every column came out
+  // the same height with the right number printed above it. Both charts state
+  // their bar heights in pixels now, and neither may quietly go back.
+  for (const chart of [
+    'app/admin/(panel)/survey/charts.tsx',
+    'app/admin/(panel)/attendance/report/ArrivalChart.tsx',
+  ]) {
+    const source = readFileSync(chart, 'utf8');
+    check(`${chart.split('/').pop()} sizes its bars in pixels`,
+      /height: `\$\{[^`]*\}%`/.test(source), false);
+  }
+
+  // Reachable from the panel.
+  const shellSource = readFileSync('components/admin/AdminShell.tsx', 'utf8');
+  check('and the panel has a way in', shellSource.includes("href: '/admin/survey'"), true);
+}
+
 // --- registering without an email -----------------------------------------------
 //
 // The field is optional now. What must stay true: a person who skips it still

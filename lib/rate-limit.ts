@@ -71,6 +71,20 @@ export const REGISTER_BY_IP: ThrottleRule = {
  * ask for it. Three a quarter-hour is generous for a person who mistyped their
  * address and far below what it takes to use the form to harass an inbox.
  */
+/**
+ * Survey submissions.
+ *
+ * The one public form on the platform that anybody may use without an account
+ * — which it has to be, since most of the people worth hearing from were
+ * registered at the door and have no password. That openness is also the whole
+ * of its exposure: nothing here costs money or mail, but a script could fill
+ * the results with invented opinions and the organizers would plan from them.
+ *
+ * Ten an hour per address is far above a household or a lecture hall sharing
+ * one connection and far below what it takes to move an average.
+ */
+export const SURVEY_BY_IP: ThrottleRule = { limit: 10, windowSeconds: 3600, maxLockSeconds: 1800 };
+
 export const RESET_BY_IP: ThrottleRule = { limit: 3, windowSeconds: 900, maxLockSeconds: 1800 };
 
 /**

@@ -141,6 +141,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
   volunteerShifts     VolunteerAssignment[]
   emailBlasts         EmailBlast[]          @relation("EmailBlastSender")
+  surveyResponse      SurveyResponse?
 
   /**
    * The admin directory's default order — admins first, then newest signups.
@@ -670,6 +671,17 @@ model SiteSettings {
   /** Shown in place of the form when registration is closed. */
   registrationClosedNote String?
 
+  /**
+   * Whether the post-conference survey takes answers.
+   *
+   * Read the opposite way round from registration: only an explicit `true`
+   * opens it. A survey asking how the conference went, live before it has
+   * happened or because a row was missing, collects answers about nothing.
+   */
+  surveyOpen Boolean @default(false)
+  /** Shown in place of the form when the survey is closed. */
+  surveyClosedNote String?
+
   updatedAt DateTime @updatedAt
 }
 
@@ -736,4 +748,114 @@ model VolunteerAssignment {
   // Claiming the same shift twice is not a second pair of hands.
   @@unique([shiftId, userId])
   @@index([userId])
+}
+
+// ─── the survey ──────────────────────────────────────────────────────────────
+//
+// Asked once, after the conference, and worth getting right because it is the
+// only part of the platform where the attendees write and the organizers read.
+//
+// The questions are rows rather than code: an organizer changes them between
+// one edition and the next, and a question list that only a developer can edit
+// is a question list that stops matching the conference.
+
+enum SurveyQuestionKind {
+  /** One to five. The workhorse: every "how would you rate…" is this. */
+  RATING
+  /** Zero to ten — the recommend-to-a-friend question, scored as an NPS. */
+  SCALE_10
+  /** One of a list. */
+  CHOICE
+  /** Several of a list. */
+  MULTI
+  /** Free text. The only kind that cannot be charted, and often the useful one. */
+  TEXT
+}
+
+model SurveyQuestion {
+  id String @id @default(cuid())
+
+  /** The heading it sits under on the form — "الجلسات", "التنظيم". */
+  section  String
+  promptAr String
+  /** A line under the prompt, when one is needed. */
+  helpAr   String?
+
+  kind SurveyQuestionKind @default(RATING)
+
+  /**
+   * The choices, in order, for CHOICE and MULTI. Empty for every other kind.
+   *
+   * A column rather than a table: they are a short ordered list belonging to
+   * exactly one question, never queried on their own, and a table would buy
+   * referential integrity for something nothing else refers to.
+   */
+  options String[]
+
+  required Boolean @default(false)
+
+  /**
+   * A retired question leaves the form and keeps its answers.
+   *
+   * Deleting is also allowed, and takes the answers with it — which is almost
+   * never what an organizer means by "remove this question" once anybody has
+   * answered it.
+   */
+  active Boolean @default(true)
+
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  answers SurveyAnswer[]
+
+  @@index([active, order])
+}
+
+model SurveyResponse {
+  id String @id @default(cuid())
+
+  /**
+   * Null for somebody who answered without signing in.
+   *
+   * Most of the people worth hearing from cannot sign in at all: the door
+   * registered 136 of them and their accounts have no usable password. A
+   * survey only signed-in accounts could answer would be a survey of the
+   * minority who registered online.
+   */
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  /** The tier and the attendance as they were at the moment of answering. */
+  category String?
+  attended Boolean @default(false)
+
+  submittedAt DateTime @default(now())
+
+  answers SurveyAnswer[]
+
+  // One per account. Postgres allows many NULLs in a unique index, so this
+  // binds the signed-in case and leaves anonymous answers alone.
+  @@unique([userId])
+  @@index([submittedAt])
+}
+
+model SurveyAnswer {
+  id String @id @default(cuid())
+
+  responseId String
+  response   SurveyResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  questionId String
+  question   SurveyQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  /** Set for RATING and SCALE_10. */
+  rating Int?
+  /** Set for TEXT. */
+  text String?
+  /** Set for CHOICE (one) and MULTI (several). */
+  choices String[]
+
+  @@unique([responseId, questionId])
+  @@index([questionId])
 }

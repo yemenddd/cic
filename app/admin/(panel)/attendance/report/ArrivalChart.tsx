@@ -27,6 +27,20 @@ export default function ArrivalChart({
   }
 
   const max = curve.peak?.count ?? 1;
+
+  /**
+   * The bar area, in pixels.
+   *
+   * This used to be a percentage, and it never worked: a column in a row laid
+   * out with `items-end` is sized by its contents, so its height is
+   * indefinite, and a child asking for a percentage of an indefinite height
+   * gets `auto` — which here meant the 3px minimum. Measured in a browser: a
+   * bar asking for 80% rendered at 3px. Every hour of the conference has been
+   * drawn at the same height since this was written, with the correct number
+   * printed above it, which is exactly the kind of wrong a chart gets away
+   * with for a long time.
+   */
+  const BAR_AREA = 150 - 34;
   // Every hour gets a label; the half-hours between stay bare, or the axis is
   // unreadable at any width a phone has.
   const showLabel = (minutes: number) => minutes % 60 === 0;
@@ -40,7 +54,7 @@ export default function ArrivalChart({
         >
           {curve.buckets.map((b) => {
             const isPeak = b.startMinutes === curve.peak?.startMinutes;
-            const height = max > 0 ? Math.max(b.count > 0 ? 3 : 0, (b.count / max) * 100) : 0;
+            const height = b.count > 0 ? Math.max(3, Math.round((b.count / max) * BAR_AREA)) : 0;
             return (
               <div key={b.startMinutes} className="flex min-w-[14px] flex-1 flex-col items-center gap-1">
                 <span
@@ -52,8 +66,7 @@ export default function ArrivalChart({
                 <div
                   className="w-full rounded-t"
                   style={{
-                    height: `${height}%`,
-                    minHeight: b.count > 0 ? 3 : 0,
+                    height,
                     background: isPeak ? 'var(--accent-cyan)' : 'var(--primary)',
                     opacity: isPeak ? 1 : 0.55,
                   }}
