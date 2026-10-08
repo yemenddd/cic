@@ -1,0 +1,64 @@
+<!--
+  Source for app/survey/opengraph-image.png and app/survey/twitter-image.png.
+
+  A static PNG for the same reason the site's own share image is one: next/og
+  renders through Satori, which shapes Arabic letters but does not apply the
+  Unicode bidirectional algorithm, so every WhatsApp and Telegram preview came
+  out with the words in reverse order.
+
+  Without this file the survey link previewed as a blank white card — the page
+  has no image of its own, and a route-level image does not inherit the root's.
+
+  To change the wording, edit this file and re-render at exactly 1200x630 in a
+  real browser (which does apply bidi). Serve it from the dev server rather
+  than opening it from disk, so the @font-face URLs below resolve:
+
+    cp scripts/og-survey.html public/_og.html
+    # open http://localhost:3311/_og.html at 1200x630, capture #og, then
+    rm public/_og.html
+-->
+<!doctype html><meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'Thmanyah';
+    src: url('/fonts/ar/thmanyahserifdisplay-Bold.otf') format('opentype');
+    font-weight: 700; font-display: block;
+  }
+  @font-face {
+    font-family: 'ThmanyahBlack';
+    src: url('/fonts/ar/thmanyahserifdisplay-Black.otf') format('opentype');
+    font-weight: 900; font-display: block;
+  }
+  html,body { margin:0; padding:0; }
+  #og {
+    width: 1200px; height: 630px;
+    position: relative;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #0d0d0f 0%, #14141a 60%, #1a1424 100%);
+    font-family: 'Thmanyah', serif;
+  }
+  /* The conference's mark, small and above the title: this card is the
+     survey's, and the conference is the thing it belongs to rather than the
+     thing it is announcing. */
+  .mark {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 54px; font-weight: 900; letter-spacing: -0.02em;
+    background-image: linear-gradient(90deg, #67e8f9, #60a5fa 50%, #8b5cf6);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .conf { margin-top: 10px; font-size: 26px; color: rgba(255,255,255,0.46); }
+  .rule {
+    width: 120px; height: 2px; margin: 34px 0;
+    background: linear-gradient(90deg, rgba(103,232,249,0), #60a5fa, rgba(139,92,246,0));
+  }
+  .title { font-size: 76px; color: rgba(255,255,255,0.94); line-height: 1.2; }
+  .sub { margin-top: 22px; font-size: 30px; color: rgba(255,255,255,0.56); }
+</style>
+<div id="og" dir="rtl">
+  <div class="mark" dir="ltr">CIC</div>
+  <div class="conf">مؤتمر الإبداع والابتكار</div>
+  <div class="rule"></div>
+  <div class="title">استبيان المؤتمر</div>
+  <div class="sub">دقيقتان من وقتك تصنعان الدورة القادمة</div>
+</div>

@@ -9,6 +9,9 @@ import SurveyForm, { type FormQuestion } from './SurveyForm';
 export const metadata = pageMetadata({
   title: 'استبيان المؤتمر | مؤتمر الإبداع والابتكار',
   description: 'رأيك في مؤتمر الإبداع والابتكار — دقيقتان تصنعان الدورة القادمة.',
+  // This route has its own card — opengraph-image.png beside this file — so
+  // the site-wide one is left out and the file convention applies.
+  image: null,
 });
 
 /**

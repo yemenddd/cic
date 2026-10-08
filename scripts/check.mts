@@ -2755,6 +2755,32 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   check('nothing still points at the old route',
     /opengraph-image(?=[`'"])/.test(readFileSync('app/page.tsx', 'utf8')), false);
 
+  // The survey is handed round as a link, so it has a card of its own rather
+  // than the conference's — same ground, its own title. Rendered the same way
+  // and for the same reason: Satori would have reversed the Arabic.
+  const surveyOg = 'app/survey/opengraph-image.png';
+  check('the survey link has its own card', existsSync(surveyOg), true);
+  check('and X is offered it too', existsSync('app/survey/twitter-image.png'), true);
+  const surveyHead = readFileSync(surveyOg).subarray(16, 24);
+  check('at the size link previews expect too',
+    `${surveyHead.readUInt32BE(0)}×${surveyHead.readUInt32BE(4)}`, '1200×630');
+  // Next reads the alt from a sibling file, and a trailing newline in it is
+  // enough to stop the tag being emitted at all.
+  for (const alt of ['app/survey/opengraph-image.alt.txt', 'app/survey/twitter-image.alt.txt']) {
+    check(`${alt.split('/').pop()} has no trailing newline`,
+      readFileSync(alt, 'utf8').endsWith('\n'), false);
+  }
+
+  // Next replaces `openGraph` wholesale rather than merging it, so a page that
+  // set only a title threw the root's image away with it — and every page but
+  // the homepage previewed as a blank card. The helper restates both the image
+  // and the card size; a page with its own image passes `image: null`.
+  const helper = readFileSync('lib/page-metadata.ts', 'utf8');
+  check('the page helper carries a share image', helper.includes("'/opengraph-image.png'"), true);
+  check('and the large card the root asked for', helper.includes("card: 'summary_large_image'"), true);
+  check('and the survey opts out of it, having its own',
+    readFileSync('app/survey/page.tsx', 'utf8').includes('image: null'), true);
+
   // Kept so the wording can be changed without reverse-engineering the design.
   check('the source it was rendered from is in the repo',
     existsSync('scripts/og-image.html'), true);
