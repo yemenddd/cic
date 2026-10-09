@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import { CalendarClock, MapPin, Users, Clock, HandHeart, Info } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
-import { CONFERENCE_DAYS } from '@/lib/conference';
 import { arabicCountBare, SHIFT, VOLUNTEER } from '@/lib/arabic-plural';
 import {
   byStartTime, canClaim, totalHours, REFUSAL_MESSAGES,
   type ShiftLike, type ClaimReason,
 } from '@/lib/volunteering';
+import { dayLabel } from '@/lib/attendance';
 import { committeeLabel } from '@/lib/committees';
 import CommitteePicker from './CommitteePicker';
 import { MAX_SHIFTS_PER_VOLUNTEER } from '@/lib/categories';
@@ -22,15 +22,12 @@ export const metadata: Metadata = {
 // show somebody a slot that filled up an hour ago.
 export const dynamic = 'force-dynamic';
 
-const DATE_LABEL = new Intl.DateTimeFormat('ar-u-nu-latn', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-});
-
+// اليومان بتسميتهما لا بتاريخهما. كان هنا تاريخ الدورة المنعقدة مكتوباً
+// بالكامل («الجمعة 2 أكتوبر»)، وهو تاريخ مضى — والجدول يُقرأ اليوم كسجلّ،
+// فالتسمية هي ما يبقى صحيحاً.
 const DAYS = [
-  { key: 'dayOne' as const, date: CONFERENCE_DAYS.dayOne },
-  { key: 'dayTwo' as const, date: CONFERENCE_DAYS.dayTwo },
+  { key: 'dayOne' as const },
+  { key: 'dayTwo' as const },
 ];
 
 function Stat({
@@ -172,9 +169,9 @@ export default async function VolunteeringPage() {
   const ours = shifts.filter((s) => s.committee === committee);
   const theirs = shifts.filter((s) => s.committee !== committee);
 
-  const days = DAYS.map(({ key, date }) => ({
+  const days = DAYS.map(({ key }) => ({
     key,
-    label: DATE_LABEL.format(new Date(date.y, date.m - 1, date.d)),
+    label: dayLabel(key),
     shifts: byStartTime(ours.filter((s) => s.day === key)),
     mineCount: mine.filter((s) => s.day === key).length,
   }));

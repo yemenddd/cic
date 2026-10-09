@@ -48,9 +48,7 @@ const { lockSeconds, LOGIN_BY_EMAIL, LOGIN_BY_IP, REGISTER_BY_IP } = await impor
 );
 const { relativeArabicDate } = await import('../lib/relative-time');
 const { arabicCountBare, SESSION } = await import('../lib/arabic-plural');
-const {
-  daysUntilConference, conferenceStart, conferenceEnd, conferenceHasEnded, conferenceHasStarted,
-} = await import('../lib/conference');
+const { conferenceEnd, conferenceHasEnded } = await import('../lib/conference');
 const { badgeToken, verifyBadgeToken } = await import('../lib/badge-token');
 const { qrMatrix, qrPath } = await import('../lib/qr');
 const jsQR = (await import('jsqr')).default;
@@ -171,12 +169,11 @@ check('two sessions use the dual with no digit', arabicCountBare(2, SESSION), '�
 check('four sessions take the few-plural', arabicCountBare(4, SESSION), '4 جلسات');
 check('twelve sessions go back to the singular noun', arabicCountBare(12, SESSION), '12 جلسة');
 
-// --- the conference dates, which several features compute from ---------------
-
-check('day one starts at 09:00 local (UTC+3)', conferenceStart().toISOString(), '2026-10-02T06:00:00.000Z');
-check('the countdown counts down', daysUntilConference(new Date('2026-09-28T06:00:00Z')), 4);
-check('it reaches zero on the day', daysUntilConference(new Date('2026-10-02T06:00:00Z')), 0);
-check('and goes negative afterwards, so callers can stop counting', daysUntilConference(new Date('2026-10-05T06:00:00Z')) < 0, true);
+// --- the fourth edition's close, which the certificate gate computes from ----
+//
+// The countdown and "has it started?" checks that stood here went with the
+// features: the edition is over, the site no longer counts down to it, and the
+// only question still asked of these dates is whether a certificate may issue.
 
 check('the conference ends at midnight after day two', conferenceEnd().toISOString(), '2026-10-03T21:00:00.000Z');
 check('a certificate is not issuable two weeks early', conferenceHasEnded(new Date('2026-09-18T12:00:00Z')), false);
@@ -995,23 +992,6 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   const d = await drain(100, []);
   check('an empty table yields nothing', d.seen.length, 0);
   check('and asks exactly once', d.queries, 1);
-}
-
-// --- has it started? ---------------------------------------------------------
-
-// The dashboard shows an attendance ring only once there is a door to have
-// walked through. Before that the figure can only be zero, which measures
-// nothing — so the boundary is what decides whether a whole card appears.
-{
-  const opening = conferenceStart();
-  check('the instant it opens counts as started', conferenceHasStarted(opening), true);
-  check('a second before it does not', conferenceHasStarted(new Date(opening.getTime() - 1000)), false);
-  check('a second after it does', conferenceHasStarted(new Date(opening.getTime() + 1000)), true);
-  check('the day before does not', conferenceHasStarted(new Date(opening.getTime() - 86_400_000)), false);
-  // Still "started" long after it is over: the two are different questions,
-  // and an attendance record does not stop being worth showing on the way home.
-  check('it stays started once ended', conferenceHasStarted(conferenceEnd()), true);
-  check('and ended is still its own question', conferenceHasEnded(opening), false);
 }
 
 // --- the account page's two meters -------------------------------------------
@@ -2691,11 +2671,11 @@ check('and their accounts too', await prisma.user.count({ where: { email: { ends
   const NAMED_YEAR = /CIC\s*2026|الإبداع والابتكار\s*2026|2026\s*Creativity|2026\s*Yaratıcılık/;
   const sources = [
     'app/layout.tsx', 'app/page.tsx', 'app/not-found.tsx',
-    'app/register/page.tsx', 'app/login/page.tsx', 'app/program/page.tsx',
+    'app/register/page.tsx', 'app/login/page.tsx',
     'app/dashboard/layout.tsx', 'app/dashboard/badge/page.tsx',
-    'components/ui/footer-section.tsx', 'components/ui/ConferenceBadge.tsx',
+    'components/ui/ConferenceBadge.tsx',
     'components/dashboard/ParticipationCertificate.tsx',
-    'components/sections/HeroSlider.tsx', 'components/sections/AboutConference.tsx',
+    'components/sections/HeroSlider.tsx',
     'lib/dictionary.ts', 'lib/account-emails.ts',
   ];
   check('the year is not part of the name',

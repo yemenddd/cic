@@ -87,7 +87,7 @@ export default function RegisterQrPage() {
             مؤتمر الإبداع والابتكار
           </p>
           <p style={{ margin: '6px 0 0', fontSize: 15, fontWeight: 600, color: '#334155' }}>
-            امسح الرمز للتسجيل
+            امسح الرمز للانضمام إلى المنصة
           </p>
 
           <div style={{ margin: '22px auto 0', width: 260, height: 260 }}>
@@ -101,7 +101,7 @@ export default function RegisterQrPage() {
             {REGISTER_URL}
           </p>
           <p style={{ margin: '6px 0 0', fontSize: 11.5, color: '#6b7280' }}>
-            ٢ – ٣ أكتوبر ٢٠٢٦ · إسطنبول، تركيا
+            إسطنبول، تركيا
           </p>
         </div>
         </div>

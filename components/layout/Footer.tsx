@@ -74,7 +74,6 @@ export default function Footer({ social }: { social: SocialLinks }) {
         { href: "/", label: t("nav.home") },
         { href: "/about", label: t("nav.about") },
         { href: "/history", label: t("nav.history") },
-        { href: "/program", label: t("nav.program") },
         { href: "/gallery", label: t("nav.gallery") },
         { href: "/videos", label: t("nav.videos") },
       ]}

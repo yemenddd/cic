@@ -20,7 +20,6 @@ function ConfirmationContent() {
   const qrValue   = params.get('q')    ?? '';
   const lang      = (params.get('lang') ?? 'ar') as 'ar' | 'en' | 'tr';
 
-  const date     = lang === 'ar' ? '2-3 أكتوبر 2026' : lang === 'tr' ? '2-3 Ekim 2026' : 'Oct 2–3, 2026';
   const location = lang === 'ar' ? 'إسطنبول - تركيا'  : lang === 'tr' ? 'İstanbul, Türkiye'   : 'Istanbul, Turkey';
 
   const [copied, setCopied] = useState(false);
@@ -42,7 +41,6 @@ function ConfirmationContent() {
         organization={org}
         track={track}
         code={code}
-        date={date}
         location={location}
         qrValue={qrValue || undefined}
         lang={lang}

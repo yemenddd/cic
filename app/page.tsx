@@ -12,25 +12,28 @@ import { getPartners, getSpeakers } from "@/lib/db/queries";
 import { sponsorLogos } from "@/lib/sponsors";
 import { siteUrl } from "@/lib/site";
 
-const eventJsonLd = {
+/**
+ * Was an `Event` with a startDate and an endDate.
+ *
+ * schema.org requires a start date on an Event, and a search engine shows one
+ * with its date attached — so after the fourth edition closed, the only honest
+ * Event markup would have been a past date advertised on the homepage. What
+ * the site is between editions is an organization with a platform, not a
+ * scheduled event, and that is what it now declares. An Event block comes back
+ * when there is a fifth date to put in it.
+ */
+const orgJsonLd = {
   "@context": "https://schema.org",
-  "@type": "Event",
+  "@type": "Organization",
   name: "مؤتمر الإبداع والابتكار (CIC)",
-  startDate: "2026-10-02",
-  endDate: "2026-10-03",
-  eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-  eventStatus: "https://schema.org/EventScheduled",
-  location: {
-    "@type": "Place",
-    name: "إسطنبول، تركيا",
-    address: { "@type": "PostalAddress", addressLocality: "Istanbul", addressCountry: "TR" },
-  },
+  url: siteUrl,
   // The file, not the route: this was a generated ImageResponse at
   // /opengraph-image and is now a static PNG, so the extension is part of it.
+  logo: `${siteUrl}/opengraph-image.png`,
   image: [`${siteUrl}/opengraph-image.png`],
   description:
-    "انضم إلينا في مؤتمر الإبداع والابتكار يومي ٢–٣ أكتوبر ٢٠٢٦. اكتشف مستقبل الابتكار.",
-  organizer: { "@type": "Organization", name: "CIC", url: siteUrl },
+    "منصة مؤتمر الإبداع والابتكار — الإبداع والبحث العلمي والابتكار، ومجتمع من المبدعين والباحثين.",
+  address: { "@type": "PostalAddress", addressLocality: "Istanbul", addressCountry: "TR" },
 };
 
 /**
@@ -56,7 +59,7 @@ export default async function Home() {
     <div className="overflow-x-clip bg-black">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
       />
       {/* 01 · Full-screen image slider */}
       <HeroSlider />

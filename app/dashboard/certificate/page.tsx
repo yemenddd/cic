@@ -2,14 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import {
-  Award, CalendarClock, ShieldCheck, ArrowLeft, CircleCheck, TriangleAlert, Clock,
+  Award, ShieldCheck, ArrowLeft, CircleCheck, TriangleAlert, Clock,
 } from 'lucide-react';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
 import { categoryLabel } from '@/lib/categories';
 import { dict } from '@/lib/dictionary';
-import { CONFERENCE_DAYS, conferenceHasEnded, daysUntilConference } from '@/lib/conference';
-import { arabicCountBare, DAY } from '@/lib/arabic-plural';
+import { conferenceHasEnded, EDITION_DATE_AR, EDITION_DATE_EN } from '@/lib/conference';
 import { certificateReadiness, type CertificateIssueLevel } from '@/lib/certificate-readiness';
 import { totalHours } from '@/lib/volunteering';
 import ParticipationCertificate from '@/components/dashboard/ParticipationCertificate';
@@ -24,13 +23,6 @@ export const metadata: Metadata = {
   title: 'شهادتي | CIC',
   robots: { index: false, follow: false },
 };
-
-const DAY_ONLY = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric' });
-const DAY_MONTH = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric', month: 'long' });
-
-function dateOf({ y, m, d }: { y: number; m: number; d: number }): Date {
-  return new Date(y, m - 1, d);
-}
 
 function Detail({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
@@ -152,15 +144,10 @@ export default async function CertificatePage() {
     confirmationCode: user.confirmationCode,
   });
 
+  // `ended` is now permanently true — the edition this certificate attests to
+  // is in the past — so the "شهادتك تصدر بعد المؤتمر" half of this screen can
+  // never be reached. Reaching here means only one thing: no scan at any gate.
   if (!available) {
-    const days = daysUntilConference();
-    const start = dateOf(CONFERENCE_DAYS.dayOne);
-    const end = dateOf(CONFERENCE_DAYS.dayTwo);
-    const sameMonth = CONFERENCE_DAYS.dayOne.m === CONFERENCE_DAYS.dayTwo.m;
-    const range = sameMonth
-      ? `${DAY_ONLY.format(start)} – ${DAY_MONTH.format(end)} ${CONFERENCE_DAYS.dayTwo.y}`
-      : `${DAY_MONTH.format(start)} – ${DAY_MONTH.format(end)} ${CONFERENCE_DAYS.dayTwo.y}`;
-
     // Wider than the 2xl this used to be: the page now holds an A4 landscape
     // sheet, which scales itself down to whatever it is given, and at 672px
     // the name on it was too small to proofread — which is the entire reason
@@ -190,24 +177,17 @@ export default async function CertificatePage() {
               className="mt-4 font-outfit font-bold text-[17px]"
               style={{ color: 'var(--text-primary)' }}
             >
-              {ended
-                ? 'لم نسجّل حضورك في المؤتمر'
-                : days > 0
-                  ? 'شهادتك تصدر بعد المؤتمر'
-                  : 'شهادتك تصدر عند ختام الفعاليات'}
+              لم نسجّل حضورك في المؤتمر
             </h2>
 
             <p className="mt-2 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              {ended
-                ? `${kind} تشهد بحضورك فعلياً، وتُصدر لمن مُسحت بطاقته عند إحدى بوابات المؤتمر. لا يوجد لحسابك تسجيل حضور.`
-                : `${kind} تشهد بحضورك فعلياً، ولذلك تُصدر بعد انتهاء الفعاليات لا قبلها — فبذلك تبقى لها قيمتها عند من يطّلع عليها.`}
+              {`${kind} تشهد بحضورك فعلياً، وتُصدر لمن مُسحت بطاقته عند إحدى بوابات المؤتمر. لا يوجد لحسابك تسجيل حضور.`}
             </p>
 
             {/* Somebody who was there and was never scanned is a real case —
                 a desk misses people — and the honest answer to them is a way
                 to be counted, not a closed door. */}
-            {ended ? (
-              <p className="mt-3 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            <p className="mt-3 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 إن كنت قد حضرت ولم يُمسح رمزك عند الباب، راسلنا بالرد على أي رسالة وصلتك من
                 المؤتمر ومعها رمز تأكيدك{user.confirmationCode ? ' ' : ''}
                 {user.confirmationCode && (
@@ -216,21 +196,7 @@ export default async function CertificatePage() {
                   </span>
                 )}
                 ، وسنراجع سجل البوابة.
-              </p>
-            ) : (
-              <p
-                className="mt-4 inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-[12.5px] font-semibold"
-                style={{
-                  background: 'var(--mat-liquid-bg)',
-                  border: '1px solid var(--mat-liquid-border)',
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                <CalendarClock className="h-3.5 w-3.5" style={{ color: 'var(--accent-violet)' }} />
-                {range}
-                {days > 0 && <span style={{ color: 'var(--text-tertiary)' }}>· بعد {arabicCountBare(days, DAY)}</span>}
-              </p>
-            )}
+            </p>
           </div>
         </section>
 
@@ -265,8 +231,8 @@ export default async function CertificatePage() {
             projectTitle={approved[0]?.titleAr ?? null}
             projectTitleEn={approved[0]?.titleEn ?? null}
             approvedProjects={approved.length}
-            date={dict.ar.registerPage.date}
-            dateEn={dict.en.registerPage.date}
+            date={EDITION_DATE_AR}
+            dateEn={EDITION_DATE_EN}
             location={dict.ar.registerPage.location}
             locationEn={dict.en.registerPage.location}
             issuedAt={issuedAt}
@@ -413,8 +379,8 @@ export default async function CertificatePage() {
           projectTitle={approved[0]?.titleAr ?? null}
           projectTitleEn={approved[0]?.titleEn ?? null}
           approvedProjects={approved.length}
-          date={dict.ar.registerPage.date}
-          dateEn={dict.en.registerPage.date}
+          date={EDITION_DATE_AR}
+          dateEn={EDITION_DATE_EN}
           location={dict.ar.registerPage.location}
           locationEn={dict.en.registerPage.location}
           issuedAt={issuedAt}

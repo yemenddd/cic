@@ -3,7 +3,7 @@ import { siteUrl } from '@/lib/site';
 import { getAchievementEditions } from '@/lib/db/queries';
 import { ACHIEVEMENT_EDITIONS } from '@/lib/achievements-data';
 
-const STATIC_ROUTES = ['', '/about', '/history', '/program', '/gallery', '/videos', '/achievements', '/register'];
+const STATIC_ROUTES = ['', '/about', '/history', '/gallery', '/videos', '/achievements', '/register'];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const editions = await getAchievementEditions();

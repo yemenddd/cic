@@ -20,6 +20,21 @@ export default async function AdminProgramPage() {
     <div>
       <ListPageHeader title="البرنامج" addHref="/admin/program/new" />
 
+      {/* صفحة البرنامج العامة حُذفت مع انتهاء الدورة، وهذا المحرِّر باقٍ.
+          بلا هذا السطر يفتح المنظِّم الصفحة فيعدّل جلسة ثم يذهب ليراها على
+          الموقع فلا يجدها — وهو عطل ظاهري لا سبب له. */}
+      <div
+        className="mb-6 rounded-xl p-3.5 text-[12.5px] leading-relaxed"
+        style={{
+          background: 'var(--mat-liquid-bg)',
+          border: '1px solid var(--mat-liquid-border)',
+          color: 'var(--text-secondary)',
+        }}
+      >
+        هذه الجلسات محفوظة ولا تُعرض على الموقع حالياً — صفحة البرنامج العامة أُغلقت بعد
+        انتهاء الدورة. حرِّرها هنا استعداداً للدورة القادمة، وتُنشر الصفحة عند إعلان موعدها.
+      </div>
+
       {[
         { key: 'dayOne', rows: dayOne },
         { key: 'dayTwo', rows: dayTwo },

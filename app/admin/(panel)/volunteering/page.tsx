@@ -3,9 +3,9 @@ import { Pencil, MapPin, HandHeart } from 'lucide-react';
 import { prisma } from '@/lib/db/client';
 import { ListPageHeader } from '@/components/admin/ListPage';
 import DeleteButton from '@/components/admin/DeleteButton';
-import { CONFERENCE_DAYS } from '@/lib/conference';
 import { byStartTime, rosterHealth, type ShiftLike } from '@/lib/volunteering';
 import { arabicCountBare, VOLUNTEER } from '@/lib/arabic-plural';
+import { dayLabel } from '@/lib/attendance';
 import { committeeLabel } from '@/lib/committees';
 import RosterSummary from './RosterSummary';
 import { OpenToggle, RemoveVolunteer } from './ShiftControls';
@@ -15,15 +15,12 @@ import { deleteShift } from './actions';
 // roster is a roster somebody staffs the door from.
 export const dynamic = 'force-dynamic';
 
-const DATE_LABEL = new Intl.DateTimeFormat('ar-u-nu-latn', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-});
-
+// اليومان بتسميتهما لا بتاريخهما. كان هنا تاريخ الدورة المنعقدة مكتوباً
+// بالكامل («الجمعة 2 أكتوبر»)، وهو تاريخ مضى — والجدول يُقرأ اليوم كسجلّ،
+// فالتسمية هي ما يبقى صحيحاً.
 const DAYS = [
-  { key: 'dayOne' as const, date: CONFERENCE_DAYS.dayOne },
-  { key: 'dayTwo' as const, date: CONFERENCE_DAYS.dayTwo },
+  { key: 'dayOne' as const },
+  { key: 'dayTwo' as const },
 ];
 
 export default async function AdminVolunteeringPage() {
@@ -61,9 +58,9 @@ export default async function AdminVolunteeringPage() {
 
   const knownDays = new Set(DAYS.map((d) => d.key as string));
   const groups = [
-    ...DAYS.map(({ key, date }) => ({
+    ...DAYS.map(({ key }) => ({
       key: key as string,
-      label: DATE_LABEL.format(new Date(date.y, date.m - 1, date.d)),
+      label: dayLabel(key),
       shifts: byStartTime(shifts.filter((s) => s.day === key)),
     })),
     {

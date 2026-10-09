@@ -7,7 +7,7 @@ import type { Metadata } from 'next';
  * `openGraph` is replaced wholesale rather than merged — so a page that set
  * only a title and description threw away the root's image with it. Every page
  * using this helper previewed as a blank white card in WhatsApp, Telegram and
- * X: /register, /program, /about, /history, /gallery, /videos, /achievements.
+ * X: /register, /about, /history, /gallery, /videos, /achievements.
  * The same wholesale replacement dropped `twitter.card`, which fell back from
  * a large image to a small one.
  *

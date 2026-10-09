@@ -9,7 +9,6 @@ import BarList, { type BarItem } from '@/components/admin/BarList';
 import { categoryLabel } from '@/lib/categories';
 import { DAY_LABELS } from '@/lib/attendance';
 import { arabicCount, arabicCountBare, VOLUNTEER, PERSON, SCAN } from '@/lib/arabic-plural';
-import { conferenceHasStarted } from '@/lib/conference';
 import {
   turnout, turnoutByCategory, arrivalCurve, dayRetention, methodSplit,
   checkpointLoad, rankAttended, byRecorder, rowsForDay, clockLabel,
@@ -123,7 +122,6 @@ export default async function AttendanceReportPage() {
   // Before the doors have ever opened, every rate on this page is a rate over
   // a conference that has not happened. The figures are still true; saying
   // what they are figures *of* is what keeps them from being read as a verdict.
-  const started = conferenceHasStarted();
 
   return (
     <div className="space-y-7">
@@ -164,13 +162,6 @@ export default async function AttendanceReportPage() {
         </Panel>
       ) : (
         <>
-          {!started && (
-            <Finding>
-              المؤتمر لم ينعقد بعد — هذه الأرقام أولية وتخصّ ما سُجّل حتى الآن (تجارب الباب
-              أو تسجيلات مبكرة). تُقرأ بعد انتهاء الفعاليات.
-            </Finding>
-          )}
-
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <StatCard
               label="حضروا فعلاً"
@@ -203,7 +194,7 @@ export default async function AttendanceReportPage() {
           {/* The findings, said out loud. A dashboard that leaves every
               conclusion to the reader gets read once. */}
           <div className="space-y-2.5">
-            {started && overall.noShows > 0 && overall.registered > 0 && (
+            {overall.noShows > 0 && overall.registered > 0 && (
               <Finding tone={overall.rate < 60 ? 'warn' : 'neutral'}>
                 من كل {arabicCountBare(overall.registered, PERSON)} مسجّلاً حضر{' '}
                 {arabicCountBare(overall.attended, PERSON)} ({overall.rate}٪).

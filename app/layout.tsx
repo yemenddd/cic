@@ -42,7 +42,7 @@ const thmanyah = localFont({
 
 const title = "CIC | مؤتمر الإبداع والابتكار";
 const description =
-  "انضم إلينا في مؤتمر الإبداع والابتكار يومي ٢–٣ أكتوبر ٢٠٢٦. اكتشف مستقبل الابتكار.";
+  "منصة مؤتمر الإبداع والابتكار — الإبداع والبحث العلمي والابتكار. انضم إلى المنصة وكن أول من يعرف بالنسخة القادمة.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

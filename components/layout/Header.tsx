@@ -21,7 +21,6 @@ const NAV_LINKS = [
   { key: 'home',         href: '/' },
   { key: 'about',        href: '/about' },
   { key: 'history',      href: '/history' },
-  { key: 'program',      href: '/program' },
   { key: 'achievements', href: '/achievements' },
   { key: 'gallery',      href: '/gallery' },
   { key: 'videos',       href: '/videos' },

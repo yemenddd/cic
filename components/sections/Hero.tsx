@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
@@ -28,32 +27,6 @@ export default function Hero() {
   const { t, dir, lang } = useLang();
   const { theme } = useTheme();
   const isLight = theme === 'light';
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-  useEffect(() => {
-    const target = new Date('2026-10-02T09:00:00').getTime();
-    const tick = () => {
-      const diff = target - Date.now();
-      if (diff <= 0) return;
-      setTimeLeft({
-        days:    Math.floor(diff / 86400000),
-        hours:   Math.floor((diff % 86400000) / 3600000),
-        minutes: Math.floor((diff % 3600000) / 60000),
-        seconds: Math.floor((diff % 60000) / 1000),
-      });
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const countdownItems = [
-    { label: t('countdown.days'),    value: timeLeft.days    },
-    { label: t('countdown.hours'),   value: timeLeft.hours   },
-    { label: t('countdown.minutes'), value: timeLeft.minutes },
-    { label: t('countdown.seconds'), value: timeLeft.seconds },
-  ];
-
   const isRtl = dir === 'rtl';
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
@@ -198,7 +171,7 @@ export default function Hero() {
               <span className="hidden sm:block w-px h-5 shrink-0" style={{ background: 'var(--border-subtle)' }} />
 
               <Link
-                href="/program"
+                href="/about"
                 className="inline-flex items-center gap-2 text-[14px] font-bold transition-colors duration-200"
                 style={{ color: 'var(--text-secondary)' }}
                 onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
@@ -230,53 +203,27 @@ export default function Hero() {
 
         </div>
 
-        {/* ── Countdown centered below ── */}
+        {/* ── ما حلّ محلّ العدّ التنازلي ──────────────────────────────
+            كان هنا عدّاد إلى 2 أكتوبر 2026. انتهت تلك النسخة، فصار
+            العدّاد يعرض أربعة أصفار لكل زائر — وهو أسوأ من لا شيء: يقول
+            إنّ المؤتمر بدأ الآن. المنصة بعد المؤتمر تبيع العضوية لا
+            الموعد، فهذا ما يُقال هنا. */}
         <motion.div
-          className="flex flex-col items-center gap-4"
+          className="flex flex-col items-center gap-3 text-center"
           {...reveal(0.46)}
         >
-          <p className="text-center font-bold text-base" style={{ color: 'var(--text-primary)', letterSpacing: '0.08em' }}>
-            {t('hero.countdownLabel')}
+          <p
+            className="font-outfit font-bold"
+            style={{ color: 'var(--text-primary)', fontSize: 'clamp(1.15rem, 3.4vw, 1.85rem)' }}
+          >
+            {t('hero.platformTitle')}
           </p>
-          <div className="flex items-center gap-2 sm:gap-3">
-            {countdownItems.map((item, i) => (
-              <div key={item.label} className="flex items-center gap-2 sm:gap-3">
-                <motion.div
-                  className="flex flex-col items-center justify-center"
-                  initial={{ opacity: 0, y: 24, scale: 0.82 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={VP}
-                  transition={{ duration: 0.48, delay: 0.38 + i * 0.08, ease: EASE }}
-                  style={{
-                    minWidth:             'clamp(54px, 16vw, 72px)',
-                    padding:              'clamp(8px, 2vw, 12px) clamp(6px, 1.5vw, 10px)',
-                    background:           'var(--mat-liquid-bg)',
-                    backdropFilter:       'blur(20px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                    border:               '1px solid var(--mat-liquid-border)',
-                    borderRadius:         '14px',
-                    boxShadow:            'var(--mat-liquid-shadow)',
-                  }}
-                >
-                  <span
-                    className="font-outfit font-bold tabular-nums leading-none"
-                    style={{
-                      fontSize: 'clamp(1.1rem, 4.5vw, 2.25rem)',
-                      color:    'var(--text-primary)',
-                    }}
-                  >
-                    {item.value.toString().padStart(2, '0')}
-                  </span>
-                  <span className="mt-1 text-caption" style={{ fontSize: 'clamp(10px, 2.2vw, 11px)', letterSpacing: '0.10em', color: 'var(--text-tertiary)' }}>
-                    {item.label}
-                  </span>
-                </motion.div>
-                {i < countdownItems.length - 1 && (
-                  <span className="text-lg sm:text-2xl font-light -mt-4 sm:-mt-5 select-none" style={{ color: 'var(--text-tertiary)' }}>:</span>
-                )}
-              </div>
-            ))}
-          </div>
+          <p
+            className="max-w-xl leading-relaxed"
+            style={{ color: 'var(--text-secondary)', fontSize: 'clamp(0.9rem, 2.1vw, 1.05rem)' }}
+          >
+            {t('hero.platformNote')}
+          </p>
         </motion.div>
 
       </div>

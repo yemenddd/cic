@@ -1,21 +1,22 @@
-import { CalendarClock, MapPin } from 'lucide-react';
-import { CONFERENCE_DAYS, daysUntilConference } from '@/lib/conference';
+import { MapPin, Users } from 'lucide-react';
 
 /**
  * The band at the top of the overview.
  *
- * A conference panel has one piece of context that outranks every number on
- * the page: how long is left. It used to say nothing at all — just the words
- * "نظرة عامة" — while the site itself spent a month advertising a date that
- * had already passed. Putting the count here means anyone who opens the panel
- * sees it.
+ * This used to be a countdown: "يتبقى ١٤ يوماً على انطلاق المؤتمر", which was
+ * the one piece of context that outranked every number on the page — while
+ * there was a date to count to. The fourth edition is over, and a countdown
+ * with nothing to count reads either as four zeros or as "انتهى المؤتمر"
+ * printed above a panel somebody opens every day, which is noise.
+ *
+ * What the panel needs now is what state the platform is in: membership is
+ * open, and this is how many accounts are in it. The count comes from the
+ * page, which already queries it.
  */
 
 // Latin digits with Arabic month names, matching /admin/insights: the stat
 // tiles next to this render Latin numerals, and a panel that mixes digit
 // systems is harder to read than one that commits to either.
-const DAY_ONLY = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric' });
-const DAY_MONTH = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric', month: 'long' });
 const TODAY_FORMAT = new Intl.DateTimeFormat('ar-u-nu-latn', {
   weekday: 'long',
   day: 'numeric',
@@ -23,40 +24,14 @@ const TODAY_FORMAT = new Intl.DateTimeFormat('ar-u-nu-latn', {
   year: 'numeric',
 });
 
-function dateOf({ y, m, d }: { y: number; m: number; d: number }): Date {
-  return new Date(y, m - 1, d);
-}
-
-/** "١٤ يوماً" — Arabic counts a day, two days and many days differently. */
-function daysLabel(days: number): string {
-  if (days === 1) return 'يوم واحد';
-  if (days === 2) return 'يومان';
-  if (days <= 10) return `${days} أيام`;
-  return `${days} يوماً`;
-}
-
-export default function OverviewHeader({ now = new Date() }: { now?: Date }) {
-  const days = daysUntilConference(now);
-  const start = dateOf(CONFERENCE_DAYS.dayOne);
-  const end = dateOf(CONFERENCE_DAYS.dayTwo);
-  // Both days almost always share a month, and "2 أكتوبر – 3 أكتوبر" says it
-  // twice; only spell the month out on each side when they actually differ.
-  const sameMonth = CONFERENCE_DAYS.dayOne.m === CONFERENCE_DAYS.dayTwo.m;
-  const range = sameMonth
-    ? `${DAY_ONLY.format(start)} – ${DAY_MONTH.format(end)} ${CONFERENCE_DAYS.dayTwo.y}`
-    : `${DAY_MONTH.format(start)} – ${DAY_MONTH.format(end)} ${CONFERENCE_DAYS.dayTwo.y}`;
-
-  // Three states, because a countdown that keeps counting into negatives is
-  // how the site ended up advertising a date in the past.
-  const status =
-    days > 0
-      ? { tone: 'soon' as const, headline: `يتبقى ${daysLabel(days)}`, sub: 'على انطلاق المؤتمر' }
-      : days === 0
-        ? { tone: 'live' as const, headline: 'المؤتمر اليوم', sub: 'انطلقت الفعاليات' }
-        : { tone: 'past' as const, headline: 'انتهى المؤتمر', sub: range };
-
-  const accent = status.tone === 'past' ? 'var(--text-tertiary)' : 'var(--accent-violet)';
-
+export default function OverviewHeader({
+  now = new Date(),
+  memberCount,
+}: {
+  now?: Date;
+  /** How many accounts exist, for the badge on the right. */
+  memberCount?: number;
+}) {
   return (
     <header className="flex flex-wrap items-end justify-between gap-5">
       <div>
@@ -79,15 +54,17 @@ export default function OverviewHeader({ now = new Date() }: { now?: Date }) {
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
           style={{ background: 'color-mix(in srgb, var(--accent-violet) 14%, transparent)' }}
         >
-          <CalendarClock className="h-5 w-5" style={{ color: accent }} />
+          <Users className="h-5 w-5" style={{ color: 'var(--accent-violet)' }} />
         </span>
 
         <div>
           <p className="font-outfit font-bold text-[15px] leading-tight" style={{ color: 'var(--text-primary)' }}>
-            {status.headline}
+            المنصة مفتوحة للعضوية
           </p>
           <p className="mt-1 text-[11.5px]" style={{ color: 'var(--text-tertiary)' }}>
-            {status.sub}
+            {typeof memberCount === 'number'
+              ? `${memberCount.toLocaleString('en-US')} حساباً مسجَّلاً`
+              : 'التسجيل متاح للجميع'}
           </p>
         </div>
 
@@ -98,7 +75,7 @@ export default function OverviewHeader({ now = new Date() }: { now?: Date }) {
 
         <div className="hidden sm:block">
           <p className="text-[12px] font-semibold" style={{ color: 'var(--text-secondary)' }}>
-            {range}
+            مؤتمر الإبداع والابتكار
           </p>
           <p className="mt-1 flex items-center gap-1 text-[11.5px]" style={{ color: 'var(--text-tertiary)' }}>
             <MapPin className="h-3 w-3" />

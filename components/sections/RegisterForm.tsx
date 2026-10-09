@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, CircleCheck, MapPin, Calendar, ArrowRight, Award, Eye, HandHelping } from 'lucide-react';
+import { Check, CircleCheck, MapPin, ArrowRight, Award, Eye, HandHelping } from 'lucide-react';
 import Link from 'next/link';
 import { useLang } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme-context';
@@ -181,7 +181,6 @@ export default function RegisterForm() {
           organization={fields.organization}
           track={track}
           code={confirmCode}
-          date={p.date}
           location={p.location}
           qrValue={badgeToken || undefined}
           lang={lang as 'ar' | 'en' | 'tr'}
@@ -779,24 +778,17 @@ export default function RegisterForm() {
                 <p className="mt-1.5 text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{p.cardDesc}</p>
               </div>
 
-              {/* Event meta */}
-              <div className="space-y-2.5">
-                {[
-                  { icon: Calendar, text: p.date },
-                  { icon: MapPin, text: p.location },
-                ].map(({ icon: Icon, text }, i) => (
-                  <div key={i} className="flex items-center gap-2.5 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
-                    <Icon className="h-3.5 w-3.5 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} />
-                    {text}
-                  </div>
-                ))}
+              {/* المكان. كان فوقه صفّ للتاريخ، وقد مضى. */}
+              <div className="flex items-center gap-2.5 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
+                <MapPin className="h-3.5 w-3.5 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} />
+                {p.location}
               </div>
 
               <div className="h-px" style={{ background: 'var(--mat-liquid-border)' }} />
 
               {/* Highlights */}
               <ul className="space-y-2">
-                {[p.cardF2, p.cardF3].map((item, i) => (
+                {[p.cardF1, p.cardF2, p.cardF3].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
                     <CircleCheck className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} />
                     {item}

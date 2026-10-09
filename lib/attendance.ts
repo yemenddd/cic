@@ -1,5 +1,5 @@
 import type { AttendanceMethod, Checkpoint, CheckpointKind } from '@prisma/client';
-import { CONFERENCE_DAYS, VENUE_UTC_OFFSET_HOURS } from '@/lib/conference';
+import { FOURTH_EDITION, VENUE_UTC_OFFSET_HOURS, type ConferenceDay } from '@/lib/conference';
 
 /**
  * The vocabulary and the arithmetic of attendance — days, labels, outcomes,
@@ -54,9 +54,16 @@ export function dayLabel(day: string): string {
  * two to everyone standing in the room, and a Vercel instance running in UTC
  * would file it under day one.
  */
+// 'dayOne' و'dayTwo' مفتاحان في القاعدة لا تاريخان: صفوف الحضور والتطوّع
+// كُتبت بهما، فيبقيان. وما يقابلهما من تاريخ هو تاريخ النسخة الرابعة وحده.
+const DAY_DATES: Record<DayKey, ConferenceDay> = {
+  dayOne: FOURTH_EDITION.first,
+  dayTwo: FOURTH_EDITION.last,
+};
+
 export function activeDayKey(now: Date = new Date()): DayKey | null {
   for (const key of DAY_KEYS) {
-    const { y, m, d } = CONFERENCE_DAYS[key];
+    const { y, m, d } = DAY_DATES[key];
     const start = Date.UTC(y, m - 1, d, -VENUE_UTC_OFFSET_HOURS);
     if (now.getTime() >= start && now.getTime() < start + 86_400_000) return key;
   }

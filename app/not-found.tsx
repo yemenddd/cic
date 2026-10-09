@@ -21,21 +21,21 @@ const CONTENT = {
     title:   'الصفحة غير موجودة',
     desc:    'يبدو أن هذه الصفحة غير موجودة أو تم نقلها. تحقق من الرابط أو عد إلى الرئيسية.',
     home:    'العودة إلى الرئيسية',
-    program: 'استعرض البرنامج',
+    program: 'انضم إلى المنصة',
   },
   en: {
     code:    '404',
     title:   'Page not found',
     desc:    'This page doesn\'t exist or has been moved. Check the URL or head back home.',
     home:    'Back to Home',
-    program: 'View Program',
+    program: 'Join the platform',
   },
   tr: {
     code:    '404',
     title:   'Sayfa bulunamadı',
     desc:    'Bu sayfa mevcut değil veya taşınmış olabilir. URL\'yi kontrol edin ya da ana sayfaya dönün.',
     home:    'Ana Sayfaya Dön',
-    program: 'Programı İncele',
+    program: 'Platforma katıl',
   },
 } as const;
 
@@ -152,9 +152,9 @@ export default function NotFound() {
               {c.home}
             </Link>
 
-            {/* Secondary — program */}
+            {/* Secondary — join the platform */}
             <Link
-              href="/program"
+              href="/register"
               className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 py-3 text-sm font-medium text-white/70 transition-all hover:border-white/20 hover:bg-white/8 hover:text-white active:scale-[0.98]"
             >
               {c.program}

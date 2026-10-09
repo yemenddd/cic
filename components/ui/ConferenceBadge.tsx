@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, CircleCheck, Download, Copy, ArrowRight } from 'lucide-react';
+import { MapPin, CircleCheck, Download, Copy, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import QRCode from '@/components/ui/QRCode';
 
@@ -13,7 +13,6 @@ export interface BadgeProps {
   organization?: string;
   track:         string;
   code:          string;
-  date:          string;
   location:      string;
   lang:          'ar' | 'en' | 'tr';
   onDownloadPDF: () => void;
@@ -72,7 +71,7 @@ function BarcodeSVG({ code }: { code: string }) {
 
 export default function ConferenceBadge({
   name, categoryId, categoryLabel, organization, track,
-  code, date, location, lang,
+  code, location, lang,
   onDownloadPDF, onCopyLink, copied,
   backHref = '/', backLabel, copyLabel, qrValue,
 }: BadgeProps) {
@@ -95,7 +94,6 @@ export default function ConferenceBadge({
     attendee:   isRtl ? 'المشارك'           : lang === 'tr' ? 'Katılımcı'          : 'Attendee',
     trackLabel: isRtl ? 'المسار'            : lang === 'tr' ? 'Alan'               : 'Track',
     orgLabel:   isRtl ? 'الجهة'             : lang === 'tr' ? 'Kuruluş'            : 'Organization',
-    dateLabel:  isRtl ? 'التاريخ'           : lang === 'tr' ? 'Tarih'              : 'Date',
     venueLabel: isRtl ? 'المكان'            : lang === 'tr' ? 'Mekan'              : 'Venue',
     codeLabel:  isRtl ? 'رمز التأكيد'       : lang === 'tr' ? 'Onay Kodu'          : 'Confirmation Code',
     scanHint:   isRtl ? 'امسح هذا الرمز عند الدخول' : lang === 'tr' ? 'Girişte bu kodu okutun' : 'Scan at the entrance',
@@ -245,17 +243,10 @@ export default function ConferenceBadge({
 
           {/* ── Event details ── */}
           <div style={{ padding: '12px 20px', background: '#f8fafc' }}>
+            {/* المكان وحده. كانت هنا خانة ثانية تطبع تاريخ الدورة المنعقدة،
+                وهذه بطاقة تُحمَّل اليوم وبعد سنة — فأي تاريخ مطبوع عليها
+                يصير خطأ في اليوم التالي للمؤتمر. */}
             <div style={{ display: 'flex', gap: 0 }}>
-              <div style={{ flex: 1, textAlign: 'center' }}>
-                <p style={{ color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 3px' }}>
-                  {lbl.dateLabel}
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'center' }}>
-                  <Calendar size={12} color={accent.from} />
-                  <span style={{ color: '#1e293b', fontWeight: 600, fontSize: 12 }}>{date}</span>
-                </div>
-              </div>
-              <div style={{ width: 1, background: '#e2e8f0', margin: '0 16px' }} />
               <div style={{ flex: 1, textAlign: 'center' }}>
                 <p style={{ color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 3px' }}>
                   {lbl.venueLabel}

@@ -37,7 +37,6 @@ async function main() {
 
   await seedSpeakers(prisma, dict);
   await seedHistoryEditions(prisma, dict);
-  await seedProgramSessions(prisma, dict);
   await seedAchievements(prisma, ACHIEVEMENT_EDITIONS);
 
   console.log('\nDone. Open /admin to review, then add the remaining images (speaker/session/student photos, partner logos, gallery photos, videos) directly in the admin panel.');
@@ -90,34 +89,6 @@ async function seedHistoryEditions(prisma: Prisma, dict: Dict) {
     });
   }
   console.log(`✓ Seeded ${ar.length} history editions`);
-}
-
-async function seedProgramSessions(prisma: Prisma, dict: Dict) {
-  const days: Array<'dayOne' | 'dayTwo'> = ['dayOne', 'dayTwo'];
-  let count = 0;
-
-  for (const day of days) {
-    const en = dict.en.schedule[day];
-    const ar = dict.ar.schedule[day];
-    const tr = dict.tr.schedule[day];
-
-    for (let i = 0; i < ar.length; i++) {
-      await prisma.programSession.create({
-        data: {
-          day,
-          time: ar[i].time,
-          titleAr: ar[i].title, titleEn: en[i]?.title, titleTr: tr[i]?.title,
-          speakerNameAr: ar[i].speaker, speakerNameEn: en[i]?.speaker, speakerNameTr: tr[i]?.speaker,
-          speakerRoleAr: ar[i].role, speakerRoleEn: en[i]?.role, speakerRoleTr: tr[i]?.role,
-          color: ar[i].color,
-          order: count++,
-          // speakerPhotoUrl is left empty here — the source data points at
-          // local /public paths, not uploaded blobs. Add each photo in /admin.
-        },
-      });
-    }
-  }
-  console.log(`✓ Seeded ${count} program sessions (add speaker photos in /admin)`);
 }
 
 async function seedAchievements(prisma: Prisma, editions: AchievementEditions) {

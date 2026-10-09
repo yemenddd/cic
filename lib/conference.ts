@@ -1,15 +1,21 @@
 /**
- * When the conference happens — the one place that knows.
+ * The fourth edition, which has concluded.
  *
- * This exists because moving the dates last time meant editing them in the
- * marketing copy, the schema.org block, two countdown targets, the Open Graph
- * card and the calendar export, and the calendar one stored them as
- * `{ y, m, d }` rather than a string, so a search for the old date skipped
- * straight past it and would have shipped every downloaded .ics on the wrong
- * day. Anything computed from the dates now reads them from here.
+ * This file used to drive the public site: a countdown on the homepage, a date
+ * chip in the header, the schema.org Event block, two badges and the calendar
+ * export all read the dates from here. None of them do any more — the edition
+ * is over, and a site that still advertises its date is a site advertising a
+ * date in the past.
  *
- * The translated display strings in lib/dictionary.ts are still written out by
- * hand — they are prose in three languages, not a formatting of these numbers.
+ * What is left is the one place where those dates are still true: a
+ * certificate. A certificate of participation states, in the past tense, that
+ * its holder was somewhere on a given date, so the date belongs on it — and it
+ * must come from a record of what happened, not from marketing copy that gets
+ * rewritten between editions. That is the difference between this constant and
+ * the one it replaced.
+ *
+ * A fifth edition adds its own dates here and gets its own forward-looking
+ * copy; it does not overwrite these.
  */
 
 export interface ConferenceDay {
@@ -19,9 +25,10 @@ export interface ConferenceDay {
   d: number;
 }
 
-export const CONFERENCE_DAYS: Record<'dayOne' | 'dayTwo', ConferenceDay> = {
-  dayOne: { y: 2026, m: 10, d: 2 },
-  dayTwo: { y: 2026, m: 10, d: 3 },
+/** When the fourth edition was held. Istanbul, 2026. */
+export const FOURTH_EDITION: Record<'first' | 'last', ConferenceDay> = {
+  first: { y: 2026, m: 10, d: 2 },
+  last: { y: 2026, m: 10, d: 3 },
 };
 
 /**
@@ -30,56 +37,28 @@ export const CONFERENCE_DAYS: Record<'dayOne' | 'dayTwo', ConferenceDay> = {
  */
 export const VENUE_UTC_OFFSET_HOURS = 3;
 
-/** When the first session opens, as a real instant. */
-export function conferenceStart(): Date {
-  const { y, m, d } = CONFERENCE_DAYS.dayOne;
-  return new Date(Date.UTC(y, m - 1, d, 9 - VENUE_UTC_OFFSET_HOURS, 0, 0));
-}
+/** As printed on a certificate, in each of the two languages it carries. */
+export const EDITION_DATE_AR = '2-3 أكتوبر 2026';
+export const EDITION_DATE_EN = 'Oct 2–3, 2026';
 
 /**
- * The moment the conference is over — midnight at the end of the second day,
+ * The moment the fourth edition ended — midnight at the end of its last day,
  * local time.
- *
- * Exists because some things must not be issued before it. A certificate of
- * participation states, in the past tense, that its holder attended; handing
- * one out two weeks in advance makes it a false document and devalues the ones
- * held by people who actually turn up.
  */
 export function conferenceEnd(): Date {
-  const { y, m, d } = CONFERENCE_DAYS.dayTwo;
+  const { y, m, d } = FOURTH_EDITION.last;
   // Hour 24 of the final day = 00:00 the next morning, shifted to UTC.
   return new Date(Date.UTC(y, m - 1, d, 24 - VENUE_UTC_OFFSET_HOURS, 0, 0));
 }
 
+/**
+ * Has the edition a certificate would attest to finished?
+ *
+ * Kept as a function of the clock rather than hard-coded to `true`, because
+ * that is what makes it still correct for a fifth edition: point the constant
+ * at the new dates and the certificate gate closes again by itself, instead of
+ * silently handing out certificates on day one.
+ */
 export function conferenceHasEnded(now: Date = new Date()): boolean {
   return now.getTime() >= conferenceEnd().getTime();
-}
-
-/**
- * Have the doors opened?
- *
- * Separate from `conferenceHasEnded` because the interesting window for most
- * of what the dashboard shows is *during* the conference, not after it: an
- * attendance figure is worth showing from the first session onwards, and is
- * meaningless — a guaranteed zero — before it.
- *
- * Takes `now` as a defaulted parameter rather than reading the clock in the
- * body, which is the same shape as `daysUntilConference` above. It keeps the
- * impure call out of any component that renders the result.
- */
-export function conferenceHasStarted(now: Date = new Date()): boolean {
-  return now.getTime() >= conferenceStart().getTime();
-}
-
-/**
- * Whole days from `now` until the opening session.
- *
- * Negative once the conference has started, which is the caller's cue to stop
- * counting down — the site spent a month advertising a date that had passed,
- * and a countdown that quietly renders a negative number is how that happens
- * again.
- */
-export function daysUntilConference(now: Date = new Date()): number {
-  const ms = conferenceStart().getTime() - now.getTime();
-  return Math.ceil(ms / 86_400_000);
 }

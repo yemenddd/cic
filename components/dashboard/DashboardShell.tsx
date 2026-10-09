@@ -2,7 +2,7 @@
 
 import { signOut } from 'next-auth/react';
 import {
-  LayoutDashboard, IdCard, CalendarDays, Lightbulb, UserRound,
+  LayoutDashboard, IdCard, Lightbulb, UserRound,
   LogOut, ExternalLink, Bell, Award, HandHeart,
 } from 'lucide-react';
 import PlatformShell, { type NavGroup, type UtilAction } from '@/components/platform/PlatformShell';
@@ -39,7 +39,6 @@ export default function DashboardShell({
       label: 'حضوري',
       items: [
         { href: '/dashboard/badge', label: 'بطاقتي', icon: IdCard },
-        { href: '/dashboard/agenda', label: 'جدولي', icon: CalendarDays },
         { href: '/dashboard/certificate', label: 'شهادتي', icon: Award },
       ],
     },

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import {
-  IdCard, CalendarDays, Lightbulb, ArrowLeft, CircleCheck, Bell, UserCheck, Sparkles, Clock,
+  IdCard, Lightbulb, ArrowLeft, CircleCheck, Bell, UserCheck, Clock,
   HandHeart, MapPin,
 } from 'lucide-react';
 import { auth } from '@/auth';
@@ -10,10 +10,8 @@ import {
   categoryLabel, categoryFeatures, abilitiesFor,
   MAX_SUBMISSIONS_PER_ATTENDEE, MAX_SHIFTS_PER_VOLUNTEER,
 } from '@/lib/categories';
-import { resolveSessionInterval } from '@/lib/ics';
-import { VENUE_UTC_OFFSET_HOURS, conferenceHasStarted } from '@/lib/conference';
 import { relativeArabicDate } from '@/lib/relative-time';
-import { arabicCountBare, SESSION, PROJECT, SHIFT } from '@/lib/arabic-plural';
+import { arabicCountBare, PROJECT, SHIFT } from '@/lib/arabic-plural';
 import { byStartTime } from '@/lib/volunteering';
 import { committeeLabel } from '@/lib/committees';
 import {
@@ -22,19 +20,7 @@ import {
 import WelcomeHero from './WelcomeHero';
 import Readiness, { type ReadinessStep } from './Readiness';
 import StatRings, { type RingStat } from './StatRings';
-import DayTimeline, { type TimelineSession } from './DayTimeline';
 import StatusBar from './StatusBar';
-
-/**
- * Minutes from midnight at the venue, for a session the .ics resolver could
- * place. That resolver works in UTC, so the fixed Istanbul offset goes back on
- * here — reusing it rather than parsing the times a second time is what keeps
- * the strip on this page and the downloaded calendar from ever disagreeing.
- */
-function venueMinutes(at: Date): number {
-  const shifted = new Date(at.getTime() + VENUE_UTC_OFFSET_HOURS * 3600_000);
-  return shifted.getUTCHours() * 60 + shifted.getUTCMinutes();
-}
 
 const DAY_LABELS: Record<string, string> = {
   dayOne: 'اليوم الأول',
@@ -76,14 +62,14 @@ export default async function DashboardHomePage() {
 
   // Deliberately un-wrapped by safe(): this is the attendee's own data, and a
   // DB outage must surface as an error rather than an empty "you have nothing".
-  const [user, unreadNotifications, saved, program, attendedCount, checkpointCount] = await Promise.all([
+  const [user, unreadNotifications, attendedCount, checkpointCount] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
         name: true,
         category: true,
         confirmationCode: true,
-        _count: { select: { savedSessions: true, submissions: true, volunteerShifts: true } },
+        _count: { select: { submissions: true, volunteerShifts: true } },
         submissions: { select: { status: true } },
       },
     }),
@@ -91,21 +77,6 @@ export default async function DashboardHomePage() {
       where: { userId: session.user.id, read: false },
       orderBy: { createdAt: 'desc' },
       take: 3,
-    }),
-    prisma.savedSession.findMany({
-      where: { userId: session.user.id },
-      select: {
-        session: {
-          select: { id: true, day: true, time: true, titleAr: true, speakerNameAr: true, trackAr: true },
-        },
-      },
-    }),
-    // The whole programme, not only what was saved: the strip below shows an
-    // empty schedule against everything that is on, which is what makes it
-    // useful to somebody who has saved nothing yet.
-    prisma.programSession.findMany({
-      orderBy: [{ day: 'asc' }, { order: 'asc' }],
-      select: { id: true, day: true, time: true, titleAr: true, speakerNameAr: true, trackAr: true },
     }),
     prisma.attendance.count({ where: { userId: session.user.id } }),
     prisma.checkpoint.count(),
@@ -120,7 +91,6 @@ export default async function DashboardHomePage() {
   const abilities = abilitiesFor(user.category);
   const benefits = categoryFeatures(user.category, 'ar');
 
-  const savedCount = user._count.savedSessions;
   const submissionCount = user._count.submissions;
   const shiftCount = user._count.volunteerShifts;
 
@@ -145,14 +115,6 @@ export default async function DashboardHomePage() {
       )[0] ?? null
     : null;
 
-  // The soonest saved session, by the same resolver the .ics export uses — so
-  // "next" here and the downloaded calendar can never disagree. Sessions whose
-  // free-text time can't be parsed sort last rather than being guessed at.
-  const upcoming = saved
-    .map(({ session: s }) => ({ session: s, interval: resolveSessionInterval(s) }))
-    .filter((row) => row.interval !== null)
-    .sort((a, b) => a.interval!.start.getTime() - b.interval!.start.getTime())[0];
-
   const steps: ReadinessStep[] = [
     {
       key: 'account',
@@ -165,18 +127,10 @@ export default async function DashboardHomePage() {
     {
       key: 'badge',
       title: 'بطاقتك جاهزة',
-      desc: user.confirmationCode ? 'حمّلها قبل يوم الحضور' : 'ستصدر بعد تأكيد التسجيل',
+      desc: user.confirmationCode ? 'احتفظ بها على هاتفك' : 'ستصدر بعد تأكيد التسجيل',
       href: '/dashboard/badge',
       icon: IdCard,
       done: Boolean(user.confirmationCode),
-    },
-    {
-      key: 'agenda',
-      title: 'جدولك الخاص',
-      desc: savedCount > 0 ? `${arabicCountBare(savedCount, SESSION)} في جدولك` : 'احفظ الجلسات التي تهمّك',
-      href: '/dashboard/agenda',
-      icon: CalendarDays,
-      done: savedCount > 0,
     },
     // Presenting a project is a participant benefit, so it is only a step for
     // the attendees who actually have it — see abilitiesFor() in lib/categories.
@@ -222,25 +176,6 @@ export default async function DashboardHomePage() {
 
   // --- what the charts are drawn from ---------------------------------------
 
-  const savedIds = new Set(saved.map(({ session: s }) => s.id));
-
-  const timeline: TimelineSession[] = program.map((s) => {
-    const interval = resolveSessionInterval(s);
-    return {
-      id: s.id,
-      day: s.day,
-      time: s.time,
-      titleAr: s.titleAr,
-      speakerNameAr: s.speakerNameAr,
-      trackAr: s.trackAr,
-      startMinutes: interval ? venueMinutes(interval.start) : null,
-      endMinutes: interval ? venueMinutes(interval.end) : null,
-      saved: savedIds.has(s.id),
-    };
-  });
-
-  const started = conferenceHasStarted();
-
   // A ring has to be a measurement of something that has happened. An empty
   // one is not "0%", it is "nothing to show yet" — and a row of empty rings is
   // the exact fault the welcome hero was rebuilt to remove, three stat cards
@@ -248,16 +183,6 @@ export default async function DashboardHomePage() {
   // something to say, and until then the readiness steps and the timeline
   // below are what ask for the action.
   const rings: RingStat[] = [
-    {
-      key: 'agenda',
-      value: savedCount,
-      total: program.length,
-      label: 'جدولك',
-      caption: `${arabicCountBare(savedCount, SESSION)} من أصل ${program.length} في البرنامج`,
-      href: '/dashboard/agenda',
-      color: 'var(--accent-cyan)',
-      ariaLabel: `حفظت ${savedCount} جلسة من أصل ${program.length}`,
-    },
     ...(abilities.submitInnovations
       ? [
           {
@@ -286,9 +211,8 @@ export default async function DashboardHomePage() {
           },
         ]
       : []),
-    // Only once there is a door to have walked through: before the conference
-    // opens this can only ever be zero, which measures nothing.
-    ...(started && checkpointCount > 0
+    // Only where there is a door to have walked through.
+    ...(checkpointCount > 0
       ? [
           {
             key: 'attendance',
@@ -372,80 +296,10 @@ export default async function DashboardHomePage() {
         </Card>
       )}
 
-      {/* The programme on a time axis. Placed above the "next session" card
-          because it answers the same question more completely — that card is
-          the one line you need on the morning itself, this is the shape of
-          both days. */}
-      {timeline.length > 0 && (
-        <DayTimeline sessions={timeline} hasSaved={savedCount > 0} />
-      )}
-
-      <div className="grid gap-5 lg:grid-cols-2">
-        {/* Next session */}
-        <Card>
-          <CardHeading title="جلستك القادمة" href="/dashboard/agenda" linkLabel="جدولي" />
-
-          {upcoming ? (
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span
-                  className="rounded-lg px-2.5 py-1 text-[11.5px] font-semibold"
-                  style={{
-                    background: 'color-mix(in srgb, var(--accent-cyan) 16%, transparent)',
-                    color: 'var(--accent-cyan)',
-                  }}
-                >
-                  {DAY_LABELS[upcoming.session.day] ?? upcoming.session.day}
-                </span>
-                <span
-                  className="inline-flex items-center gap-1.5 text-[12px]"
-                  style={{ color: 'var(--text-secondary)' }}
-                >
-                  <Clock className="h-3.5 w-3.5" />
-                  {upcoming.session.time}
-                </span>
-              </div>
-
-              <p
-                className="mt-3 font-outfit font-bold text-[15px] leading-relaxed"
-                style={{ color: 'var(--text-primary)' }}
-              >
-                {upcoming.session.titleAr}
-              </p>
-
-              {(upcoming.session.speakerNameAr || upcoming.session.trackAr) && (
-                <p className="mt-1.5 text-[12.5px]" style={{ color: 'var(--text-tertiary)' }}>
-                  {[upcoming.session.speakerNameAr, upcoming.session.trackAr]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </p>
-              )}
-
-              {savedCount > 1 && (
-                <p className="mt-4 text-[11.5px]" style={{ color: 'var(--text-tertiary)' }}>
-                  و{arabicCountBare(savedCount - 1, SESSION)} أخرى في جدولك
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="py-3">
-              <p className="text-[13px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                {savedCount > 0
-                  ? 'جلساتك المحفوظة لم تُحدَّد أوقاتها بعد — ستظهر هنا فور جدولتها.'
-                  : 'لم تحفظ أي جلسة بعد. تصفّح البرنامج واختر ما يهمّك ليصبح لك جدول خاص.'}
-              </p>
-              <Link
-                href="/dashboard/agenda"
-                className="mt-4 inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[13px] font-semibold"
-                style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
-              >
-                <Sparkles className="h-4 w-4" />
-                تصفّح البرنامج
-              </Link>
-            </div>
-          )}
-        </Card>
-
+      {/* كانت هنا خريطة اليومين وبطاقة «جلستك القادمة». برنامج الدورة
+          المنعقدة انتهى، وصفحة الجدول حُذفت معه — فما بقي هو ما لا يتقادم:
+          الإشعارات وحالة ما قدّمه العضو. */}
+      <div className="grid gap-5">
         {/* Notifications, or — when the feed is quiet — the project statuses */}
         <Card>
           {unreadNotifications.length > 0 ? (

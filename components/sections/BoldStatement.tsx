@@ -21,7 +21,7 @@ export default function BoldStatement() {
         description={t('bold.description')}
         description2={t('bold.description2')}
         buttonText={t('bold.explore')}
-        buttonLink="/program"
+        buttonLink="/about"
         imageUrl1="/images/about/1.jpg"
         imageUrl2="/images/about/2.jpg"
       />

@@ -1,14 +1,12 @@
 import { redirect } from 'next/navigation';
 import {
-  CalendarClock, MapPin, ScanLine, Smartphone, Printer, TriangleAlert, CircleCheck,
+  MapPin, ScanLine, Smartphone, Printer, TriangleAlert, CircleCheck,
 } from 'lucide-react';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db/client';
 import { categoryLabel } from '@/lib/categories';
 import { badgeToken } from '@/lib/badge-token';
 import { dict } from '@/lib/dictionary';
-import { CONFERENCE_DAYS, daysUntilConference, conferenceHasStarted } from '@/lib/conference';
-import { arabicCountBare, DAY } from '@/lib/arabic-plural';
 import { dayLabel, ATTENDANCE_METHOD_LABELS } from '@/lib/attendance';
 import DashboardBadge from '@/components/dashboard/DashboardBadge';
 import GatePass from './GatePass';
@@ -17,12 +15,6 @@ export const metadata = {
   title: 'بطاقتي | CIC',
 };
 
-const DAY_ONLY = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric' });
-const DAY_MONTH = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric', month: 'long' });
-
-function dateOf({ y, m, d }: { y: number; m: number; d: number }): Date {
-  return new Date(y, m - 1, d);
-}
 
 /** One line of practical guidance beside the pass. */
 function Tip({
@@ -93,14 +85,6 @@ export default async function BadgePage() {
     minute: '2-digit',
   });
 
-  const days = daysUntilConference();
-  const start = dateOf(CONFERENCE_DAYS.dayOne);
-  const end = dateOf(CONFERENCE_DAYS.dayTwo);
-  const sameMonth = CONFERENCE_DAYS.dayOne.m === CONFERENCE_DAYS.dayTwo.m;
-  const range = sameMonth
-    ? `${DAY_ONLY.format(start)} – ${DAY_MONTH.format(end)} ${CONFERENCE_DAYS.dayTwo.y}`
-    : `${DAY_MONTH.format(start)} – ${DAY_MONTH.format(end)} ${CONFERENCE_DAYS.dayTwo.y}`;
-
   return (
     <div dir="rtl">
       <h1 className="font-outfit font-bold text-xl" style={{ color: 'var(--text-primary)' }}>
@@ -141,7 +125,6 @@ export default async function BadgePage() {
             // QR works even for an account whose code was never issued, which
             // is exactly the case the warning above is about.
             qrValue={badgeToken(session.user.id)}
-            date={dict.ar.registerPage.date}
             location={dict.ar.registerPage.location}
           />
         </div>
@@ -156,10 +139,8 @@ export default async function BadgePage() {
             name={user.name ?? ''}
           />
 
-          {/* Where the badge has been scanned. Shown once there is a door to
-              have walked through: before that it can only be empty, and an
-              empty list is not a record of anything. */}
-          {(attendance.length > 0 || conferenceHasStarted()) && (
+          {/* Where the badge has been scanned. */}
+          {attendance.length > 0 && (
             <section
               className="rounded-2xl p-5"
               style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
@@ -203,28 +184,23 @@ export default async function BadgePage() {
             </section>
           )}
 
-          {/* When and where it will be asked for. */}
+          {/* أين تُطلب. كان هنا سطر ثانٍ بتاريخ النسخة الرابعة وعدد الأيام
+              المتبقّية عليها — وبطاقة تُفتح اليوم لا يتبقّى لها شيء. */}
           <section
             className="rounded-2xl p-5"
             style={{ background: 'var(--bg-elevated)', border: '1px solid var(--mat-liquid-border)' }}
           >
             <h2 className="font-outfit font-bold text-[14.5px]" style={{ color: 'var(--text-primary)' }}>
-              متى تحتاجها
+              أين تحتاجها
             </h2>
 
             <div className="mt-3.5 space-y-2.5">
               <p className="flex items-center gap-2.5 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
-                <CalendarClock className="h-4 w-4 shrink-0" style={{ color: 'var(--accent-violet)' }} />
-                {range}
-                {days > 0 && (
-                  <span style={{ color: 'var(--text-tertiary)' }}>
-                    · بعد {arabicCountBare(days, DAY)}
-                  </span>
-                )}
-              </p>
-              <p className="flex items-center gap-2.5 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
                 <MapPin className="h-4 w-4 shrink-0" style={{ color: 'var(--accent-violet)' }} />
                 {dict.ar.registerPage.location}
+              </p>
+              <p className="text-[12.5px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                تُمسح عند بوابة كل فعالية للمؤتمر، وتبقى صالحة في حسابك بين نسخة وأخرى.
               </p>
             </div>
           </section>

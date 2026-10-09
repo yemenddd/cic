@@ -6,7 +6,7 @@ import CICLogo from '@/components/ui/CICLogo';
  * choosing a new password.
  *
  * Deliberately not AuthScreen: that one is the sign-in screen, built around a
- * credentials form, a photograph and the conference countdown. These two are a
+ * credentials form and a photograph. These two are a
  * single field and a sentence, and bending the larger component to render them
  * would tie a rarely-used page to every future change of the sign-in design.
  *

@@ -1,10 +1,15 @@
 import Link from 'next/link';
-import { CalendarClock, MapPin, ArrowLeft, QrCode } from 'lucide-react';
-import { CONFERENCE_DAYS, daysUntilConference } from '@/lib/conference';
+import { MapPin, ArrowLeft, QrCode } from 'lucide-react';
 
 /**
- * The top of the attendee's dashboard: who they are, when the conference is,
- * and the code on their badge.
+ * The top of the attendee's dashboard: who they are, and the code on their
+ * badge.
+ *
+ * It used to carry a countdown and the conference dates beside them. The
+ * fourth edition is over, so that line could only ever say "انتهى المؤتمر ·
+ * 2 – 3 أكتوبر 2026" — a date in the past, printed on the first thing a member
+ * sees every time they sign in. The badge code is what is still true about
+ * them, so it is now the whole of the hero.
  *
  * The badge code is the one thing an attendee is asked for at the door, so it
  * is treated as the hero rather than as the first of three identical stat
@@ -12,49 +17,15 @@ import { CONFERENCE_DAYS, daysUntilConference } from '@/lib/conference';
  * open on a row of zeros.
  */
 
-const DAY_ONLY = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric' });
-const DAY_MONTH = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric', month: 'long' });
-
-function dateOf({ y, m, d }: { y: number; m: number; d: number }): Date {
-  return new Date(y, m - 1, d);
-}
-
-function daysLabel(days: number): string {
-  if (days === 1) return 'يوم واحد';
-  if (days === 2) return 'يومان';
-  if (days <= 10) return `${days} أيام`;
-  return `${days} يوماً`;
-}
-
 export default function WelcomeHero({
   firstName,
   category,
   code,
-  now = new Date(),
 }: {
   firstName: string;
   category: string;
   code: string | null;
-  now?: Date;
 }) {
-  const days = daysUntilConference(now);
-  const start = dateOf(CONFERENCE_DAYS.dayOne);
-  const end = dateOf(CONFERENCE_DAYS.dayTwo);
-  const sameMonth = CONFERENCE_DAYS.dayOne.m === CONFERENCE_DAYS.dayTwo.m;
-  const range = sameMonth
-    ? `${DAY_ONLY.format(start)} – ${DAY_MONTH.format(end)} ${CONFERENCE_DAYS.dayTwo.y}`
-    : `${DAY_MONTH.format(start)} – ${DAY_MONTH.format(end)} ${CONFERENCE_DAYS.dayTwo.y}`;
-
-  // Never counts into negatives — the public site already spent a month
-  // advertising a date that had passed, and this is the same mistake one
-  // subtraction away.
-  const countdown =
-    days > 0
-      ? `يتبقى ${daysLabel(days)}`
-      : days === 0
-        ? 'المؤتمر اليوم'
-        : 'انتهى المؤتمر';
-
   return (
     <section
       className="rounded-2xl p-6 md:p-7"
@@ -66,7 +37,7 @@ export default function WelcomeHero({
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0">
           <p className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-            مؤتمر الإبداع والابتكار · {CONFERENCE_DAYS.dayTwo.y}
+            منصة مؤتمر الإبداع والابتكار
           </p>
 
           <h1
@@ -88,13 +59,6 @@ export default function WelcomeHero({
                 {category}
               </span>
             )}
-            <span
-              className="inline-flex items-center gap-1.5 text-[12.5px]"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              <CalendarClock className="h-3.5 w-3.5" />
-              {countdown} · {range}
-            </span>
             <span
               className="inline-flex items-center gap-1.5 text-[12.5px]"
               style={{ color: 'var(--text-tertiary)' }}

@@ -13,7 +13,6 @@ export default function DashboardBadge({
   organization,
   track,
   code,
-  date,
   location,
   qrValue,
 }: {
@@ -23,7 +22,6 @@ export default function DashboardBadge({
   organization?: string;
   track: string;
   code: string;
-  date: string;
   location: string;
   /** The signed badge token, computed on the server — see lib/badge-token.ts. */
   qrValue: string;
@@ -51,7 +49,6 @@ export default function DashboardBadge({
       organization={organization}
       track={track}
       code={code}
-      date={date}
       location={location}
       qrValue={qrValue}
       lang="ar"
